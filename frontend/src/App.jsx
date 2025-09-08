@@ -1,7 +1,13 @@
 import React from "react";
+import Auth from "./components/auth/authPage";
+import "./App.css";
 
 function App() {
-  return <div className="text-red-500">This is the Social Networking APP</div>;
+  return (
+    <div className="App">
+      <Auth />
+    </div>
+  );
 }
 
 export default App;
