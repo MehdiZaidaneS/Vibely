@@ -5,51 +5,48 @@
 //     "password": "123"
 // }
 
+const mongoose = require("mongoose")
+
+const Schema = mongoose.Schema
 
 
-const object = {
-    "id": 1,
-    "fullName": "Mehdi Zaidane",
-    "email": "mehdi@gmail.com",
-    "phonenumber": 1231241,
-    "password": "123"
-}
+const userSchema = new Schema(
+    {
+        fullName:{
+            type: String,
+            required: true
 
-let users = [object]
-let nextId = 2
+        },
+        email:{
+            type: String,
+            required: true
 
+        },
+        phonenumber:{
+            type: String,
+            required: true
 
-function getAllUsers() {
-    return users
-}
+        },
+        password:{
+            type: String,
+            required: true
 
-//Function checks if email already exists
-function emailExisting(email) {
-    return users.find(user => user.email === email)
-}
+        },
+        username:{
+            type: String,
+            required: false
 
-function usernameExisting(username) {
-    return users.find(user => user.username === username)
-}
+        },
+        interests:{
+            type: String,
+            required: false
 
-function createUser(newUserData) {
-
-    if (emailExisting(newUserData.email)) {
-        console.log("Email already existing");
-        return false;
-    }
-
-    const newUser = { id: nextId++, ...newUserData };
-    users.push(newUser);
-    return newUser;
-}
+        },
+    }, {timestamps: true}
+);
 
 
 
+module.exports = mongoose.model("User", userSchema);
 
-
-module.exports = {
-    getAllUsers,
-    createUser
-}
 
