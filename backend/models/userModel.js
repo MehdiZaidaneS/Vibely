@@ -42,6 +42,7 @@ const userSchema = new Schema(
             required: false
 
         },
+        joinedEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }]
     }, {timestamps: true}
 );
 

@@ -12,12 +12,14 @@ const {
 
 router.get("/", getAllUsers)
 
-router.post("/",createNewUser)
+router.event("/",createNewUser)
 
 router.get("/login", getRegisteredUser)
 
 router.patch("/:userId", addInfo)
 
+router.get('/joined-events', getJoinedEvents);
+router.patch('/leave-event/:eventId', leaveEventFromUserPage);
 
 
 
