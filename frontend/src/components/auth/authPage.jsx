@@ -91,14 +91,15 @@ const Auth = () => {
         password: "",
         countryCode: "+358",
       });
-      setShowForm(true); // Show form again
+      setShowForm(true);
+       // Show form again
     }, 300); // Delay matches CSS transition duration
   };
 
   return (
     <div className="min-h-screen flex bg-purple-50 overflow-hidden">
       {/* ================================================================== */}
-      {/* LEFT SIDE - BRAND PRESENTATION */}
+      {/* LEFT SIDE */}
       {/* ================================================================== */}
       <div className="w-1/2 relative overflow-hidden flex flex-col">
         {/* Background Image Container */}
