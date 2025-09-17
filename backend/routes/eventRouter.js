@@ -11,7 +11,7 @@ const {
 
 
 
-router.event("/", createEvent);
+router.post("/", createEvent);
 
 // Get all events (GET request)
 router.get("/", getAllEvents);
