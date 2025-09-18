@@ -1,13 +1,19 @@
 import React from "react";
-import EventPage from "./pages/EventPage"; 
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Auth from "./components/auth/authPage";
+import WelcomePage from "./components/auth/welcomePage";
+import EventPage from "./pages/EventPage";
 import "./App.css";
 
 function App() {
   return (
-    <div className="App">
-      
-      <EventPage />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="auth" element={<Auth />} />
+        <Route path="welcome" element={<WelcomePage />} />
+        <Route path="events" element={<EventPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
