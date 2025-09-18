@@ -7,6 +7,7 @@ const app = express()
 const cors = require("cors")
 const userRouter = require("./routes/userRouter")
 const notificationRouter = require("./routes/notificationsRouter")
+const generateText  = require("./controllers/AIeventController");
 
 const connectDB = require("./config/db")
 const eventRouter = require("./routes/eventRouter")
@@ -25,7 +26,7 @@ app.use(cors())
 app.use("/api/users", userRouter)
 app.use("/api/event", eventRouter)
 app.use("/api/notifications", notificationRouter)
-
+app.post('/api/AIevent',generateText );
 
 
 
