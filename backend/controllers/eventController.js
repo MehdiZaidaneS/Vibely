@@ -1,15 +1,18 @@
-// controllers/eventController.js
-
 const Event = require('../models/eventModel');
 
-// Create a event
 exports.createEvent = async (req, res) => {
   try {
     const newEvent = new Event({
-      author: req.user._id, // assuming user is authenticated and user._id is available
+      author: req.body.author,
+      title: req.body.title,
+      type: req.body.type,
+      date: req.body.date,
+      time: req.body.time,
       content: req.body.content,
       image: req.body.image,
-      video: req.body.video
+      video: req.body.video,
+      capacity: req.body.capacity,
+      participant: req.body.participant || []
     });
 
     const savedEvent = await newEvent.save();
@@ -19,23 +22,22 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-
 exports.getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('author', 'username email').populate('participant', 'username email');
+    const events = await Event.find()
+      .populate('author', 'username email')
+      .populate('participant', 'username email');
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching events', error });
   }
 };
 
-// Get a single event by ID
 exports.getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId)
       .populate('author', 'username email')
-      .populate('likes', 'username')
-      .populate('comments'); // populate comments if using separate comment model
+      .populate('participant', 'username email');
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
@@ -45,7 +47,6 @@ exports.getEventById = async (req, res) => {
   }
 };
 
-// Like a event
 exports.joinEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
@@ -84,13 +85,12 @@ exports.leaveEvent = async (req, res) => {
       return res.status(400).json({ message: 'You are not a participant of this event' });
     }
     event.participant.splice(index, 1);
-    
 
     const joinedIndex = user.joinedEvents.indexOf(event._id);
     if (joinedIndex !== -1) {
       user.joinedEvents.splice(joinedIndex, 1);
     }
-    
+
     await event.save();
     await user.save();
     res.status(200).json({ message: 'Left event successfully', event });
