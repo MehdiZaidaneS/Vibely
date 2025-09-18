@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
-import { useNavigate } from "react-router-dom"; // For any future navigation, but not used yet
+import { useNavigate } from "react-router-dom";
 import styles from "./Create_Event.module.css";
 
 function CreateEvent() {
@@ -9,7 +9,7 @@ function CreateEvent() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
-  // Sidebar handlers (copied from EventPage for consistency)
+  // Sidebar handlers (i just reused it from EventPage (consistency ig)
   const openSidebar = () => {
     setIsSidebarOpen(true);
     document.body.style.overflow = "hidden";
