@@ -24,9 +24,9 @@ app.use(cors())
 
 
 app.use("/api/users", userRouter)
-app.use("/api/event", eventRouter)
+app.use("/api/events", eventRouter)
 app.use("/api/notifications", notificationRouter)
-app.post('/api/AIevent',generateText );
+app.post('/api/AIevent', generateText);
 
 
 

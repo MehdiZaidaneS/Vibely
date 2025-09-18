@@ -1,44 +1,32 @@
 // controllers/AIeventController.js
 
-const { matchEventsForUser } = require("../services/AIeventService");
+const { matchEvents } = require("../services/AIeventService");
 const { normalizeAIevent } = require("../utils/normalizeAIevent");
 
 async function EventMatches(req, res) {
   try {
-    const { userId } = req.body;
+    const { userId, preferrences } = req.body;
 
     if (!userId) {
       return res.status(400).json({ message: "userId is required." });
     }
 
     // Call event matcher service
-    const rawResponse = await matchEventsForUser(userId);
+    const rawResponse = await matchEvents(userId, preferrences);
 
-    // Handle possible fenced code block JSON
-    const jsonMatch = rawResponse.text?.match(/```json\s*([\s\S]*?)\s*```/);
-    const jsonString = jsonMatch ? jsonMatch[1] : rawResponse.text || rawResponse;
+    // Normalize the response
+    const norm = normalizeAIevent(rawResponse);
 
+    // Log response
     if (process.env.DEBUG_GEMINI === "true") {
-      console.log("EventMatcher JSON:", jsonString);
+      console.log("EventMatcher JSON:", norm);
     }
 
-    // Parse JSON
-    let parsedEvents;
-    try {
-      parsedEvents = JSON.parse(jsonString);
-    } catch (err) {
-      return res.status(500).json({ error: "Error parsing JSON response." });
-    }
-
-    // Normalize output
-    const normalizedEvents = normalizeAIevent(parsedEvents);
-
-    // Send back response
-    res.json(normalizedEvents);
-
+    // Send back normalized response
+    res.status(200).json(norm);
   } catch (err) {
-    console.error("Error in AIeventController:", err);
-    res.status(500).json({ message: "Internal server error", error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Internal server error." });
   }
 }
 
