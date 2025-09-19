@@ -9,7 +9,7 @@ Consistent route naming
 
 no authentication middleware
 
-### eventControllers.js
+### Event components
 
 - Improvements needed:
 
@@ -19,7 +19,7 @@ Joining/leaving events updates both event.participant and user.joinedEvents sepa
 
 no checking if the event is full before allowing join.
 
-### AIeventController.js
+### AI recommendation
 
 - Improvements needed:
 
