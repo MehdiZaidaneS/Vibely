@@ -5,7 +5,7 @@ const Schema = mongoose.Schema
 
 const userSchema = new Schema(
     {
-        fullName: {
+        name: {
             type: String,
             required: true
 
@@ -16,7 +16,7 @@ const userSchema = new Schema(
             unique: true,
             match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"]
         },
-        phoneNumber: {
+        phone: {
             type: String,
             required: true
 
@@ -30,6 +30,10 @@ const userSchema = new Schema(
             type: String,
             required: false
 
+        },
+        countryCode: {
+            type: String,
+            required: false
         },
         interests: [{
             type: String,

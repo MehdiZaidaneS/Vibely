@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import {createUser} from "../../api/userApi.js"
+import {useNavigate} from "react-router-dom"
 import { Eye, EyeOff, Phone, Mail, Lock, User } from "lucide-react";
 
 const Auth = () => {
@@ -26,6 +28,8 @@ const Auth = () => {
     password: "",
     countryCode: "+358", // Default to Finland
   });
+
+  const navigate = useNavigate()
 
   // ============================================================================
   // CONSTANTS AND DATA
@@ -70,12 +74,15 @@ const Auth = () => {
   // Handle form submission
   const handleSubmit = () => {
     setIsLoading(true);
+    createUser(formData)
     console.log("Form submitted:", formData);
 
     // Simulate API call with timeout
     setTimeout(() => {
       setIsLoading(false);
+      
     }, 2000);
+  
   };
 
   // Toggle between login and signup modes with animation
