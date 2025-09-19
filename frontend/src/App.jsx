@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Auth from "./components/auth/authPage";
 import WelcomePage from "./components/auth/welcomePage";
 import EventPage from "./pages/EventPage";
-import CreateEvent from "./pages/Create_Event";
+import CreateEvent from "./pages/CreateEvent";
 import "./App.css";
 
 function App() {

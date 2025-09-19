@@ -2,8 +2,8 @@
 import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
-import Modal from "../import/Modal";
-import Toast from "../import/Toast";
+import Modal from "../import/JoinEvent";
+import Toast from "../import/NotificationJoin";
 import "./EventPage.css";
 
 function EventPage() {

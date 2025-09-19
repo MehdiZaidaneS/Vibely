@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
 import { useNavigate } from "react-router-dom";
-import styles from "./Create_Event.module.css";
+import styles from "./CreateEvent.module.css";
 
 function CreateEvent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
