@@ -7,6 +7,7 @@ const app = express()
 const cors = require("cors")
 const userRouter = require("./routes/userRouter")
 const notificationRouter = require("./routes/notificationsRouter")
+const generateText  = require("./controllers/AIeventController");
 
 const connectDB = require("./config/db")
 const eventRouter = require("./routes/eventRouter")
@@ -22,17 +23,10 @@ app.use(cors())
 
 
 
-// API endpoints for core features
-// Handles user registration and login
-app.use("/api/users", userRouter);    
-
-// Manages event creation, and leaving and joing      
-app.use("/api/events", eventRouter);    
-    
-// Sends and fetches user notifications
-app.use("/api/notifications", notificationRouter); 
-
-
+app.use("/api/users", userRouter)
+app.use("/api/events", eventRouter)
+app.use("/api/notifications", notificationRouter)
+app.post('/api/AIevent', generateText);
 
 
 

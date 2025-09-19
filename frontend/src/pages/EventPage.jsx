@@ -1,4 +1,5 @@
 // src/pages/EventPage.jsx
+import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
 import Modal from "../import/Modal";
@@ -178,6 +179,12 @@ function EventPage() {
               >
                 Complete
               </a>
+              <Link
+                to="/create-event"
+                className="header-menu-item"
+              >
+                Create your own event
+              </Link>
             </nav>
           </div>
         </header>
