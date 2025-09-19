@@ -1,10 +1,3 @@
-// {
-//     "username": "mehdiz",
-//     "email": "mehdi@gmail.com",
-//     "phonenumber": 1231241,
-//     "password": "123"
-// }
-
 const mongoose = require("mongoose")
 
 const Schema = mongoose.Schema
@@ -12,42 +5,44 @@ const Schema = mongoose.Schema
 
 const userSchema = new Schema(
     {
-        fullName:{
+        fullName: {
             type: String,
             required: true
 
         },
-        email:{
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"]
+        },
+        phoneNumber: {
             type: String,
             required: true
 
         },
-        phonenumber:{
+        password: {
             type: String,
             required: true
 
         },
-        password:{
-            type: String,
-            required: true
-
-        },
-        username:{
+        username: {
             type: String,
             required: false
 
         },
-        interests:{
+        interests: [{
             type: String,
             required: false
 
-        },
-        joinedEvents: 
-        [{ type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Event' 
         }],
-        
-    }, {timestamps: true}
+        joinedEvents:
+            [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Event'
+            }],
+
+    }, { timestamps: true }
 );
 
 

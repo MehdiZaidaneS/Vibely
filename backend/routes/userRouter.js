@@ -16,7 +16,7 @@ router.get("/", getAllUsers)
 
 router.post("/",createNewUser)
 
-router.get("/login", getRegisteredUser)
+router.post("/login", getRegisteredUser)
 
 router.patch("/:userId", addInfo)
 
