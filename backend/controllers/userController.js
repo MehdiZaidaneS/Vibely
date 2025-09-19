@@ -53,7 +53,7 @@ const addInfo = async (req, res) => {
     const {userId} = req.params
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-        res.status(400).json({ message: "Not valid ID" })
+        return res.status(400).json({ message: "Not valid ID" })
     }
 
     try {

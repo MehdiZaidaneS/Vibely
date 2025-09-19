@@ -15,7 +15,7 @@ router.get("/", getAll)
 
 router.post("/", createNotification)
 
-router.get("/:userId", getMyNotifications)
+router.get("/user/:userId", getMyNotifications)
 
 router.delete("/:notificationId", deleteNotification)
 
