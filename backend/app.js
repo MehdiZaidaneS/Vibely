@@ -22,9 +22,16 @@ app.use(cors())
 
 
 
-app.use("/api/users", userRouter)
-app.use("/api/event", eventRouter)
-app.use("/api/notifications", notificationRouter)
+// API endpoints for core features
+// Handles user registration and login
+app.use("/api/users", userRouter);    
+
+// Manages event creation, and leaving and joing      
+app.use("/api/events", eventRouter);    
+    
+// Sends and fetches user notifications
+app.use("/api/notifications", notificationRouter); 
+
 
 
 
