@@ -53,7 +53,7 @@ const addInfo = async (req, res) => {
     const {userId} = req.params
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-        res.status(400).json({ message: "Not valid ID" })
+        return res.status(400).json({ message: "Not valid ID" })
     }
 
     try {
@@ -74,12 +74,48 @@ const addInfo = async (req, res) => {
     }
 }
 
+const getJoinedEvents = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('joinedEvents');
+    res.status(200).json(user.joinedEvents);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching joined events', error });
+  }
+};
+const leaveEventFromUserPage = async (req, res) => {
+  try {
+    const user = req.user;
+    const eventId = req.params.eventId;
 
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    // Remove user from event.participant
+    const Index = event.participant.indexOf(user._id);
+    if (Index !== -1) {
+      event.participant.splice(Index, 1);
+      await event.save();
+    }
+
+    // Remove event from user.joinedEvents
+    const eventIndex = user.joinedEvents.indexOf(event._id);
+    if (eventIndex !== -1) {
+      user.joinedEvents.splice(eventIndex, 1);
+      await user.save();
+    }
+
+    res.status(200).json({ message: 'Successfully left event' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error leaving event from user page', error });
+  }
+};
 
 
 module.exports = {
     getAllUsers,
     createNewUser,
     getRegisteredUser,
-    addInfo
+    addInfo,
+    getJoinedEvents,
+    leaveEventFromUserPage
 }

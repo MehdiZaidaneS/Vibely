@@ -1,0 +1,216 @@
+/* Welcome Page CSS Module */
+
+/* ============================================================ */
+/* BASE ANIMATIONS */
+/* ============================================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes letterBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slideUpDelayed {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDelayed {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================================ */
+/* SHOOTING STAR ANIMATIONS */
+/* ============================================================ */
+
+@keyframes shooting1 {
+  0% {
+    opacity: 0;
+    transform: translateX(0px) translateY(0px) scale(0);
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(20px) translateY(-20px) scale(1);
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(200px) translateY(-200px) scale(0.5);
+    box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes shooting2 {
+  0% {
+    opacity: 0;
+    transform: translateX(0px) translateY(0px) scale(0);
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-30px) translateY(30px) scale(1);
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-250px) translateY(250px) scale(0.5);
+    box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes shooting3 {
+  0% {
+    opacity: 0;
+    transform: translateX(0px) translateY(0px) scale(0);
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(40px) translateY(-40px) scale(1);
+    box-shadow: 0 0 15px 3px rgba(255, 255, 255, 0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(300px) translateY(-300px) scale(0.5);
+    box-shadow: 0 0 25px 5px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@keyframes shooting4 {
+  0% {
+    opacity: 0;
+    transform: translateX(0px) translateY(0px) scale(0);
+    box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-25px) translateY(-25px) scale(1);
+    box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-200px) translateY(-200px) scale(0.5);
+    box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* ============================================================ */
+/* ANIMATION CLASS ASSIGNMENTS */
+/* ============================================================ */
+
+.animateFadeIn {
+  opacity: 0;
+  animation: fadeIn 0.6s ease-out forwards;
+  animation-fill-mode: forwards;
+}
+
+.animateSlideUpDelayed {
+  opacity: 0;
+  animation: slideUpDelayed 0.8s ease-out 1s forwards;
+  animation-fill-mode: forwards;
+}
+
+.animateFadeInDelayed {
+  opacity: 0;
+  animation: fadeInDelayed 1s ease-out 1.5s forwards;
+  animation-fill-mode: forwards;
+}
+
+.animateSlideUp {
+  opacity: 0;
+  animation: slideUp 0.6s ease-out forwards;
+  animation-fill-mode: forwards;
+}
+
+.animateBounceIn {
+  opacity: 0;
+  animation: bounceIn 0.8s ease-out forwards;
+  animation-fill-mode: forwards;
+}
+
+.animateLetterBounce {
+  display: inline-block;
+  animation: letterBounce 2s ease-in-out infinite;
+}
+
+/* Shooting star animation classes with timing */
+.animateShooting1 {
+  animation: shooting1 3s ease-out infinite;
+  animation-delay: 0s;
+}
+
+.animateShooting2 {
+  animation: shooting2 4s ease-out infinite;
+  animation-delay: 1s;
+}
+
+.animateShooting3 {
+  animation: shooting3 2.5s ease-out infinite;
+  animation-delay: 2s;
+}
+
+.animateShooting4 {
+  animation: shooting4 3.5s ease-out infinite;
+  animation-delay: 3s;
+}
+
+/* Hover scale effect */
+.hoverScale102:hover {
+  transform: scale(1.02);
+}

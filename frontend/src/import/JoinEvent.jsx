@@ -1,4 +1,4 @@
-// src/components/Modal.jsx
+// src/import/Modal.jsx
 import React from "react";
 
 export default function Modal({ isOpen, title, message, onConfirm, onCancel }) {
