@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import {createUser} from "../../api/userApi.js"
-import {useNavigate} from "react-router-dom"
+import { createUser, logUser } from "../../api/userApi.js"
+import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, Phone, Mail, Lock, User } from "lucide-react";
 import styles from "./authPage.module.css";
 
@@ -20,6 +20,9 @@ const Auth = () => {
 
   // Controls form slide animation when switching between login/signup
   const [showForm, setShowForm] = useState(true);
+
+  // Add error state for UI feedback
+  const [error, setError] = useState(null);
 
   // Form data object containing all input values
   const [formData, setFormData] = useState({
@@ -73,22 +76,38 @@ const Auth = () => {
   };
 
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
-    createUser(formData)
-    console.log("Form submitted:", formData);
+    setError(null); // clear any old errors
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setIsLoading(false);
-      
-    }, 2000);
-  
+    if (isLogin) {
+      try{
+         const user = await logUser(formData);
+         navigate("/events");
+      } catch (err) {
+        setError(err.message || "Log In failed. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+
+    } else {
+      try {
+        const newUser = await createUser(formData);
+        navigate("/events");
+      } catch (err) {
+        setError(err.message || "Registration failed. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
   };
 
   // Toggle between login and signup modes with animation
   const toggleMode = () => {
     setShowForm(false); // Hide form for smooth transition
+    setError(null)
     setTimeout(() => {
       setIsLogin(!isLogin); // Switch mode
       // Reset form data when switching modes
@@ -281,9 +300,8 @@ const Auth = () => {
 
         {/* Form container with slide animation */}
         <div
-          className={`w-full max-w-sm transition-all duration-500 ${
-            showForm ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
-          }`}
+          className={`w-full max-w-sm transition-all duration-500 ${showForm ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+            }`}
         >
           {/* Main form card */}
           <div className="bg-gray-50 rounded-2xl shadow-lg p-8 border border-gray-200">
@@ -355,6 +373,12 @@ const Auth = () => {
                   : "Please fill your information below"}
               </p>
             </div>
+
+            {error && (
+              <p className="text-sm text-red-600 mb-4 text-center font-medium">
+                {error}
+              </p>
+            )}
 
             {/* Form fields with staggered animations */}
             <div className="space-y-4">
@@ -511,6 +535,7 @@ const Auth = () => {
                   </label>
                 </div>
               )}
+
 
               {/* Submit button with loading state */}
               <div
