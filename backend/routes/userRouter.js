@@ -1,5 +1,6 @@
 const express = require("express")
 const router = express.Router()
+const requireAuth = require("../middleware/requireAuth");
 
 const {
  getAllUsers,
@@ -9,6 +10,7 @@ const {
  getJoinedEvents,
  leaveEventFromUserPage
 } = require("../controllers/userController.js")
+const requireAuth = require("../middleware/requireAuth.js")
 
 
 
@@ -18,12 +20,13 @@ router.post("/",createNewUser)
 
 router.post("/login", getRegisteredUser)
 
-router.patch("/:userId", addInfo)
-
 router.get('/joined-events', getJoinedEvents);
 
 router.patch('/leave-event/:eventId', leaveEventFromUserPage);
 
+router.use(requireAuth);
+
+router.patch("/:userId", addInfo)
 
 
 module.exports = router
