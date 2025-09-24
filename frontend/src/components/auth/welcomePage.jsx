@@ -6,6 +6,7 @@ import {
   Calendar,
   MessageCircle,
   Sparkles,
+  User,
 } from "lucide-react";
 import styles from "./welcomePage.module.css";
 
@@ -13,6 +14,15 @@ const WelcomePage = () => {
   // ============================================================================
   // STATE MANAGEMENT
   // ============================================================================
+
+  // Track current step: 'username' or 'interests'
+  const [currentStep, setCurrentStep] = useState("username");
+
+  // Track username input
+  const [username, setUsername] = useState("");
+
+  // Track username validation state
+  const [usernameStatus, setUsernameStatus] = useState("idle"); // 'idle', 'checking', 'available', 'taken'
 
   // Track selected interests
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -41,7 +51,7 @@ const WelcomePage = () => {
     },
     {
       id: "meeting",
-      title: "Making new people",
+      title: "Meeting new people",
       description: "Connect with like-minded individuals in your area",
       icon: Users,
       color: "from-indigo-500 to-indigo-600",
@@ -75,6 +85,49 @@ const WelcomePage = () => {
   // EVENT HANDLERS
   // ============================================================================
 
+  // Simulate checking if username is taken (replace with real API call)
+  const checkUsernameAvailability = async (usernameToCheck) => {
+    // Simulate some usernames being taken
+    const takenUsernames = ["admin"];
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const isTaken = takenUsernames.includes(usernameToCheck.toLowerCase());
+        resolve(isTaken);
+      }, 800); // Simulate network delay
+    });
+  };
+
+  // Handle username input changes
+  const handleUsernameChange = async (value) => {
+    setUsername(value);
+
+    if (value.trim().length >= 4) {
+      setUsernameStatus("checking");
+      try {
+        const isTaken = await checkUsernameAvailability(value.trim());
+        setUsernameStatus(isTaken ? "taken" : "available");
+      } catch (error) {
+        console.error("Error checking username:", error);
+        setUsernameStatus("idle");
+      }
+    } else {
+      setUsernameStatus("idle");
+    }
+  };
+
+  // Handle username form submission
+  const handleUsernameSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (username.trim().length >= 4 && usernameStatus === "available") {
+      setShowContent(false);
+      setTimeout(() => {
+        setCurrentStep("interests");
+        setShowContent(true);
+      }, 300);
+    }
+  };
+
   // Handle interest selection/deselection
   const toggleInterest = (interestId) => {
     setSelectedInterests((prev) => {
@@ -89,6 +142,7 @@ const WelcomePage = () => {
   // Handle continue button click
   const handleContinue = () => {
     setIsLoading(true);
+    console.log("Username:", username);
     console.log("Selected interests:", selectedInterests);
 
     // Simulate API call
@@ -96,7 +150,7 @@ const WelcomePage = () => {
       setIsLoading(false);
       // Here you would navigate to the next page
       alert(
-        `Welcome! You selected: ${selectedInterests
+        `Welcome ${username}! You selected: ${selectedInterests
           .map((id) => interests.find((i) => i.id === id)?.title)
           .join(", ")}`
       );
@@ -105,9 +159,21 @@ const WelcomePage = () => {
 
   // Handle skip button click
   const handleSkip = () => {
+    console.log("Username:", username);
     console.log("User skipped interest selection");
     // Here you would navigate to the next page without selections
-    alert("Welcome to Vibely! You can set your interests later in settings.");
+    alert(
+      `Welcome to Vibely, ${username}! You can set your interests later in settings.`
+    );
+  };
+
+  // Handle back to username step
+  const handleBackToUsername = () => {
+    setShowContent(false);
+    setTimeout(() => {
+      setCurrentStep("username");
+      setShowContent(true);
+    }, 300);
   };
 
   return (
@@ -260,7 +326,7 @@ const WelcomePage = () => {
       </div>
 
       {/* ================================================================== */}
-      {/* RIGHT SIDE - WELCOME AND INTERESTS SELECTION */}
+      {/* RIGHT SIDE - WELCOME FORM */}
       {/* ================================================================== */}
       <div className="w-1/2 bg-gradient-to-br from-purple-400 via-white to-indigo-400 flex items-center justify-center p-8 relative overflow-hidden">
         {/* Subtle background grid pattern */}
@@ -269,18 +335,9 @@ const WelcomePage = () => {
             className="absolute inset-0 opacity-[0.02]"
             style={{
               backgroundImage: `repeating-linear-gradient(0deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px),
-                                    repeating-linear-gradient(90deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px)`,
+                                      repeating-linear-gradient(90deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px)`,
             }}
           ></div>
-        </div>
-
-        {/* Language selector in top right corner */}
-        <div className="absolute top-6 right-6">
-          <select className="text-xs text-gray-500 bg-transparent border-none focus:outline-none cursor-pointer">
-            <option value="en">English</option>
-            <option value="fi">Suomi</option>
-            <option value="sv">Svenska</option>
-          </select>
         </div>
 
         {/* Main content container with slide animation */}
@@ -293,165 +350,296 @@ const WelcomePage = () => {
         >
           {/* Main welcome card */}
           <div className="bg-gray-50 rounded-2xl shadow-lg p-8 border border-gray-200">
-            {/* Welcome header section */}
-            <div className={`text-center mb-8 ${styles.animateFadeIn}`}>
-              <div
-                className={`w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 ${styles.animateBounceIn}`}
-              >
-                <Sparkles className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                Welcome to Vibely!
-              </h2>
-              <p className="text-lg text-gray-600 mb-2">
-                What brings you here today?
-              </p>
-              <p className="text-sm text-gray-500">
-                Help us personalize your experience by selecting your interests
-              </p>
-            </div>
+            {/* USERNAME STEP */}
+            {currentStep === "username" && (
+              <>
+                {/* Welcome header section */}
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                    Welcome to Vibely!
+                  </h2>
+                  <p className="text-lg text-gray-600 mb-2">
+                    Let's get started with your journey
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    First, tell us what you'd like to be called
+                  </p>
+                </div>
 
-            {/* Interest selection grid */}
-            <div className="space-y-4 mb-8">
-              {interests.map((interest, index) => {
-                const Icon = interest.icon;
-                const isSelected = selectedInterests.includes(interest.id);
-
-                return (
-                  <div
-                    key={interest.id}
-                    className={`${
-                      styles.animateSlideUp
-                    } cursor-pointer transition-all duration-300 transform hover:scale-102 ${
-                      isSelected ? "scale-102" : ""
-                    } ${isSelected ? styles.hoverScale102 : ""}`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                    onClick={() => toggleInterest(interest.id)}
-                  >
-                    <div
-                      className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-                        isSelected
-                          ? `border-purple-500 bg-gradient-to-r ${interest.color} text-white shadow-lg`
-                          : `border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/50`
-                      }`}
+                {/* Username input */}
+                <div className="space-y-6">
+                  <div>
+                    <label
+                      htmlFor="username"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      <div className="flex items-start space-x-4">
-                        {/* Icon container */}
-                        <div
-                          className={`p-3 rounded-lg transition-all duration-300 ${
-                            isSelected ? "bg-white/20" : `${interest.bgColor}`
-                          }`}
-                        >
-                          <Icon
-                            className={`w-6 h-6 transition-all duration-300 ${
-                              isSelected ? "text-white" : interest.textColor
-                            }`}
-                          />
-                        </div>
+                      Choose your username
+                    </label>
+                    <input
+                      type="text"
+                      id="username"
+                      value={username}
+                      onChange={(e) => handleUsernameChange(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          username.trim().length >= 4 &&
+                          usernameStatus === "available"
+                        ) {
+                          handleUsernameSubmit(e);
+                        }
+                      }}
+                      placeholder="Enter your username..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-lg"
+                      maxLength={20}
+                    />
+                    <div className="mt-2 flex justify-between items-center text-xs">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-gray-500">
+                          Minimum 4 characters
+                        </span>
+                        {usernameStatus === "checking" && (
+                          <div className="flex items-center space-x-1 text-blue-600">
+                            <div className="animate-spin rounded-full h-3 w-3 border border-blue-600 border-t-transparent"></div>
+                            <span>Checking...</span>
+                          </div>
+                        )}
+                        {usernameStatus === "available" && (
+                          <div className="flex items-center space-x-1 text-green-600">
+                            <Check className="w-3 h-3" />
+                            <span>Available!</span>
+                          </div>
+                        )}
+                        {usernameStatus === "taken" && (
+                          <div className="flex items-center space-x-1 text-red-600">
+                            <svg
+                              className="w-3 h-3"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <span>Taken</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-gray-500">
+                        {username.length}/20
+                      </span>
+                    </div>
+                  </div>
 
-                        {/* Content */}
-                        <div className="flex-1">
-                          <h3
-                            className={`font-semibold text-lg mb-1 transition-all duration-300 ${
-                              isSelected ? "text-white" : "text-gray-900"
-                            }`}
-                          >
-                            {interest.title}
-                          </h3>
-                          <p
-                            className={`text-sm transition-all duration-300 ${
-                              isSelected ? "text-white/90" : "text-gray-600"
-                            }`}
-                          >
-                            {interest.description}
-                          </p>
-                        </div>
+                  <button
+                    onClick={handleUsernameSubmit}
+                    disabled={
+                      username.trim().length < 4 ||
+                      usernameStatus !== "available"
+                    }
+                    className={`w-full py-3 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 flex items-center justify-center transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group shadow-lg hover:shadow-xl ${
+                      username.trim().length >= 4 &&
+                      usernameStatus === "available"
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    {usernameStatus === "checking" ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Checking username...
+                      </>
+                    ) : (
+                      <>
+                        Continue
+                        <ArrowRight className="ml-2 w-4 h-4 transition-all duration-300 group-hover:translate-x-1" />
+                      </>
+                    )}
+                  </button>
+                </div>
 
-                        {/* Selection indicator */}
+                {/* Footer note */}
+                <div className="mt-6 text-center">
+                  <p className="text-xs text-gray-500">
+                    You can change your username later in settings
+                  </p>
+                  {usernameStatus === "taken" && (
+                    <p className="text-xs text-red-600 mt-2">
+                      Try adding numbers or different characters to make it
+                      unique
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* INTERESTS STEP */}
+            {currentStep === "interests" && (
+              <>
+                {/* Welcome header section with username */}
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                    Hi {username}! 👋
+                  </h2>
+                  <p className="text-lg text-gray-600 mb-2">
+                    What brings you here today?
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Help us personalize your experience by selecting your
+                    interests
+                  </p>
+
+                  {/* Back button */}
+                  <button
+                    onClick={handleBackToUsername}
+                    className="mt-4 text-sm text-purple-600 hover:text-purple-800 transition-colors duration-200 flex items-center mx-auto font-medium"
+                  >
+                    ← Change username
+                  </button>
+                </div>
+
+                {/* Interest selection grid */}
+                <div className="space-y-4 mb-8">
+                  {interests.map((interest, index) => {
+                    const Icon = interest.icon;
+                    const isSelected = selectedInterests.includes(interest.id);
+
+                    return (
+                      <div
+                        key={interest.id}
+                        className={`cursor-pointer transition-all duration-300 transform hover:scale-102 ${
+                          isSelected ? "scale-102" : ""
+                        } ${isSelected ? styles.hoverScale102 : ""}`}
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                        onClick={() => toggleInterest(interest.id)}
+                      >
                         <div
-                          className={`transition-all duration-300 ${
+                          className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
                             isSelected
-                              ? "opacity-100 scale-100"
-                              : "opacity-0 scale-50"
+                              ? `border-purple-500 bg-gradient-to-r ${interest.color} text-white shadow-lg`
+                              : `border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/50`
                           }`}
                         >
-                          <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                            <Check className="w-4 h-4 text-purple-600" />
+                          <div className="flex items-start space-x-4">
+                            {/* Icon container */}
+                            <div
+                              className={`p-3 rounded-lg transition-all duration-300 ${
+                                isSelected
+                                  ? "bg-white/20"
+                                  : `${interest.bgColor}`
+                              }`}
+                            >
+                              <Icon
+                                className={`w-6 h-6 transition-all duration-300 ${
+                                  isSelected ? "text-white" : interest.textColor
+                                }`}
+                              />
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1">
+                              <h3
+                                className={`font-semibold text-lg mb-1 transition-all duration-300 ${
+                                  isSelected ? "text-white" : "text-gray-900"
+                                }`}
+                              >
+                                {interest.title}
+                              </h3>
+                              <p
+                                className={`text-sm transition-all duration-300 ${
+                                  isSelected ? "text-white/90" : "text-gray-600"
+                                }`}
+                              >
+                                {interest.description}
+                              </p>
+                            </div>
+
+                            {/* Selection indicator */}
+                            <div
+                              className={`transition-all duration-300 ${
+                                isSelected
+                                  ? "opacity-100 scale-100"
+                                  : "opacity-0 scale-50"
+                              }`}
+                            >
+                              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                                <Check className="w-4 h-4 text-purple-600" />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+                </div>
 
-            {/* Selection counter */}
-            {selectedInterests.length > 0 && (
-              <div className={`text-center mb-6 ${styles.animateSlideUp}`}>
-                <p className="text-sm text-purple-600 font-medium">
-                  {selectedInterests.length} interest
-                  {selectedInterests.length > 1 ? "s" : ""} selected
-                </p>
-              </div>
+                {/* Selection counter */}
+                {selectedInterests.length > 0 && (
+                  <div className="text-center mb-6">
+                    <p className="text-sm text-purple-600 font-medium">
+                      {selectedInterests.length} interest
+                      {selectedInterests.length > 1 ? "s" : ""} selected
+                    </p>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="space-y-3">
+                  {/* Continue button */}
+                  <button
+                    onClick={handleContinue}
+                    disabled={isLoading}
+                    className={`w-full py-3 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 flex items-center justify-center transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group shadow-lg hover:shadow-xl ${
+                      selectedInterests.length > 0
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    {isLoading ? (
+                      <>
+                        {/* Loading spinner */}
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Setting up your experience...
+                      </>
+                    ) : (
+                      <>
+                        Continue with {selectedInterests.length} selection
+                        {selectedInterests.length !== 1 ? "s" : ""}
+                        {/* Arrow icon that moves on hover */}
+                        <ArrowRight className="ml-2 w-4 h-4 transition-all duration-300 group-hover:translate-x-1" />
+                      </>
+                    )}
+                  </button>
+
+                  {/* Skip button */}
+                  <button
+                    onClick={handleSkip}
+                    disabled={isLoading}
+                    className="w-full py-3 px-4 rounded-lg font-medium text-gray-600 border border-gray-300 hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Skip for now
+                  </button>
+                </div>
+
+                {/* Footer note */}
+                <div className="mt-6 text-center">
+                  <p className="text-xs text-gray-500">
+                    You can always change your interests later in settings
+                  </p>
+                </div>
+              </>
             )}
 
-            {/* Action buttons */}
-            <div
-              className={`space-y-3 ${styles.animateSlideUp}`}
-              style={{ animationDelay: "0.4s" }}
-            >
-              {/* Continue button */}
-              <button
-                onClick={handleContinue}
-                disabled={isLoading}
-                className={`w-full py-3 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 flex items-center justify-center transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed group shadow-lg hover:shadow-xl ${
-                  selectedInterests.length > 0
-                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                {isLoading ? (
-                  <>
-                    {/* Loading spinner */}
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                    Setting up your experience...
-                  </>
-                ) : (
-                  <>
-                    Continue with {selectedInterests.length} selection
-                    {selectedInterests.length !== 1 ? "s" : ""}
-                    {/* Arrow icon that moves on hover */}
-                    <ArrowRight className="ml-2 w-4 h-4 transition-all duration-300 group-hover:translate-x-1" />
-                  </>
-                )}
-              </button>
-
-              {/* Skip button */}
-              <button
-                onClick={handleSkip}
-                disabled={isLoading}
-                className="w-full py-3 px-4 rounded-lg font-medium text-gray-600 border border-gray-300 hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Skip for now
-              </button>
-            </div>
-
-            {/* Footer note */}
-            <div
-              className={`mt-6 text-center ${styles.animateFadeIn}`}
-              style={{ animationDelay: "0.6s" }}
-            >
-              <p className="text-xs text-gray-500">
-                You can always change your interests later in settings
-              </p>
-            </div>
-
             {/* Security badge for trust */}
-            <div
-              className={`mt-6 flex items-center justify-center text-xs text-gray-500 ${styles.animateFadeIn}`}
-              style={{ animationDelay: "0.7s" }}
-            >
+            <div className="mt-6 flex items-center justify-center text-xs text-gray-500">
               {/* Lock icon */}
               <svg
                 className="w-4 h-4 mr-1"
@@ -464,7 +652,7 @@ const WelcomePage = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              Your preferences are private and secure
+              Your information is private and secure
             </div>
           </div>
         </div>
