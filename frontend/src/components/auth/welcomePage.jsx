@@ -100,9 +100,12 @@ const WelcomePage = () => {
 
   // Handle username input changes
   const handleUsernameChange = async (value) => {
-    setUsername(value);
+    // Remove any characters that aren't letters, numbers, or underscores
+    const sanitizedValue = value.replace(/[^a-zA-Z0-9_]/g, "");
 
-    if (value.trim().length >= 4) {
+    setUsername(sanitizedValue);
+
+    if (sanitizedValue.trim().length >= 4) {
       setUsernameStatus("checking");
       try {
         const isTaken = await checkUsernameAvailability(value.trim());
