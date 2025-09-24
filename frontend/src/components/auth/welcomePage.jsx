@@ -473,8 +473,7 @@ const WelcomePage = () => {
                   </p>
                   {usernameStatus === "taken" && (
                     <p className="text-xs text-red-600 mt-2">
-                      Try adding numbers or different characters to make it
-                      unique
+                      Try adding numbers to make it unique
                     </p>
                   )}
                 </div>
