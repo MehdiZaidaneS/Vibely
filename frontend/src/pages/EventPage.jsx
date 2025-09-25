@@ -1,8 +1,11 @@
 // src/pages/EventPage.jsx
+import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
-import Modal from "../import/Modal";
-import Toast from "../import/Toast";
+import Modal from "../import/JoinEvent";
+import Toast from "../import/NotificationJoin";
+import CreateEventModal from "../import/CreateEventModal";
+import UserDropdown from "../import/UserDropdown";
 import "./EventPage.css";
 
 function EventPage() {
@@ -12,6 +15,7 @@ function EventPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [toast, setToast] = useState({ visible: false, message: "" });
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
 
   const createEvent = async (newEventData) => {
@@ -167,16 +171,17 @@ const [events, setEvents] = useState([
                 onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
               />
             </div>
-
-            <img src="../assets/images/img_notification.svg" alt="Notifications" className="notification-icon" />
-
-            <div className="user-profile">
-              <img src="../assets/images/img_image_of_userlogin.png" alt="John Doe profile" className="user-avatar" />
-              <div className="user-dropdown">
-                <span className="user-name">John Doe</span>
-                <img src="../assets/images/img_dropdownoptionsiconuserlogin.svg" alt="Dropdown" className="dropdown-arrow" />
-              </div>
+            <div className="icon-container">
+              <span className="tooltip-wrapper">
+                <img src="../assets/images/img_notification.svg" alt="Notifications" className="notification-icon" />
+                <span className="tooltip">Notifications</span>
+              </span>
+              <span className="tooltip-wrapper">
+                <img src="../assets/images/img_DM_icon.svg" alt="Direct Messages" className="dm-icon" width="18" height="18" />
+                <span className="tooltip">Direct Messages</span>
+              </span>
             </div>
+            <UserDropdown />
           </div>
 
           <div className="header-bottom">
@@ -197,13 +202,12 @@ const [events, setEvents] = useState([
               >
                 Ongoing
               </a>
-              <a
-                href="#"
-                className={`header-menu-item ${activeMenu === "complete" ? "active" : ""}`}
-                onClick={() => setActiveMenu("complete")}
+              <button
+                className="header-menu-item create-event-button"
+                onClick={() => setIsCreateModalOpen(true)}
               >
-                Complete
-              </a>
+                Create your own event
+              </button>
             </nav>
           </div>
         </header>
@@ -240,28 +244,27 @@ const [events, setEvents] = useState([
             ))}
           </div>
         </main>
-<<<<<<< Updated upstream
       </div>
-=======
-      </div >
+
 
       <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={createEvent}
       />
->>>>>>> Stashed changes
+
 
       {/* Modal + Toast */}
-      <Modal
+      < Modal
         isOpen={isModalOpen}
         title="Join event?"
-        message={selectedEvent ? `Do you want to join "${selectedEvent}"?` : "Do you want to join this event?"}
+        message={selectedEvent ? `Do you want to join "${selectedEvent}"?` : "Do you want to join this event?"
+        }
         onConfirm={confirmJoin}
         onCancel={cancelJoin}
       />
       <Toast message={toast.message} visible={toast.visible} onClose={closeToast} />
-    </div>
+    </div >
   );
 }
 

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
+import { createUser, logUser } from "../../api/userApi.js"
+import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, Phone, Mail, Lock, User } from "lucide-react";
+import styles from "./authPage.module.css";
 
 const Auth = () => {
   // ============================================================================
@@ -18,6 +21,9 @@ const Auth = () => {
   // Controls form slide animation when switching between login/signup
   const [showForm, setShowForm] = useState(true);
 
+  // Add error state for UI feedback
+  const [error, setError] = useState(null);
+
   // Form data object containing all input values
   const [formData, setFormData] = useState({
     name: "",
@@ -26,6 +32,8 @@ const Auth = () => {
     password: "",
     countryCode: "+358", // Default to Finland
   });
+
+  const navigate = useNavigate()
 
   // ============================================================================
   // CONSTANTS AND DATA
@@ -68,19 +76,38 @@ const Auth = () => {
   };
 
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
-    console.log("Form submitted:", formData);
+    setError(null); // clear any old errors
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    if (isLogin) {
+      try{
+         const user = await logUser(formData);
+         navigate("/events");
+      } catch (err) {
+        setError(err.message || "Log In failed. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+
+    } else {
+      try {
+        const newUser = await createUser(formData);
+        navigate("/welcome");
+      } catch (err) {
+        setError(err.message || "Registration failed. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
   };
 
   // Toggle between login and signup modes with animation
   const toggleMode = () => {
     setShowForm(false); // Hide form for smooth transition
+    setError(null)
     setTimeout(() => {
       setIsLogin(!isLogin); // Switch mode
       // Reset form data when switching modes
@@ -91,15 +118,17 @@ const Auth = () => {
         password: "",
         countryCode: "+358",
       });
-      setShowForm(true);
-       // Show form again
+      // Force a small delay to ensure proper animation reset
+      setTimeout(() => {
+        setShowForm(true); // Show form again
+      }, 50);
     }, 300); // Delay matches CSS transition duration
   };
 
   return (
     <div className="min-h-screen flex bg-purple-50 overflow-hidden">
       {/* ================================================================== */}
-      {/* LEFT SIDE */}
+      {/* LEFT SIDE - BRAND PRESENTATION */}
       {/* ================================================================== */}
       <div className="w-1/2 relative overflow-hidden flex flex-col">
         {/* Background Image Container */}
@@ -131,10 +160,18 @@ const Auth = () => {
             ></div>
 
             {/* Animated shooting stars for magical effect */}
-            <div className="absolute top-20 left-10 w-1 h-1 bg-white rounded-full animate-shooting-1 opacity-0"></div>
-            <div className="absolute top-32 right-20 w-1 h-1 bg-white rounded-full animate-shooting-2 opacity-0"></div>
-            <div className="absolute top-60 left-32 w-1 h-1 bg-white rounded-full animate-shooting-3 opacity-0"></div>
-            <div className="absolute bottom-40 right-32 w-1 h-1 bg-white rounded-full animate-shooting-4 opacity-0"></div>
+            <div
+              className={`absolute top-20 left-10 w-1 h-1 bg-white rounded-full opacity-0 ${styles.animateShooting1}`}
+            ></div>
+            <div
+              className={`absolute top-32 right-20 w-1 h-1 bg-white rounded-full opacity-0 ${styles.animateShooting2}`}
+            ></div>
+            <div
+              className={`absolute top-60 left-32 w-1 h-1 bg-white rounded-full opacity-0 ${styles.animateShooting3}`}
+            ></div>
+            <div
+              className={`absolute bottom-40 right-32 w-1 h-1 bg-white rounded-full opacity-0 ${styles.animateShooting4}`}
+            ></div>
           </div>
         </div>
 
@@ -143,43 +180,43 @@ const Auth = () => {
 
         {/* Main Vibely Logo Section */}
         <div className="absolute inset-0 z-10 flex items-start justify-center px-10 pt-50">
-          <div className="text-center animate-fade-in">
+          <div className={`text-center ${styles.animateFadeIn}`}>
             <div className="group cursor-pointer">
               {/* Large animated Vibely text */}
               <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 transition-all duration-700 group-hover:scale-105 group-hover:text-purple-200">
                 {/* Each letter bounces individually with staggered timing */}
                 <span
-                  className="inline-block animate-letter-bounce"
+                  className={styles.animateLetterBounce}
                   style={{ animationDelay: "0s" }}
                 >
                   V
                 </span>
                 <span
-                  className="inline-block animate-letter-bounce"
+                  className={styles.animateLetterBounce}
                   style={{ animationDelay: "0.1s" }}
                 >
                   i
                 </span>
                 <span
-                  className="inline-block animate-letter-bounce"
+                  className={styles.animateLetterBounce}
                   style={{ animationDelay: "0.2s" }}
                 >
                   b
                 </span>
                 <span
-                  className="inline-block animate-letter-bounce"
+                  className={styles.animateLetterBounce}
                   style={{ animationDelay: "0.3s" }}
                 >
                   e
                 </span>
                 <span
-                  className="inline-block animate-letter-bounce"
+                  className={styles.animateLetterBounce}
                   style={{ animationDelay: "0.4s" }}
                 >
                   l
                 </span>
                 <span
-                  className="inline-block animate-letter-bounce"
+                  className={styles.animateLetterBounce}
                   style={{ animationDelay: "0.5s" }}
                 >
                   y
@@ -187,12 +224,16 @@ const Auth = () => {
               </h1>
 
               {/* Brand tagline with delayed animation */}
-              <p className="text-xl md:text-2xl text-white/90 font-medium italic animate-slide-up-delayed tracking-wide">
+              <p
+                className={`text-xl md:text-2xl text-white/90 font-medium italic tracking-wide ${styles.animateSlideUpDelayed}`}
+              >
                 "Where friendships begin."
               </p>
 
               {/* Decorative dots with pulsing animation */}
-              <div className="mt-6 flex justify-center space-x-2 animate-fade-in-delayed">
+              <div
+                className={`mt-6 flex justify-center space-x-2 ${styles.animateFadeInDelayed}`}
+              >
                 <div
                   className="w-3 h-3 bg-white/60 rounded-full animate-pulse"
                   style={{ animationDelay: "0s" }}
@@ -219,7 +260,7 @@ const Auth = () => {
           ].map((social, index) => (
             <div
               key={index}
-              className="w-12 h-12 bg-black bg-opacity-20 rounded-md flex items-center justify-center cursor-pointer hover:bg-opacity-40 transition-all duration-300 hover:scale-125 hover:rotate-12 animate-bounce-in"
+              className={`w-12 h-12 bg-black bg-opacity-20 rounded-md flex items-center justify-center cursor-pointer hover:bg-opacity-40 transition-all duration-300 hover:scale-125 hover:rotate-12 ${styles.animateBounceIn}`}
               style={{ animationDelay: social.delay }}
             >
               {/* Social media icon with hover effects */}
@@ -259,14 +300,13 @@ const Auth = () => {
 
         {/* Form container with slide animation */}
         <div
-          className={`w-full max-w-sm transition-all duration-500 ${
-            showForm ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
-          }`}
+          className={`w-full max-w-sm transition-all duration-500 ${showForm ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+            }`}
         >
           {/* Main form card */}
           <div className="bg-gray-50 rounded-2xl shadow-lg p-8 border border-gray-200">
             {/* Welcome message section */}
-            <div className="text-center mb-6 animate-fade-in">
+            <div className={`text-center mb-6 ${styles.animateFadeIn}`}>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 {isLogin
                   ? "Welcome back to Vibely"
@@ -282,7 +322,7 @@ const Auth = () => {
             {/* Google login button - only shown during signup */}
             {!isLogin && (
               <div
-                className="mb-6 space-y-3 animate-slide-up"
+                className={`mb-6 space-y-3 ${styles.animateSlideUp}`}
                 style={{ animationDelay: "0.1s" }}
               >
                 <button className="w-full flex items-center justify-center px-4 py-3 border border-purple-200 rounded-lg hover:bg-purple-50/50 transition-all duration-300 hover:scale-105 group bg-white">
@@ -323,7 +363,7 @@ const Auth = () => {
             )}
 
             {/* Form header with dynamic text */}
-            <div className="mb-8 animate-slide-down">
+            <div className={`mb-8 ${styles.animateSlideDown}`}>
               <h2 className="text-2xl font-bold text-gray-900 mb-2 transition-all duration-300">
                 {isLogin ? "Login" : "Sign Up"}
               </h2>
@@ -334,12 +374,19 @@ const Auth = () => {
               </p>
             </div>
 
+            {error && (
+              <p className="text-sm text-red-600 mb-4 text-center font-medium">
+                {error}
+              </p>
+            )}
+
             {/* Form fields with staggered animations */}
             <div className="space-y-4">
               {/* Name field - only shown during signup */}
               {!isLogin && (
                 <div
-                  className="animate-slide-up"
+                  key={`name-${isLogin}`}
+                  className={styles.animateSlideUp}
                   style={{ animationDelay: "0.1s" }}
                 >
                   <div className="relative group">
@@ -360,7 +407,8 @@ const Auth = () => {
               {/* Phone number field with country code - only shown during signup */}
               {!isLogin && (
                 <div
-                  className="animate-slide-up"
+                  key={`phone-${isLogin}`}
+                  className={styles.animateSlideUp}
                   style={{ animationDelay: "0.2s" }}
                 >
                   <div className="group">
@@ -394,7 +442,8 @@ const Auth = () => {
 
               {/* Email field - shown in both login and signup */}
               <div
-                className="animate-slide-up"
+                key={`email-${isLogin}`}
+                className={styles.animateSlideUp}
                 style={{ animationDelay: isLogin ? "0.1s" : "0.3s" }}
               >
                 <div className="relative group">
@@ -413,7 +462,8 @@ const Auth = () => {
 
               {/* Password field with visibility toggle */}
               <div
-                className="animate-slide-up"
+                key={`password-${isLogin}`}
+                className={styles.animateSlideUp}
                 style={{ animationDelay: isLogin ? "0.2s" : "0.4s" }}
               >
                 <div className="relative group">
@@ -445,7 +495,7 @@ const Auth = () => {
               {/* Remember me and forgot password - only shown during login */}
               {isLogin && (
                 <div
-                  className="flex items-center justify-between text-sm animate-slide-up"
+                  className={`flex items-center justify-between text-sm ${styles.animateSlideUp}`}
                   style={{ animationDelay: "0.3s" }}
                 >
                   <label className="flex items-center">
@@ -464,7 +514,7 @@ const Auth = () => {
               {/* Terms and conditions checkbox - only shown during signup */}
               {!isLogin && (
                 <div
-                  className="animate-slide-up"
+                  className={styles.animateSlideUp}
                   style={{ animationDelay: "0.5s" }}
                 >
                   <label className="flex items-start text-sm">
@@ -486,9 +536,10 @@ const Auth = () => {
                 </div>
               )}
 
+
               {/* Submit button with loading state */}
               <div
-                className="animate-slide-up"
+                className={styles.animateSlideUp}
                 style={{ animationDelay: isLogin ? "0.4s" : "0.6s" }}
               >
                 <button
@@ -527,7 +578,7 @@ const Auth = () => {
 
             {/* Footer section with mode toggle */}
             <div
-              className="mt-6 text-center animate-fade-in"
+              className={`mt-6 text-center ${styles.animateFadeIn}`}
               style={{ animationDelay: "0.7s" }}
             >
               {/* Additional login option - only shown during login */}
@@ -555,7 +606,7 @@ const Auth = () => {
 
             {/* Security badge for trust */}
             <div
-              className="mt-8 flex items-center justify-center text-xs text-gray-500 animate-fade-in"
+              className={`mt-8 flex items-center justify-center text-xs text-gray-500 ${styles.animateFadeIn}`}
               style={{ animationDelay: "0.8s" }}
             >
               {/* Lock icon */}
@@ -575,241 +626,6 @@ const Auth = () => {
           </div>
         </div>
       </div>
-
-      {/* ================================================================== */}
-      {/* CSS ANIMATIONS AND STYLES */}
-      {/* ================================================================== */}
-      <style jsx>{`
-        /* ============================================================ */
-        /* BASE ANIMATIONS */
-        /* ============================================================ */
-
-        /* Fade in from bottom animation */
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Individual letter bounce animation for logo */
-        @keyframes letter-bounce {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-
-        /* Delayed slide up animation for tagline */
-        @keyframes slide-up-delayed {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Delayed fade in animation for decorative elements */
-        @keyframes fade-in-delayed {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        /* Slide down animation for form headers */
-        @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Slide up animation for form elements */
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Bounce in animation for social icons */
-        @keyframes bounce-in {
-          0% {
-            opacity: 0;
-            transform: scale(0.3);
-          }
-          50% {
-            opacity: 1;
-            transform: scale(1.05);
-          }
-          70% {
-            transform: scale(0.9);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        /* ============================================================ */
-        /* SHOOTING STAR ANIMATIONS */
-        /* ============================================================ */
-
-        /* Shooting star animation variant 1 */
-        @keyframes shooting-1 {
-          0% {
-            opacity: 0;
-            transform: translateX(0px) translateY(0px) scale(0);
-            box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
-          }
-          10% {
-            opacity: 1;
-            transform: translateX(20px) translateY(-20px) scale(1);
-            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(200px) translateY(-200px) scale(0.5);
-            box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.4);
-          }
-        }
-
-        /* Shooting star animation variant 2 */
-        @keyframes shooting-2 {
-          0% {
-            opacity: 0;
-            transform: translateX(0px) translateY(0px) scale(0);
-            box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
-          }
-          10% {
-            opacity: 1;
-            transform: translateX(-30px) translateY(30px) scale(1);
-            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(-250px) translateY(250px) scale(0.5);
-            box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.4);
-          }
-        }
-
-        /* Shooting star animation variant 3 */
-        @keyframes shooting-3 {
-          0% {
-            opacity: 0;
-            transform: translateX(0px) translateY(0px) scale(0);
-            box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
-          }
-          10% {
-            opacity: 1;
-            transform: translateX(40px) translateY(-40px) scale(1);
-            box-shadow: 0 0 15px 3px rgba(255, 255, 255, 0.9);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(300px) translateY(-300px) scale(0.5);
-            box-shadow: 0 0 25px 5px rgba(255, 255, 255, 0.3);
-          }
-        }
-
-        /* Shooting star animation variant 4 */
-        @keyframes shooting-4 {
-          0% {
-            opacity: 0;
-            transform: translateX(0px) translateY(0px) scale(0);
-            box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0);
-          }
-          10% {
-            opacity: 1;
-            transform: translateX(-25px) translateY(-25px) scale(1);
-            box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.8);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(-200px) translateY(-200px) scale(0.5);
-            box-shadow: 0 0 20px 4px rgba(255, 255, 255, 0.4);
-          }
-        }
-
-        /* ============================================================ */
-        /* ANIMATION CLASS ASSIGNMENTS */
-        /* ============================================================ */
-
-        /* Apply animations to elements */
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out forwards;
-        }
-
-        .animate-slide-up-delayed {
-          opacity: 0;
-          animation: slide-up-delayed 0.8s ease-out 1s forwards;
-        }
-
-        .animate-fade-in-delayed {
-          opacity: 0;
-          animation: fade-in-delayed 1s ease-out 1.5s forwards;
-        }
-
-        .animate-slide-down {
-          animation: slide-down 0.6s ease-out forwards;
-        }
-
-        .animate-slide-up {
-          opacity: 0;
-          animation: slide-up 0.6s ease-out forwards;
-        }
-
-        .animate-bounce-in {
-          opacity: 0;
-          animation: bounce-in 0.8s ease-out forwards;
-        }
-
-        .animate-letter-bounce {
-          animation: letter-bounce 2s ease-in-out infinite;
-        }
-
-        /* Shooting star animation classes with timing */
-        .animate-shooting-1 {
-          animation: shooting-1 3s ease-out infinite;
-          animation-delay: 0s;
-        }
-
-        .animate-shooting-2 {
-          animation: shooting-2 4s ease-out infinite;
-          animation-delay: 1s;
-        }
-
-        .animate-shooting-3 {
-          animation: shooting-3 2.5s ease-out infinite;
-          animation-delay: 2s;
-        }
-
-        .animate-shooting-4 {
-          animation: shooting-4 3.5s ease-out infinite;
-          animation-delay: 3s;
-        }
-      `}</style>
     </div>
   );
 };

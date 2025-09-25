@@ -1,10 +1,9 @@
 const UserModel = require("../models/userModel.js")
 const mongoose = require("mongoose")
-<<<<<<< Updated upstream
-=======
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv") 
 dotenv.config() 
+
 
 
 const generateToken = (_id) => {
@@ -12,7 +11,7 @@ const generateToken = (_id) => {
         expiresIn: "3d",
     })
 }
->>>>>>> Stashed changes
+
 
 
 const getAllUsers = async (req, res) => {
@@ -28,34 +27,35 @@ const getAllUsers = async (req, res) => {
 
 const createNewUser = async (req, res) => {
 
+    const { name, email, phone, password } = req.body
+
     try {
-        const newUser = await UserModel.create({ ...req.body })
-        res.status(201).json(newUser)
+        const newUser = await UserModel.signup(name, email, phone, password)
+
+        const token = generateToken(newUser._id)
+        res.status(201).json({ user: newUser, token })
 
     } catch (error) {
-        res.status(400).json({ message: "Error creating the user", error: error.message })
+        res.status(400).json({ message: error.message })
     }
 
 }
 
 const getRegisteredUser = async (req, res) => {
-
+    const { email, password } = req.body
     try {
-        const { email, password } = req.body
-        const user = await UserModel.findOne({ email: email })
 
-        if (!user) {
-            res.status(404).json({ message: "User not found" })
-        }
+        const user = await UserModel.login(email, password)
 
-        if (user.password === password) {
-            res.status(200).json(user)
+        if (user) {
+            const token = generateToken(user._id);
+            res.status(200).json({ user: user, token })
         } else {
-            res.status(401).json({ message: "Wrong password" })
+            res.status(400).json({ message: "Invalid credentials" });
         }
 
     } catch (error) {
-        res.status(500).json({ message: "Error Logging in" })
+        res.status(400).json({ message: error.message });
     }
 
 }
@@ -63,64 +63,74 @@ const getRegisteredUser = async (req, res) => {
 
 const addInfo = async (req, res) => {
 
-    const {userId} = req.params
+    const { userId } = req.params
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-        res.status(400).json({ message: "Not valid ID" })
+        return res.status(400).json({ message: "Not valid ID" })
     }
 
     try {
 
+        const updatedData = { ...req.body }
+
+        delete updatedData.interests
+
+        const updateQuery = { $set: updatedData };
+
+        if (req.body.interests && req.body.interests.length > 0) {
+            updateQuery.$addToSet = { interests: { $each: Array.isArray(req.body.interests) ? req.body.interests : [req.body.interests] } };
+        }
+
         const updatedUser = await UserModel.findByIdAndUpdate(
-            { _id: userId },
-            { ...req.body },
+            userId,
+            updateQuery,
             { new: true }
         );
 
-        if(updatedUser){
+        if (updatedUser) {
             res.status(200).json(updatedUser)
-        }else{
-            res.status(404).json({message: "User not found"})
+        } else {
+            res.status(404).json({ message: "User not found" })
         }
     } catch (error) {
-         res.status(500).json({message: "Error updatiding user"})
+        res.status(500).json({ message: "Error updatiding user" })
     }
 }
 
 const getJoinedEvents = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).populate('joinedEvents');
-    res.status(200).json(user.joinedEvents);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching joined events', error });
-  }
+    try {
+        const user = await User.findById(req.user._id).populate('joinedEvents');
+        res.status(200).json(user.joinedEvents);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching joined events', error });
+    }
 };
 const leaveEventFromUserPage = async (req, res) => {
-  try {
-    const user = req.user;
-    const eventId = req.params.eventId;
+    try {
+        const user = req.user;
+        const eventId = req.params.eventId;
 
-    const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ message: 'Event not found' });
+        const event = await Event.findById(eventId);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    // Remove user from event.participant
-    const Index = event.participant.indexOf(user._id);
-    if (Index !== -1) {
-      event.participant.splice(Index, 1);
-      await event.save();
+        // Remove user from event.participant
+        const Index = event.participant.indexOf(user._id);
+        if (Index !== -1) {
+            event.participant.splice(Index, 1);
+            await event.save();
+        }
+
+        // Remove event from user.joinedEvents
+        const eventIndex = user.joinedEvents.indexOf(event._id);
+        if (eventIndex !== -1) {
+            user.joinedEvents.splice(eventIndex, 1);
+            await user.save();
+        }
+
+        res.status(200).json({ message: 'Successfully left event' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error leaving event from user page', error });
     }
-
-    // Remove event from user.joinedEvents
-    const eventIndex = user.joinedEvents.indexOf(event._id);
-    if (eventIndex !== -1) {
-      user.joinedEvents.splice(eventIndex, 1);
-      await user.save();
-    }
-
-    res.status(200).json({ message: 'Successfully left event' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error leaving event from user page', error });
-  }
 };
 
 

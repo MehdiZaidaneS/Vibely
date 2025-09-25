@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styles from "./CreateEvent.module.css";
+
 const currentUser = localStorage.getItem("userID"); // { _id: "...", name: "...", email: "..." }
+
 
 function CreateEventModal({ isOpen, onClose, onSubmit }) {
   const [title, setTitle] = useState("");
@@ -18,6 +20,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
       alert("Title is required!");
       return;
     }
+
     const newEventData = {
     author: currentUser,  
     title,
@@ -30,6 +33,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
     description,
   };
     onSubmit(newEventData);
+
     // Reset form
     setTitle("");
     setEventType("");
@@ -39,6 +43,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
     setLocation("");
     setDescription("");
     setCapacity("");
+
   };
 
   if (!isOpen) return null;
@@ -63,6 +68,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
               className={styles.input}
             />
           </div>
+
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label htmlFor="event-type">Event Type</label>
@@ -91,6 +97,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
                 className={styles.input}
               />
             </div>
+
           </div>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
@@ -113,6 +120,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
                 className={styles.input}
               />
             </div>
+
             <div className={styles.formGroup}>
               <label htmlFor="event-end-time">End Time</label>
               <input
@@ -123,6 +131,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
                 className={styles.input}
               />
             </div>
+
 
           </div>
           <div className={styles.formGroup}>

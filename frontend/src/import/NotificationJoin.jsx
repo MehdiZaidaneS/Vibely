@@ -1,4 +1,4 @@
-// src/components/Toast.jsx
+// src/import/Toast.jsx
 import React, { useEffect } from "react";
 
 export default function Toast({ message, visible, onClose, type = "success", duration = 3000 }) {

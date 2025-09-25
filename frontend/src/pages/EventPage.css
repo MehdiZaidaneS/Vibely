@@ -1,17 +1,7 @@
 /* src/pages/EventPage.css */
 
 /* Reset and base styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #ffffff;
-  line-height: 1.5;
-}
 
 /* ------------------------------------------------------------- */
 /* Layout components */
@@ -144,8 +134,8 @@ body {
 }
 
 .upgrade-icon {
-  width: 54px;
-  height: 54px;
+  width: 120px;
+  height: 120px;
   margin: 0 auto 18px;
 }
 
@@ -259,9 +249,15 @@ body {
 }
 
 .notification-icon {
-  width: 24px;
+  width: 24px; 
   height: 24px;
   cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease; /* Add transition */
+}
+
+.notification-icon:hover {
+  transform: scale(1.1); /* Slight zoom */
+  opacity: 0.8; /* Subtle fade */
 }
 
 .user-profile {
@@ -590,4 +586,49 @@ body {
 button:focus, a:focus, input:focus {
   outline: 3px solid rgba(99,102,241,0.15);
   outline-offset: 3px;
+}
+
+
+/* Icon container for notifications and DMs */
+.icon-container {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Reduced from default margin for closer spacing */
+}
+
+/* Tooltip wrapper */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip styling */
+.tooltip {
+  visibility: hidden;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 8px;
+  position: absolute;
+  z-index: 100;
+  bottom: 100%; /* Position above the icon */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* Show tooltip on hover */
+.tooltip-wrapper:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Adjust icon margins */
+.notification-icon,
+.dm-icon {
+  margin: 0; /* Remove default margins */
 }

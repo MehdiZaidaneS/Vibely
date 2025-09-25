@@ -1,5 +1,6 @@
 const express = require("express")
 const router = express.Router()
+const requireAuth = require("../middleware/requireAuth");
 
 const {
  getAllUsers,
@@ -12,18 +13,20 @@ const {
 
 
 
+
 router.get("/", getAllUsers)
 
 router.post("/",createNewUser)
 
-router.get("/login", getRegisteredUser)
-
-router.patch("/:userId", addInfo)
+router.post("/login", getRegisteredUser)
 
 router.get('/joined-events', getJoinedEvents);
 
 router.patch('/leave-event/:eventId', leaveEventFromUserPage);
 
+router.use(requireAuth);
+
+router.patch("/:userId", addInfo)
 
 
 module.exports = router
