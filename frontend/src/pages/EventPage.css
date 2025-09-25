@@ -587,3 +587,48 @@ button:focus, a:focus, input:focus {
   outline: 3px solid rgba(99,102,241,0.15);
   outline-offset: 3px;
 }
+
+
+/* Icon container for notifications and DMs */
+.icon-container {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Reduced from default margin for closer spacing */
+}
+
+/* Tooltip wrapper */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip styling */
+.tooltip {
+  visibility: hidden;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 8px;
+  position: absolute;
+  z-index: 100;
+  bottom: 100%; /* Position above the icon */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* Show tooltip on hover */
+.tooltip-wrapper:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Adjust icon margins */
+.notification-icon,
+.dm-icon {
+  margin: 0; /* Remove default margins */
+}
