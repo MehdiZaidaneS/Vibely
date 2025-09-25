@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:4000/api/users";
+
+const API_URL = `http://localhost:5000/api/users`;
+
 
 
 export const createUser = async (body) => {

@@ -1,6 +1,9 @@
 const UserModel = require("../models/userModel.js")
 const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken")
+const dotenv = require("dotenv") 
+dotenv.config() 
+
 
 
 const generateToken = (_id) => {
@@ -8,6 +11,7 @@ const generateToken = (_id) => {
         expiresIn: "3d",
     })
 }
+
 
 
 const getAllUsers = async (req, res) => {

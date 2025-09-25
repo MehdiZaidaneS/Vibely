@@ -17,8 +17,34 @@ function EventPage() {
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+
+  const createEvent = async (newEventData) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEventData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create event");
+      }
+
+      const savedEvent = await response.json();
+
+      setEvents((prev) => [...prev, savedEvent]);
+
+      setIsCreateModalOpen(false);
+      setToast({ visible: true, message: "Event created successfully!" });
+    } catch (error) {
+      console.error(error);
+      setToast({ visible: true, message: "Error creating event!" });
+    }
+  };
+
+
   // mock events
-  const events = [
+const [events, setEvents] = useState([
     {
       id: "freshers",
       title: "Freshers' Welcome Party",
@@ -58,7 +84,7 @@ function EventPage() {
       className: "event-medium photography-event",
       background: "url('../assets/images/img_photography_event_image.png')",
     },
-  ];
+  ]);
 
   const filteredEvents = events.filter((event) => {
     const titleLower = event.title.toLowerCase();
@@ -218,16 +244,15 @@ function EventPage() {
             ))}
           </div>
         </main>
-      </div >
+      </div>
+
 
       <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={() => {
-          setIsCreateModalOpen(false);
-          setToast({ visible: true, message: "Event created successfully!" });
-        }}
+        onSubmit={createEvent}
       />
+
 
       {/* Modal + Toast */}
       < Modal

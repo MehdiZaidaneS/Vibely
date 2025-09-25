@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import styles from "./CreateEvent.module.css";
 
+const currentUser = localStorage.getItem("userID"); // { _id: "...", name: "...", email: "..." }
+
+
 function CreateEventModal({ isOpen, onClose, onSubmit }) {
   const [title, setTitle] = useState("");
   const [eventType, setEventType] = useState("");
   const [date, setDate] = useState("");
+  const [capacity, setCapacity] = useState("");
   const [time, setTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
@@ -15,14 +20,30 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
       alert("Title is required!");
       return;
     }
-    onSubmit();
+
+    const newEventData = {
+    author: currentUser,  
+    title,
+    type: eventType,
+    date,
+    time,
+    endTime,
+    location,
+    capacity: Number(capacity), 
+    description,
+  };
+    onSubmit(newEventData);
+
     // Reset form
     setTitle("");
     setEventType("");
     setDate("");
     setTime("");
+    setEndTime("");
     setLocation("");
     setDescription("");
+    setCapacity("");
+
   };
 
   if (!isOpen) return null;
@@ -47,20 +68,36 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
               className={styles.input}
             />
           </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="event-type">Event Type</label>
-            <select
-              id="event-type"
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
-              className={styles.select}
-            >
-              <option value="">Select a type</option>
-              <option>Social Event</option>
-              <option>Business Event</option>
-              <option>Educational Event</option>
-              <option>Entertainment Event</option>
-            </select>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label htmlFor="event-type">Event Type</label>
+              <select
+                id="event-type"
+                value={eventType}
+                onChange={(e) => setEventType(e.target.value)}
+                className={styles.select}
+              >
+                <option value="">Select a type</option>
+                <option>Social Event</option>
+                <option>Business Event</option>
+                <option>Educational Event</option>
+                <option>Entertainment Event</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="event-capacity">Capacity</label>
+              <input
+                id="event-capacity"
+                type="number"
+                placeholder="Enter capacity"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+
           </div>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
@@ -83,6 +120,19 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
                 className={styles.input}
               />
             </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="event-end-time">End Time</label>
+              <input
+                id="event-end-time"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+
+
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="event-location">Location</label>
