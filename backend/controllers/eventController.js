@@ -5,12 +5,13 @@ exports.createEvent = async (req, res) => {
     const newEvent = new Event({
       author: req.body.author,
       title: req.body.title,
+      description: req.body.description,
       type: req.body.type,
       date: req.body.date,
       time: req.body.time,
-      content: req.body.content,
+      endTime: req.body.endTime,
       image: req.body.image,
-      video: req.body.video,
+      location: req.body.location,
       capacity: req.body.capacity,
       participant: req.body.participant || []
     });

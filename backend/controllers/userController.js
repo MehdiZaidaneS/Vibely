@@ -1,5 +1,18 @@
 const UserModel = require("../models/userModel.js")
 const mongoose = require("mongoose")
+<<<<<<< Updated upstream
+=======
+const jwt = require("jsonwebtoken")
+const dotenv = require("dotenv") 
+dotenv.config() 
+
+
+const generateToken = (_id) => {
+    return jwt.sign({ _id }, process.env.SECRET, {
+        expiresIn: "3d",
+    })
+}
+>>>>>>> Stashed changes
 
 
 const getAllUsers = async (req, res) => {
