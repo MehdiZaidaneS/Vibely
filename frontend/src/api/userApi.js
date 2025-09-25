@@ -48,6 +48,7 @@ export const logUser = async (body) => {
 
         const user = await response.json()
         localStorage.setItem("user", user.token);
+        localStorage.setItem("userId", user.user._id);
         return user
 
 

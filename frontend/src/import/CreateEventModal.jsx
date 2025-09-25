@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import styles from "./CreateEvent.module.css";
 
-const currentUser = localStorage.getItem("userID"); // { _id: "...", name: "...", email: "..." }
-
 
 function CreateEventModal({ isOpen, onClose, onSubmit }) {
   const [title, setTitle] = useState("");
@@ -22,7 +20,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
     }
 
     const newEventData = {
-    author: currentUser,  
+    author: localStorage.getItem("userId"),  
     title,
     type: eventType,
     date,
@@ -32,6 +30,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
     capacity: Number(capacity), 
     description,
   };
+  console.log("POST data to send:", newEventData); // <-- log here
     onSubmit(newEventData);
 
     // Reset form
