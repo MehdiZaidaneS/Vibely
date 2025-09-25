@@ -9,6 +9,8 @@ import {
   User,
 } from "lucide-react";
 import styles from "./welcomePage.module.css";
+import { useNavigate } from "react-router-dom";
+import { addInfo } from "../../api/userApi.js"
 
 const WelcomePage = () => {
   // ============================================================================
@@ -32,6 +34,8 @@ const WelcomePage = () => {
 
   // Animation state for content transitions
   const [showContent, setShowContent] = useState(true);
+
+  const navigate = useNavigate()
 
   // ============================================================================
   // CONSTANTS AND DATA
@@ -143,15 +147,27 @@ const WelcomePage = () => {
   };
 
   // Handle continue button click
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setIsLoading(true);
     console.log("Username:", username);
     console.log("Selected interests:", selectedInterests);
 
+    const body = {
+       username,
+       interests: selectedInterests
+    }
+
+    try {
+        await addInfo(body)
+
+      } catch (error) {
+        console.log(error.message)
+      }
+
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      // Here you would navigate to the next page
+       navigate("/events")
       alert(
         `Welcome ${username}! You selected: ${selectedInterests
           .map((id) => interests.find((i) => i.id === id)?.title)

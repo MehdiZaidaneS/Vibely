@@ -94,7 +94,7 @@ const Auth = () => {
     } else {
       try {
         const newUser = await createUser(formData);
-        navigate("/events");
+        navigate("/welcome");
       } catch (err) {
         setError(err.message || "Registration failed. Please try again.");
       } finally {

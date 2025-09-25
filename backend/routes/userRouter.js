@@ -10,7 +10,7 @@ const {
  getJoinedEvents,
  leaveEventFromUserPage
 } = require("../controllers/userController.js")
-const requireAuth = require("../middleware/requireAuth.js")
+
 
 
 

@@ -67,9 +67,19 @@ const addInfo = async (req, res) => {
 
     try {
 
+        const updatedData = { ...req.body }
+
+        delete updatedData.interests
+
+        const updateQuery = { $set: updatedData };
+
+        if (req.body.interests && req.body.interests.length > 0) {
+            updateQuery.$addToSet = { interests: { $each: Array.isArray(req.body.interests) ? req.body.interests : [req.body.interests] } };
+        }
+
         const updatedUser = await UserModel.findByIdAndUpdate(
-            { _id: userId },
-            { ...req.body },
+            userId,
+            updateQuery,
             { new: true }
         );
 
