@@ -42,8 +42,9 @@ function EventPage() {
     }
   };
 
+
   // mock events
-  const [events, setEvents] = useState([
+const [events, setEvents] = useState([
     {
       id: "freshers",
       title: "Freshers' Welcome Party",
@@ -84,30 +85,6 @@ function EventPage() {
       background: "url('../assets/images/img_photography_event_image.png')",
     },
   ]);
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/events");
-        if (!response.ok) throw new Error("Failed to fetch events");
-        const data = await response.json();
-
-        const normalized = data.map(ev => ({
-          ...ev,
-          id: ev._id, // use MongoDB _id for all events from backend
-        }));
-
-        
-        setEvents(normalized);
-
-        
-      } catch (err) {
-        console.error("Error fetching events:", err);
-      }
-    };
-
-    fetchEvents();
-  }, []);
-
 
   const filteredEvents = events.filter((event) => {
     const titleLower = event.title.toLowerCase();
@@ -133,38 +110,15 @@ function EventPage() {
   };
 
   // join flow
-  const handleJoinClick = (event) => {
-    setSelectedEvent(event._id);
+  const handleJoinClick = (title) => {
+    setSelectedEvent(title);
     setIsModalOpen(true);
-
-    
   };
 
-  const confirmJoin = async () => {
-    try {
-      console.log(selectedEvent)
-      
-      const response = await fetch(`http://localhost:5000/api/events/${selectedEvent}/join`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: {"user": localStorage.getItem("userId")}
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to joinn event");
-      }
-
-      const joinedEvent = await response.json();
-
-
-      setIsCreateModalOpen(false);
-      setSelectedEvent(null);
-      setToast({ visible: true, message: `You've joined "${joinedEvent.title}"` });
-    } catch (error) {
-      setToast({ visible: true, message: `failed to join` });
-      setIsCreateModalOpen(false);
-      setSelectedEvent(null);
-    }
+  const confirmJoin = () => {
+    setIsModalOpen(false);
+    setToast({ visible: true, message: `You've joined "${selectedEvent}"` });
+    setSelectedEvent(null);
   };
 
   const cancelJoin = () => {
@@ -278,7 +232,7 @@ function EventPage() {
                     aria-label={`Join ${event.title.toLowerCase()}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleJoinClick(event);
+                      handleJoinClick(event.title);
                     }}
                   >
                     <img src="../assets/images/img_join_football_event_button.svg" alt="Join" width="20" height="20" />
