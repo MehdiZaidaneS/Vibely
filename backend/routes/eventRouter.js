@@ -22,9 +22,9 @@ router.get("/search", searchEvent);
 // Get a single event by ID (GET request)
 router.get("/:eventId", getEventById);
 
-// Like a event (PATCH request, because you're updating the event)
-router.patch("/:eventId/join", joinEvent);
-router.patch("/:eventId/leave", leaveEvent);
+
+router.post("/:eventId/join", joinEvent);
+router.post("/:eventId/leave", leaveEvent);
 
 
 module.exports = router;

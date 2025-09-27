@@ -134,7 +134,7 @@ function EventPage() {
 
   // join flow
   const handleJoinClick = (event) => {
-    setSelectedEvent(event._id);
+    setSelectedEvent(event);
     setIsModalOpen(true);
 
     
@@ -142,12 +142,13 @@ function EventPage() {
 
   const confirmJoin = async () => {
     try {
-      console.log(selectedEvent)
+      const eventID = selectedEvent._id
+      console.log(eventID)
       
-      const response = await fetch(`http://localhost:5000/api/events/${selectedEvent}/join`, {
-        method: "PATCH",
+      const response = await fetch(`http://localhost:5000/api/events/${eventID}/join`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: {"user": localStorage.getItem("userId")}
+        body: JSON.stringify({"user": localStorage.getItem("userId")})
       });
 
       if (!response.ok) {
@@ -304,7 +305,7 @@ function EventPage() {
       < Modal
         isOpen={isModalOpen}
         title="Join event?"
-        message={selectedEvent ? `Do you want to join "${selectedEvent}"?` : "Do you want to join this event?"
+        message={selectedEvent ? `Do you want to join "${selectedEvent.title}"?` : "Do you want to join this event?"
         }
         onConfirm={confirmJoin}
         onCancel={cancelJoin}
