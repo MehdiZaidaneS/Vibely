@@ -1,4 +1,5 @@
 const Event = require('../models/eventModel');
+const User = require('../models/userModel');
 
 exports.createEvent = async (req, res) => {
   try {
@@ -51,15 +52,16 @@ exports.getEventById = async (req, res) => {
 exports.joinEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
-    const user = req.user;
+    const userID = req.body.user;
+    const user = await User.findById(userID);
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    if (event.participant.includes(user._id)) {
+    if (event.participant.includes(userID)) {
       return res.status(400).json({ message: 'You already joined this event' });
     }
-    event.participant.push(user._id);
+    event.participant.push(userID);
 
     if (!user.joinedEvents.includes(event._id)) {
       user.joinedEvents.push(event._id);
@@ -98,4 +100,11 @@ exports.leaveEvent = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error leaving event', error });
   }
+};
+
+exports.searchEvent = async (req, res) => {
+  const { name } = req.query;
+  const event = await Event.findOne({ title: name });
+  if (!event) return res.status(404).json({ error: "Event not found" });
+  res.json(event);
 };

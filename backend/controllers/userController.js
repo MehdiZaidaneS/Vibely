@@ -1,4 +1,6 @@
 const UserModel = require("../models/userModel.js")
+const Event = require("../models/eventModel");
+
 const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv") 
@@ -107,7 +109,7 @@ const getJoinedEvents = async (req, res) => {
 };
 const leaveEventFromUserPage = async (req, res) => {
     try {
-        const user = req.user;
+        const user = req.body.user;
         const eventId = req.params.eventId;
 
         const event = await Event.findById(eventId);
