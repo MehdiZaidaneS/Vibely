@@ -6,6 +6,7 @@ import Modal from "../import/JoinEvent";
 import Toast from "../import/NotificationJoin";
 import CreateEventModal from "../import/CreateEventModal";
 import UserDropdown from "../import/UserDropdown";
+import { Plus } from 'lucide-react';
 import "./EventPage.css";
 
 function EventPage() {
@@ -16,7 +17,6 @@ function EventPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
 
   const createEvent = async (newEventData) => {
     try {
@@ -92,9 +92,7 @@ function EventPage() {
           id: ev._id, // use MongoDB _id for all events from backend
         }));
 
-
         setEvents(normalized);
-
 
       } catch (err) {
         console.error("Error fetching events:", err);
@@ -103,7 +101,6 @@ function EventPage() {
 
     fetchEvents();
   }, []);
-
 
   const filteredEvents = events.filter((event) => {
     const titleLower = event.title.toLowerCase();
@@ -133,7 +130,6 @@ function EventPage() {
     setSelectedEvent(event);
     setIsModalOpen(true);
 
-
   };
 
   const confirmJoin = async () => {
@@ -152,7 +148,6 @@ function EventPage() {
       }
 
       const joinedEvent = await response.json();
-
 
       setIsCreateModalOpen(false);
       setSelectedEvent(null);
@@ -214,19 +209,27 @@ function EventPage() {
                 onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
               />
             </div>
-            <div className="icon-container">
+            <div className="right-group">
               <span className="tooltip-wrapper">
-                <img src="../assets/images/img_notification.svg" alt="Notifications" className="notification-icon" />
-                <span className="tooltip">Notifications</span>
+                <Plus className="create-icon" onClick={() => setIsCreateModalOpen(true)} />
+                <span className="tooltip">Create Event</span>
               </span>
-              <span className="tooltip-wrapper">
-                <img src="../assets/images/img_DM_icon.svg" alt="Direct Messages" className="dm-icon" width="18" height="18" />
-                <span className="tooltip">Direct Messages</span>
-              </span>
+              <div className="icon-container">
+                <span className="tooltip-wrapper">
+                  <img src="../assets/images/img_notification.svg" alt="Notifications" className="notification-icon" />
+                  <span className="tooltip">Notifications</span>
+                </span>
+                <span className="tooltip-wrapper">
+                  <img src="../assets/images/img_DM_icon.svg" alt="Direct Messages" className="dm-icon" width="18" height="18" />
+                  <span className="tooltip">Direct Messages</span>
+                </span>
+              </div>
+              <UserDropdown />
             </div>
-            <UserDropdown />
           </div>
 
+
+          {/* SubHeader, basically where event filter should be, will fix in the next iteration */}
           <div className="header-bottom">
             <h1 className="page-title">All Events</h1>
 
@@ -252,13 +255,6 @@ function EventPage() {
               >
                 Joined
               </a>
-              <button
-                className="header-menu-item create-event-button"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                Create your own event
-              </button>
-
             </nav>
           </div>
         </header>
@@ -297,25 +293,22 @@ function EventPage() {
         </main>
       </div>
 
-
       <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={createEvent}
       />
 
-
       {/* Modal + Toast */}
-      < Modal
+      <Modal
         isOpen={isModalOpen}
         title="Join event?"
-        message={selectedEvent ? `Do you want to join "${selectedEvent.title}"?` : "Do you want to join this event?"
-        }
+        message={selectedEvent ? `Do you want to join "${selectedEvent.title}"?` : "Do you want to join this event?"}
         onConfirm={confirmJoin}
         onCancel={cancelJoin}
       />
       <Toast message={toast.message} visible={toast.visible} onClose={closeToast} />
-    </div >
+    </div>
   );
 }
 

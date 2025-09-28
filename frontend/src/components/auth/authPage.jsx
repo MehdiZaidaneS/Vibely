@@ -10,7 +10,7 @@ const Auth = () => {
   // ============================================================================
 
   // Controls whether we're showing login or signup form
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
 
   // Controls password visibility toggle
   const [showPassword, setShowPassword] = useState(false);
