@@ -64,6 +64,7 @@ exports.postMessage = async (req, res) => {
   }
 };
 
+
 exports.editMessage = async (req, res) => {
   const { messageId } = req.params;
   const { userId, content } = req.body;
@@ -96,25 +97,59 @@ exports.editMessage = async (req, res) => {
   }
 };
 
+const User = require('../models/userModel'); // Assuming your user model is here
 
-exports.getChatHistory = async (req, res) => {
-  const { roomId } = req.params;
-
+exports.searchChatRoomByUser = async (req, res) => {
+  const { userId } = req.params;
   try {
+    const chatrooms = await ChatRoom.find({ participants: userId })
+      .populate('participants', 'name avatar isOnline')
+      .populate('lastMessage')
+      .sort({ updatedAt: -1 });
 
-    const chatRoom = await ChatRoom.findById(roomId).populate('participants','name email');
-    if (!chatRoom) {
-      return res.status(404).json({ message: 'Chat room not found' });
+    if (!chatrooms || chatrooms.length === 0) {
+      return res.status(200).json([]); // Return an empty array if no chatrooms are found
     }
 
-    const messages = await Message.find({ chatRoom: roomId })
-      .populate('sender', 'name email')
-      .sort({ createdAt: 1 });
+    const formattedChatrooms = chatrooms.map((room) => {
+      const otherParticipant = room.isGroup
+        ? null
+        : room.participants.find((p) => p._id.toString() !== userId);
 
-    res.json({ room: chatRoom, messages });
+      const lastMessageContent = room.lastMessage
+        ? room.lastMessage.content
+        : 'No messages yet.';
+
+      return {
+        id: room._id, // Use 'id' to match frontend key
+        name: room.isGroup ? room.name : (otherParticipant?.name || 'Unknown User'),
+        avatar: room.isGroup ? room.avatar || '/default-group-avatar.png' : (otherParticipant?.avatar || '/default-avatar.png'),
+        isOnline: room.isGroup ? true : (otherParticipant?.isOnline || false),
+        lastMessage: lastMessageContent,
+        lastMessageTime: room.lastMessage ? room.lastMessage.createdAt : room.updatedAt,
+        unreadCount: 0, // This logic needs to be implemented separately
+        isTyping: false, // This is a frontend state, not a database field
+      };
+    });
+
+    res.json(formattedChatrooms);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to search for chatrooms.' });
   }
+};
+
+exports.getChatHistory = async (req, res) => {
+    const { roomId } = req.params;
+    try {
+        const messages = await Message.find({ chatRoom: roomId })
+            .populate('sender', 'name email')
+            .sort({ createdAt: 1 });
+        
+        // Only return the messages array
+        res.json(messages); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
 exports.getParticipants = async (req, res) => {

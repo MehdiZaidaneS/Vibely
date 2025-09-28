@@ -13,7 +13,8 @@ const connectDB = require("./config/db")
 const eventRouter = require("./routes/eventRouter")
 const chatRouter = require('./routes/chatRouter.js');
 connectDB()
-
+const http = require('http');
+const { Server } = require('socket.io');
 
 
 
@@ -32,8 +33,39 @@ app.use("/api/notifications", notificationRouter)
 app.post('/api/AIevent', generateText)
 app.use('/api/chatrooms', chatRouter)
 
+//chatroom servers
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*', 
+    methods: ['GET', 'POST']
+  }
+});
+// Socket.io connection
+io.on('connection', (socket) => {
+  console.log('A user connected: ' + socket.id);
+
+  // Join a chatroom
+  socket.on('joinRoom', (roomId) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+  });
+
+  // Listen for new messages
+  socket.on('sendMessage', (message) => {
+    const { roomId, sender, content } = message;
+
+    // broadcast to all users in the room except sender
+    socket.to(roomId).emit('receiveMessage', message);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected: ' + socket.id);
+  });
+});
 
 
-app.listen(port, ()=>{
-    console.log(`Server is running on port ${port}`)
-})
+
+server.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});

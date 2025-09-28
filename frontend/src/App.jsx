@@ -26,6 +26,7 @@ function App() {
         {/* <Route path="create-event" element={<CreateEvent />} /> */}
         <Route path="/public-chat" element={<PublicChat />} />
         <Route path="/private-chat" element={<PrivateChat />} />
+        <Route path="/private-chat/:chatroomId" element={<PrivateChat />} />
       </Routes>
     </BrowserRouter>
   );
