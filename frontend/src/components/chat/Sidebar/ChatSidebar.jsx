@@ -30,12 +30,14 @@ const ChatSidebar = ({
             <div>
               <h2 className="text-lg font-semibold">Messages</h2>
               <p className="text-purple-100 text-sm">
-                {conversations.length} conversations
+                {conversations?.length || 0} conversations
               </p>
             </div>
           </div>
           <button
-            onClick={() => setShowNewConversation(true)}
+            onClick={() =>
+              setShowNewConversation && setShowNewConversation(true)
+            }
             className="p-2 hover:bg-white/20 rounded-lg transition-all duration-200"
             title="New Conversation"
           >
@@ -49,8 +51,8 @@ const ChatSidebar = ({
           <input
             type="text"
             placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery || ""}
+            onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
           />
         </div>
@@ -59,12 +61,24 @@ const ChatSidebar = ({
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4">
-          <ConversationList
-            conversations={conversations}
-            activeConversation={activeConversation}
-            setActiveConversation={setActiveConversation}
-            styles={styles}
-          />
+          {conversations && conversations.length > 0 ? (
+            <ConversationList
+              conversations={conversations}
+              activeConversation={activeConversation}
+              setActiveConversation={setActiveConversation}
+              styles={styles}
+            />
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-gray-400">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">No conversations yet</p>
+                <p className="text-xs mt-1">
+                  Start a new conversation to get started
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

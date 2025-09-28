@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Bell, Shield, Flag, UserX } from "lucide-react";
+import io from "socket.io-client";
 
 // Import all the modular components
 import ChatSidebar from "./sidebar/ChatSidebar";
@@ -10,117 +11,26 @@ import MessageInput from "./Input/MessageInput";
 import FriendsModal from "./Modals/FriendsModal";
 import NewConversationModal from "./Modals/NewConversationModal";
 
+// Import CSS module
 import styles from "./privateChat.module.css";
+
+const API_URL = "http://localhost:5000";
+const socket = io(API_URL);
 
 const PrivateChat = () => {
   const navigate = useNavigate();
+  const { chatroomId } = useParams();
 
   // ============================================================================
   // STATE MANAGEMENT
   // ============================================================================
 
-  const [conversations] = useState([
-    {
-      id: "alex",
-      name: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face&auto=format",
-      lastMessage: "Hey! How was your day?",
-      timestamp: "2:45 PM",
-      isOnline: true,
-      unreadCount: 3,
-      isTyping: false,
-    },
-    {
-      id: "sarah",
-      name: "Sarah Chen",
-      avatar:
-        "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop&crop=face&auto=format",
-      lastMessage: "Thanks for the help earlier!",
-      timestamp: "1:30 PM",
-      isOnline: true,
-      unreadCount: 0,
-      isTyping: false,
-    },
-    {
-      id: "marcus",
-      name: "Marcus Rodriguez",
-      avatar:
-        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face&auto=format",
-      lastMessage: "See you at the game tonight!",
-      timestamp: "11:15 AM",
-      isOnline: false,
-      unreadCount: 0,
-      isTyping: false,
-    },
-    {
-      id: "emma",
-      name: "Emma Wilson",
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face&auto=format",
-      lastMessage: "That sounds like a great plan!",
-      timestamp: "Yesterday",
-      isOnline: true,
-      unreadCount: 1,
-      isTyping: false,
-    },
-    {
-      id: "lisa",
-      name: "Lisa Park",
-      avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face&auto=format",
-      lastMessage: "Can't wait for the weekend!",
-      timestamp: "Yesterday",
-      isOnline: false,
-      unreadCount: 0,
-      isTyping: false,
-    },
-  ]);
-
-  const [activeConversation, setActiveConversation] = useState("alex");
-
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      senderId: "alex",
-      message: "Hey there! How's your day going?",
-      timestamp: "2:30 PM",
-      isCurrentUser: false,
-    },
-    {
-      id: 2,
-      senderId: "you",
-      message: "Pretty good! Just working on some projects. How about you?",
-      timestamp: "2:32 PM",
-      isCurrentUser: true,
-    },
-    {
-      id: 3,
-      senderId: "alex",
-      message:
-        "Same here! Working on that presentation for tomorrow. Are you free for a quick call later?",
-      timestamp: "2:35 PM",
-      isCurrentUser: false,
-    },
-    {
-      id: 4,
-      senderId: "you",
-      message: "Sure! What time works for you?",
-      timestamp: "2:37 PM",
-      isCurrentUser: true,
-    },
-    {
-      id: 5,
-      senderId: "alex",
-      message: "How about 4 PM? We can go over the details then.",
-      timestamp: "2:40 PM",
-      isCurrentUser: false,
-    },
-  ]);
-
+  // Backend-integrated state
+  const [conversations, setConversations] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [currentChatroom, setCurrentChatroom] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // UI state for modals and dropdowns
@@ -130,12 +40,14 @@ const PrivateChat = () => {
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [friendRequestStates, setFriendRequestStates] = useState({});
   const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const userId = localStorage.getItem("userId");
 
-  // All available users for searching with friendship status
+  // All available users for searching with friendship status (mock data for now)
   const [allUsers] = useState([
     {
       id: "alex",
@@ -155,36 +67,6 @@ const PrivateChat = () => {
         "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop&crop=face&auto=format",
       isOnline: true,
       mutualFriends: 8,
-      friendshipStatus: "friends",
-    },
-    {
-      id: "marcus",
-      name: "Marcus Rodriguez",
-      username: "@marcusr",
-      avatar:
-        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face&auto=format",
-      isOnline: false,
-      mutualFriends: 6,
-      friendshipStatus: "friends",
-    },
-    {
-      id: "emma",
-      name: "Emma Wilson",
-      username: "@emmaw",
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face&auto=format",
-      isOnline: true,
-      mutualFriends: 15,
-      friendshipStatus: "friends",
-    },
-    {
-      id: "lisa",
-      name: "Lisa Park",
-      username: "@lisap",
-      avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face&auto=format",
-      isOnline: false,
-      mutualFriends: 20,
       friendshipStatus: "friends",
     },
     {
@@ -215,16 +97,6 @@ const PrivateChat = () => {
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&auto=format",
       isOnline: true,
       mutualFriends: 9,
-      friendshipStatus: "not_friends",
-    },
-    {
-      id: "anna",
-      name: "Anna Thompson",
-      username: "@annat",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face&auto=format",
-      isOnline: true,
-      mutualFriends: 4,
       friendshipStatus: "not_friends",
     },
   ]);
@@ -315,7 +187,83 @@ const PrivateChat = () => {
   };
 
   // ============================================================================
-  // EFFECTS
+  // BACKEND INTEGRATION EFFECTS
+  // ============================================================================
+
+  // Effect 1: Fetch chatrooms and set current chatroom
+  useEffect(() => {
+    const getChatrooms = async () => {
+      if (!userId) return;
+
+      try {
+        const response = await fetch(
+          `${API_URL}/api/chatrooms/search/${userId}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch chatrooms");
+        }
+        const chatrooms = await response.json();
+        setConversations(chatrooms);
+
+        if (chatroomId) {
+          const room = chatrooms.find((c) => c.id === chatroomId);
+          if (room) {
+            setCurrentChatroom(room);
+          } else {
+            navigate("/private-chat");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch chatrooms:", err);
+      }
+    };
+    getChatrooms();
+  }, [userId, chatroomId, navigate]);
+
+  // Effect 2: Fetch messages for the active chatroom
+  useEffect(() => {
+    const getMessages = async () => {
+      if (!chatroomId) {
+        setMessages([]);
+        return;
+      }
+      try {
+        const response = await fetch(
+          `${API_URL}/api/chatrooms/history/${chatroomId}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch messages");
+        }
+        const msgs = await response.json();
+        setMessages(msgs);
+      } catch (err) {
+        console.error("Failed to fetch messages:", err);
+        setMessages([]);
+      }
+    };
+    getMessages();
+  }, [chatroomId]);
+
+  // Effect 3: Handle real-time WebSocket communication
+  useEffect(() => {
+    if (!chatroomId) return;
+
+    socket.emit("joinRoom", chatroomId);
+
+    const handleNewMessage = (message) => {
+      setMessages((prev) => [...prev, message]);
+    };
+
+    socket.on("receiveMessage", handleNewMessage);
+
+    return () => {
+      socket.off("receiveMessage", handleNewMessage);
+      socket.emit("leaveRoom", chatroomId);
+    };
+  }, [chatroomId]);
+
+  // ============================================================================
+  // UI EFFECTS
   // ============================================================================
 
   useEffect(() => {
@@ -346,60 +294,47 @@ const PrivateChat = () => {
   }, []);
 
   // ============================================================================
-  // EVENT HANDLERS
+  // BACKEND EVENT HANDLERS
   // ============================================================================
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() === "") return;
+  const handleSendMessage = async () => {
+    if (newMessage.trim() === "" || !chatroomId) return;
 
     const message = {
-      id: messages.length + 1,
-      senderId: "you",
-      message: newMessage,
-      timestamp: new Date().toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
-      isCurrentUser: true,
+      sender: userId,
+      content: newMessage.trim(),
     };
 
-    setMessages([...messages, message]);
-    setNewMessage("");
+    try {
+      const response = await fetch(
+        `${API_URL}/api/chatrooms/messages/${chatroomId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message),
+        }
+      );
 
-    setTimeout(() => {
-      simulateResponse();
-    }, 1000 + Math.random() * 2000);
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const sentMessage = await response.json();
+      setMessages((prev) => [...prev, sentMessage]);
+      socket.emit("sendMessage", { chatroomId, message: sentMessage });
+      setNewMessage("");
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
   };
 
-  const simulateResponse = () => {
-    const responses = [
-      "That sounds great!",
-      "I totally agree with you!",
-      "Thanks for letting me know!",
-      "Awesome! 👍",
-      "Perfect timing!",
-      "Let me think about it...",
-      "Sounds like a plan!",
-    ];
-
-    const randomResponse =
-      responses[Math.floor(Math.random() * responses.length)];
-
-    const response = {
-      id: messages.length + 2,
-      senderId: activeConversation,
-      message: randomResponse,
-      timestamp: new Date().toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
-      isCurrentUser: false,
-    };
-
-    setMessages((prev) => [...prev, response]);
+  const handleSelectConversation = (id) => {
+    navigate(`/private-chat/${id}`);
   };
+
+  // ============================================================================
+  // UI EVENT HANDLERS
+  // ============================================================================
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -445,7 +380,7 @@ const PrivateChat = () => {
       if (!userExists) {
         console.log("Starting new conversation with friend:", userId);
       }
-      setActiveConversation(userId);
+      handleSelectConversation(userId);
       setShowNewConversation(false);
     }
   };
@@ -474,20 +409,19 @@ const PrivateChat = () => {
     }));
   };
 
-  // Get current conversation info
-  const currentConversation = conversations.find(
-    (conv) => conv.id === activeConversation
+  // ============================================================================
+  // DERIVED STATE
+  // ============================================================================
+
+  // Get the other participant for display
+  const otherParticipant = currentChatroom?.participants?.find(
+    (p) => p._id?.toString() !== userId
   );
 
-  // Only show conversations with friends
-  const filteredConversations = conversations.filter((conv) => {
-    const user = allUsers.find((u) => u.id === conv.id);
-    return (
-      user &&
-      user.friendshipStatus === "friends" &&
-      conv.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  // Filter conversations based on search
+  const filteredConversations = conversations.filter((conv) =>
+    conv.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // More menu options
   const moreOptions = [
@@ -524,8 +458,8 @@ const PrivateChat = () => {
         conversations={filteredConversations}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        activeConversation={activeConversation}
-        setActiveConversation={setActiveConversation}
+        activeConversation={chatroomId}
+        setActiveConversation={handleSelectConversation}
         setShowNewConversation={setShowNewConversation}
         styles={styles}
       />
@@ -537,7 +471,7 @@ const PrivateChat = () => {
         } transition-all duration-300`}
       >
         <ChatHeader
-          currentConversation={currentConversation}
+          currentConversation={currentChatroom}
           isSidebarOpen={isSidebarOpen}
           navigate={navigate}
           setShowFriendsModal={setShowFriendsModal}
@@ -549,7 +483,9 @@ const PrivateChat = () => {
 
         <MessagesArea
           messages={messages}
-          currentConversation={currentConversation}
+          currentConversation={currentChatroom}
+          otherParticipant={otherParticipant}
+          userId={userId}
           isTyping={isTyping}
           messagesEndRef={messagesEndRef}
           styles={styles}
@@ -560,7 +496,8 @@ const PrivateChat = () => {
           setNewMessage={setNewMessage}
           handleSendMessage={handleSendMessage}
           handleKeyPress={handleKeyPress}
-          currentConversation={currentConversation}
+          currentConversation={currentChatroom}
+          chatroomId={chatroomId}
           messageInputRef={messageInputRef}
           showEmojiPicker={showEmojiPicker}
           setShowEmojiPicker={setShowEmojiPicker}
@@ -582,7 +519,7 @@ const PrivateChat = () => {
         handleSendFriendRequest={handleSendFriendRequest}
         handleAcceptFriendRequest={handleAcceptFriendRequest}
         handleDeclineFriendRequest={handleDeclineFriendRequest}
-        setActiveConversation={setActiveConversation}
+        setActiveConversation={handleSelectConversation}
         styles={styles}
       />
 
@@ -597,7 +534,7 @@ const PrivateChat = () => {
         handleAcceptFriendRequest={handleAcceptFriendRequest}
         handleDeclineFriendRequest={handleDeclineFriendRequest}
         friendRequestStates={friendRequestStates}
-        setActiveConversation={setActiveConversation}
+        setActiveConversation={handleSelectConversation}
         styles={styles}
       />
     </div>

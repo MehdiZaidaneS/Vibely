@@ -10,7 +10,7 @@ const ConversationItem = ({
 }) => {
   return (
     <div
-      onClick={onClick}
+      onClick={() => onClick(conversation.id)}
       className={`${
         styles.userListItem
       } flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
@@ -23,7 +23,7 @@ const ConversationItem = ({
       {/* Avatar with status indicators */}
       <div className="relative">
         <img
-          src={conversation.avatar}
+          src={conversation.avatar || "/default-avatar.png"}
           alt={conversation.name}
           className="w-12 h-12 rounded-full object-cover"
         />
@@ -46,7 +46,16 @@ const ConversationItem = ({
             {conversation.name}
           </span>
           <span className="text-xs text-gray-500">
-            {conversation.timestamp}
+            {conversation.lastMessageTime
+              ? new Date(conversation.lastMessageTime).toLocaleTimeString(
+                  "en-US",
+                  {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  }
+                )
+              : conversation.timestamp || ""}
           </span>
         </div>
         <div className="flex items-center">

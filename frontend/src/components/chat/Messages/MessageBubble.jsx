@@ -1,10 +1,20 @@
 import React from "react";
 
-const MessageBubble = ({ message, index, currentConversation, styles }) => {
+const MessageBubble = ({
+  message,
+  index,
+  currentConversation,
+  otherParticipant,
+  userId,
+  styles,
+}) => {
+  // Determine if this message is from the current user
+  const isCurrentUser = message.sender._id?.toString() === userId;
+
   return (
     <div
       className={`${styles.messageContainer} ${styles.animateMessageSlideIn} ${
-        message.isCurrentUser
+        isCurrentUser
           ? `flex justify-end ${styles.animateSlideInRight}`
           : `flex justify-start ${styles.animateSlideInLeft}`
       }`}
@@ -12,18 +22,18 @@ const MessageBubble = ({ message, index, currentConversation, styles }) => {
     >
       <div
         className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${
-          message.isCurrentUser ? "flex-row-reverse space-x-reverse" : ""
+          isCurrentUser ? "flex-row-reverse space-x-reverse" : ""
         }`}
       >
         {/* Avatar for non-current user messages */}
-        {!message.isCurrentUser && (
+        {!isCurrentUser && (
           <div className="relative flex-shrink-0">
             <img
-              src={currentConversation?.avatar}
-              alt={currentConversation?.name}
+              src={otherParticipant?.avatar || "/default-avatar.png"}
+              alt={otherParticipant?.name || "Unknown User"}
               className="w-8 h-8 rounded-full object-cover"
             />
-            {currentConversation?.isOnline && (
+            {otherParticipant?.isOnline && (
               <div
                 className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
               />
@@ -34,12 +44,12 @@ const MessageBubble = ({ message, index, currentConversation, styles }) => {
         {/* Message content */}
         <div
           className={`${styles.floatingElement} ${
-            message.isCurrentUser
+            isCurrentUser
               ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
               : "bg-white border border-gray-200 text-gray-900"
           } rounded-lg px-4 py-3 shadow-sm`}
         >
-          {/* Image content */}
+          {/* Image content (if message has image) */}
           {message.image && (
             <div className="mb-2">
               <img
@@ -51,18 +61,27 @@ const MessageBubble = ({ message, index, currentConversation, styles }) => {
             </div>
           )}
 
-          {/* Text content */}
-          {message.message && (
-            <p className="text-sm whitespace-pre-wrap">{message.message}</p>
+          {/* Text content - handle both backend (content) and frontend (message) properties */}
+          {(message.content || message.message) && (
+            <p className="text-sm whitespace-pre-wrap">
+              {message.content || message.message}
+            </p>
           )}
 
           {/* Timestamp */}
           <p
             className={`text-xs mt-1 ${
-              message.isCurrentUser ? "text-purple-100" : "text-gray-500"
+              isCurrentUser ? "text-purple-100" : "text-gray-500"
             }`}
           >
-            {message.timestamp}
+            {message.timestamp ||
+              (message.createdAt
+                ? new Date(message.createdAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                : "now")}
           </p>
         </div>
       </div>
