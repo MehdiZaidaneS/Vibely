@@ -11,7 +11,7 @@ const generateText  = require("./controllers/AIeventController");
 
 const connectDB = require("./config/db")
 const eventRouter = require("./routes/eventRouter")
-
+const chatRouter = require('./routes/chatRouter.js');
 connectDB()
 
 
@@ -29,8 +29,8 @@ app.use(cors({
 app.use("/api/users", userRouter)
 app.use("/api/events", eventRouter)
 app.use("/api/notifications", notificationRouter)
-app.post('/api/AIevent', generateText);
-
+app.post('/api/AIevent', generateText)
+app.use('/api/chatrooms', chatRouter)
 
 
 
