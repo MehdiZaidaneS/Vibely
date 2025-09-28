@@ -632,3 +632,22 @@ button:focus, a:focus, input:focus {
 .dm-icon {
   margin: 0; /* Remove default margins */
 }
+
+.create-icon {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  color: #6a6969;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.create-icon:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+.right-group {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Space between icons container and UserDropdown */
+}
