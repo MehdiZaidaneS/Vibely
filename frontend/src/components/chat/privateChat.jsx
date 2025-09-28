@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Send,
   Users,
@@ -6,113 +7,122 @@ import {
   Smile,
   Paperclip,
   MoreVertical,
-  Hash,
   Image,
   X,
   Plus,
-  UserPlus,
   Bell,
-  LogOut,
-  Edit,
-  Copy,
+  Shield,
   Flag,
+  UserX,
+  UserPlus,
   Home,
-  MessageCircle,
+  Hash,
 } from "lucide-react";
-import styles from "./publicChat.module.css";
-import { useNavigate } from "react-router-dom";
+import styles from "./privateChat.module.css";
 
-const PublicChat = () => {
+const PrivateChat = () => {
   const navigate = useNavigate();
+
   // ============================================================================
   // STATE MANAGEMENT
   // ============================================================================
 
-  // Chat groups/channels
-  const [chatGroups] = useState([
+  const [conversations] = useState([
     {
-      id: "general",
-      name: "General",
-      icon: Hash,
-      members: 156,
-      description: "General discussion for everyone",
+      id: "alex",
+      name: "Alex Johnson",
+      avatar:
+        "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face&auto=format",
+      lastMessage: "Hey! How was your day?",
+      timestamp: "2:45 PM",
+      isOnline: true,
+      unreadCount: 3,
+      isTyping: false,
     },
     {
-      id: "football",
-      name: "Football",
-      icon: "⚽",
-      members: 42,
-      description: "Football fans unite!",
+      id: "sarah",
+      name: "Sarah Chen",
+      avatar:
+        "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop&crop=face&auto=format",
+      lastMessage: "Thanks for the help earlier!",
+      timestamp: "1:30 PM",
+      isOnline: true,
+      unreadCount: 0,
+      isTyping: false,
     },
     {
-      id: "boardgames",
-      name: "Board Game Party",
-      icon: "🎲",
-      members: 28,
-      description: "Board game enthusiasts",
+      id: "marcus",
+      name: "Marcus Rodriguez",
+      avatar:
+        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face&auto=format",
+      lastMessage: "See you at the game tonight!",
+      timestamp: "11:15 AM",
+      isOnline: false,
+      unreadCount: 0,
+      isTyping: false,
     },
     {
-      id: "gaming",
-      name: "Gaming LAN",
-      icon: "🎮",
-      members: 73,
-      description: "PC and console gaming",
+      id: "emma",
+      name: "Emma Wilson",
+      avatar:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face&auto=format",
+      lastMessage: "That sounds like a great plan!",
+      timestamp: "Yesterday",
+      isOnline: true,
+      unreadCount: 1,
+      isTyping: false,
     },
     {
-      id: "food",
-      name: "Foodies",
-      icon: "🍕",
-      members: 61,
-      description: "Food lovers and recipes",
-    },
-    {
-      id: "music",
-      name: "Music Lovers",
-      icon: "🎵",
-      members: 89,
-      description: "Share your favorite tunes",
+      id: "lisa",
+      name: "Lisa Park",
+      avatar:
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face&auto=format",
+      lastMessage: "Can't wait for the weekend!",
+      timestamp: "Yesterday",
+      isOnline: false,
+      unreadCount: 0,
+      isTyping: false,
     },
   ]);
 
-  const [activeGroup, setActiveGroup] = useState("general");
+  const [activeConversation, setActiveConversation] = useState("alex");
 
   const [messages, setMessages] = useState([
     {
       id: 1,
-      user: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face&auto=format",
-      message: "Hey everyone! Welcome to the Vibely public chat! 🎉",
+      senderId: "alex",
+      message: "Hey there! How's your day going?",
       timestamp: "2:30 PM",
-      isOnline: true,
+      isCurrentUser: false,
     },
     {
       id: 2,
-      user: "Sarah Chen",
-      avatar:
-        "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop&crop=face&auto=format",
-      message:
-        "Thanks for creating this space! Looking forward to meeting everyone here.",
+      senderId: "you",
+      message: "Pretty good! Just working on some projects. How about you?",
       timestamp: "2:32 PM",
-      isOnline: true,
+      isCurrentUser: true,
     },
     {
       id: 3,
-      user: "Marcus Rodriguez",
-      avatar:
-        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face&auto=format",
-      message: "Love the design! This feels so welcoming 😊",
+      senderId: "alex",
+      message:
+        "Same here! Working on that presentation for tomorrow. Are you free for a quick call later?",
       timestamp: "2:35 PM",
-      isOnline: false,
+      isCurrentUser: false,
     },
     {
       id: 4,
-      user: "Emma Wilson",
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face&auto=format",
-      message: "Anyone interested in organizing a meetup this weekend?",
-      timestamp: "2:38 PM",
-      isOnline: true,
+      senderId: "you",
+      message: "Sure! What time works for you?",
+      timestamp: "2:37 PM",
+      isCurrentUser: true,
+    },
+    {
+      id: 5,
+      senderId: "alex",
+      message: "How about 4 PM? We can go over the details then.",
+      timestamp: "2:40 PM",
+      isCurrentUser: false,
     },
   ]);
 
@@ -125,168 +135,107 @@ const PublicChat = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showNewConversation, setShowNewConversation] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [friendRequestStates, setFriendRequestStates] = useState({});
   const [showFriendsModal, setShowFriendsModal] = useState(false);
-  const [friendsModalTab, setFriendsModalTab] = useState("friends"); // friends, requests, suggestions
+  const [friendsModalTab, setFriendsModalTab] = useState("friends");
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Current user
-  const currentUser = {
-    name: "You",
-    avatar:
-      "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=40&h=40&fit=crop&crop=face&auto=format",
-    isOnline: true,
-  };
-
-  // Online users list
-  const [onlineUsers] = useState([
+  // All available users for searching with friendship status
+  const [allUsers] = useState([
     {
-      id: 1,
+      id: "alex",
       name: "Alex Johnson",
+      username: "@alexj",
       avatar:
-        "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=32&h=32&fit=crop&crop=face&auto=format",
+        "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face&auto=format",
       isOnline: true,
-    },
-    {
-      id: 2,
-      name: "Sarah Chen",
-      avatar:
-        "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: true,
-    },
-    {
-      id: 3,
-      name: "Emma Wilson",
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: true,
-    },
-    {
-      id: 4,
-      name: "Marcus Rodriguez",
-      avatar:
-        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: false,
-    },
-    {
-      id: 5,
-      name: "Lisa Park",
-      avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: true,
-    },
-    {
-      id: 6,
-      name: "David Kim",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: true,
-    },
-  ]);
-
-  // Friends data
-  const [friends] = useState([
-    {
-      id: 1,
-      name: "Alex Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: true,
-      status: "Playing Football Manager",
       mutualFriends: 12,
+      friendshipStatus: "friends",
     },
     {
-      id: 2,
+      id: "sarah",
       name: "Sarah Chen",
+      username: "@sarahc",
       avatar:
-        "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=32&h=32&fit=crop&crop=face&auto=format",
+        "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop&crop=face&auto=format",
       isOnline: true,
-      status: "In Gaming LAN",
       mutualFriends: 8,
+      friendshipStatus: "friends",
     },
     {
-      id: 3,
-      name: "Emma Wilson",
+      id: "marcus",
+      name: "Marcus Rodriguez",
+      username: "@marcusr",
       avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=32&h=32&fit=crop&crop=face&auto=format",
+        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face&auto=format",
+      isOnline: false,
+      mutualFriends: 6,
+      friendshipStatus: "friends",
+    },
+    {
+      id: "emma",
+      name: "Emma Wilson",
+      username: "@emmaw",
+      avatar:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&crop=face&auto=format",
       isOnline: true,
-      status: "Available",
       mutualFriends: 15,
+      friendshipStatus: "friends",
     },
     {
-      id: 4,
-      name: "Marcus Rodriguez",
-      avatar:
-        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: false,
-      status: "Last seen 2 hours ago",
-      mutualFriends: 6,
-    },
-    {
-      id: 5,
+      id: "lisa",
       name: "Lisa Park",
+      username: "@lisap",
       avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=32&h=32&fit=crop&crop=face&auto=format",
-      isOnline: true,
-      status: "In Board Game Party",
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face&auto=format",
+      isOnline: false,
       mutualFriends: 20,
+      friendshipStatus: "friends",
     },
-  ]);
-
-  const [friendRequests] = useState([
     {
-      id: 101,
+      id: "michael",
       name: "Michael Torres",
+      username: "@michaelt",
       avatar:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format",
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format",
+      isOnline: true,
       mutualFriends: 5,
-      requestDate: "2 days ago",
+      friendshipStatus: "pending_received",
     },
     {
-      id: 102,
+      id: "jennifer",
       name: "Jennifer Liu",
+      username: "@jenliu",
       avatar:
-        "https://images.unsplash.com/photo-1494790108755-2616b612d9e9?w=32&h=32&fit=crop&crop=face&auto=format",
+        "https://images.unsplash.com/photo-1494790108755-2616b612d9e9?w=40&h=40&fit=crop&crop=face&auto=format",
+      isOnline: false,
       mutualFriends: 3,
-      requestDate: "1 week ago",
+      friendshipStatus: "pending_sent",
     },
     {
-      id: 103,
-      name: "Robert Smith",
+      id: "david",
+      name: "David Kim",
+      username: "@davidk",
       avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face&auto=format",
-      mutualFriends: 7,
-      requestDate: "3 days ago",
-    },
-  ]);
-
-  const [suggestedFriends] = useState([
-    {
-      id: 201,
-      name: "Anna Kim",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=32&h=32&fit=crop&crop=face&auto=format",
-      mutualFriends: 12,
-      reason: "12 mutual friends",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&auto=format",
+      isOnline: true,
+      mutualFriends: 9,
+      friendshipStatus: "not_friends",
     },
     {
-      id: 202,
-      name: "Carlos Garcia",
+      id: "anna",
+      name: "Anna Thompson",
+      username: "@annat",
       avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=32&h=32&fit=crop&crop=face&auto=format",
-      mutualFriends: 8,
-      reason: "In Gaming LAN group",
-    },
-    {
-      id: 203,
-      name: "Sophie Martin",
-      avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=32&h=32&fit=crop&crop=face&auto=format",
-      mutualFriends: 6,
-      reason: "Lives nearby",
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face&auto=format",
+      isOnline: true,
+      mutualFriends: 4,
+      friendshipStatus: "not_friends",
     },
   ]);
 
@@ -415,15 +364,13 @@ const PublicChat = () => {
 
     const message = {
       id: messages.length + 1,
-      user: currentUser.name,
-      avatar: currentUser.avatar,
+      senderId: "you",
       message: newMessage,
       timestamp: new Date().toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit",
         hour12: true,
       }),
-      isOnline: true,
       isCurrentUser: true,
     };
 
@@ -432,35 +379,33 @@ const PublicChat = () => {
 
     setTimeout(() => {
       simulateResponse();
-    }, 2000 + Math.random() * 3000);
+    }, 1000 + Math.random() * 2000);
   };
 
   const simulateResponse = () => {
     const responses = [
-      "That's awesome! 🎉",
-      "I totally agree with that!",
-      "Thanks for sharing!",
-      "Great point! 👍",
-      "Count me in!",
-      "Love this energy! ✨",
+      "That sounds great!",
+      "I totally agree with you!",
+      "Thanks for letting me know!",
+      "Awesome! 👍",
+      "Perfect timing!",
+      "Let me think about it...",
+      "Sounds like a plan!",
     ];
 
-    const randomUser =
-      onlineUsers[Math.floor(Math.random() * onlineUsers.length)];
     const randomResponse =
       responses[Math.floor(Math.random() * responses.length)];
 
     const response = {
       id: messages.length + 2,
-      user: randomUser.name,
-      avatar: randomUser.avatar,
+      senderId: activeConversation,
       message: randomResponse,
       timestamp: new Date().toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit",
         hour12: true,
       }),
-      isOnline: randomUser.isOnline,
+      isCurrentUser: false,
     };
 
     setMessages((prev) => [...prev, response]);
@@ -486,8 +431,7 @@ const PublicChat = () => {
       reader.onload = (event) => {
         const imageMessage = {
           id: messages.length + 1,
-          user: currentUser.name,
-          avatar: currentUser.avatar,
+          senderId: "you",
           message: "",
           image: event.target.result,
           timestamp: new Date().toLocaleTimeString("en-US", {
@@ -495,7 +439,6 @@ const PublicChat = () => {
             minute: "2-digit",
             hour12: true,
           }),
-          isOnline: true,
           isCurrentUser: true,
         };
         setMessages([...messages, imageMessage]);
@@ -505,32 +448,82 @@ const PublicChat = () => {
     setShowImageUpload(false);
   };
 
-  const handleAcceptFriend = (friendId) => {
-    console.log("Accepting friend request:", friendId);
-  };
-
-  const handleDeclineFriend = (friendId) => {
-    console.log("Declining friend request:", friendId);
+  const handleStartConversation = (userId) => {
+    const user = allUsers.find((u) => u.id === userId);
+    if (user && user.friendshipStatus === "friends") {
+      const userExists = conversations.find((conv) => conv.id === userId);
+      if (!userExists) {
+        console.log("Starting new conversation with friend:", userId);
+      }
+      setActiveConversation(userId);
+      setShowNewConversation(false);
+      setUserSearchQuery("");
+    }
   };
 
   const handleSendFriendRequest = (userId) => {
     console.log("Sending friend request to:", userId);
+    setFriendRequestStates((prev) => ({
+      ...prev,
+      [userId]: "pending",
+    }));
   };
 
-  const handleRemoveFriend = (friendId) => {
-    console.log("Removing friend:", friendId);
+  const handleAcceptFriendRequest = (userId) => {
+    console.log("Accepting friend request from:", userId);
+    setFriendRequestStates((prev) => ({
+      ...prev,
+      [userId]: "accepted",
+    }));
   };
 
-  // Get current group info
-  const currentGroup = chatGroups.find((group) => group.id === activeGroup);
-  const groupMessages = messages.filter(
-    (msg) => msg.group === activeGroup || !msg.group
-  );
-  const filteredUsers = onlineUsers.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleDeclineFriendRequest = (userId) => {
+    console.log("Declining friend request from:", userId);
+    setFriendRequestStates((prev) => ({
+      ...prev,
+      [userId]: "declined",
+    }));
+  };
+
+  // Get current conversation info
+  const currentConversation = conversations.find(
+    (conv) => conv.id === activeConversation
   );
 
-  // More menu options (consolidated settings + more)
+  // Only show conversations with friends
+  const filteredConversations = conversations.filter((conv) => {
+    const user = allUsers.find((u) => u.id === conv.id);
+    return (
+      user &&
+      user.friendshipStatus === "friends" &&
+      conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+
+  // Filter users for new conversation search
+  const filteredUsers = allUsers.filter((user) => {
+    const searchLower = userSearchQuery.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(searchLower) ||
+      user.username.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Get categorized friends
+  const friends = allUsers.filter(
+    (user) => user.friendshipStatus === "friends"
+  );
+  const pendingRequests = allUsers.filter(
+    (user) => user.friendshipStatus === "pending_received"
+  );
+  const sentRequests = allUsers.filter(
+    (user) => user.friendshipStatus === "pending_sent"
+  );
+  const suggestions = allUsers.filter(
+    (user) => user.friendshipStatus === "not_friends"
+  );
+
+  // More menu options
   const moreOptions = [
     {
       icon: Bell,
@@ -538,25 +531,21 @@ const PublicChat = () => {
       action: () => console.log("Notifications"),
     },
     {
-      icon: Users,
-      label: "Manage Members",
-      action: () => console.log("Manage Members"),
+      icon: Flag,
+      label: "Report User",
+      action: () => console.log("Report"),
+      danger: true,
     },
     {
-      icon: Edit,
-      label: "Edit Group Info",
-      action: () => console.log("Edit Group"),
+      icon: Shield,
+      label: "Block User",
+      action: () => console.log("Block"),
+      danger: true,
     },
     {
-      icon: Copy,
-      label: "Copy Group Link",
-      action: () => console.log("Copy Link"),
-    },
-    { icon: Flag, label: "Report Group", action: () => console.log("Report") },
-    {
-      icon: LogOut,
-      label: "Leave Group",
-      action: () => console.log("Leave Group"),
+      icon: UserX,
+      label: "Remove Friend",
+      action: () => console.log("Remove Friend"),
       danger: true,
     },
   ];
@@ -576,25 +565,19 @@ const PublicChat = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                {typeof currentGroup?.icon === "string" ? (
-                  <span className="text-lg">{currentGroup.icon}</span>
-                ) : (
-                  <Hash className="w-5 h-5" />
-                )}
+                <Users className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">
-                  {currentGroup?.name || "Chat"}
-                </h2>
+                <h2 className="text-lg font-semibold">Messages</h2>
                 <p className="text-purple-100 text-sm">
-                  {currentGroup?.members} members
+                  {conversations.length} conversations
                 </p>
               </div>
             </div>
             <button
-              onClick={() => setShowCreateGroup(true)}
+              onClick={() => setShowNewConversation(true)}
               className="p-2 hover:bg-white/20 rounded-lg transition-all duration-200"
-              title="Create New Group"
+              title="New Conversation"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -604,7 +587,7 @@ const PublicChat = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-200" />
             <input
               type="text"
-              placeholder="Search groups or users..."
+              placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
@@ -612,82 +595,81 @@ const PublicChat = () => {
           </div>
         </div>
 
-        {/* Chat Groups */}
+        {/* Conversations List */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-              Chat Groups
-            </h3>
             <div className="space-y-1">
-              {chatGroups.map((group, index) => (
+              {filteredConversations.map((conversation, index) => (
                 <div
-                  key={group.id}
-                  onClick={() => setActiveGroup(group.id)}
+                  key={conversation.id}
+                  onClick={() => setActiveConversation(conversation.id)}
                   className={`${
                     styles.userListItem
                   } flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                    activeGroup === group.id
+                    activeConversation === conversation.id
                       ? "bg-purple-100 border-l-4 border-purple-500"
                       : "hover:bg-gray-50"
                   } ${styles.animateSlideInLeft}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white font-semibold">
-                    {typeof group.icon === "string" ? (
-                      <span className="text-sm">{group.icon}</span>
-                    ) : (
-                      <group.icon className="w-4 h-4" />
+                  <div className="relative">
+                    <img
+                      src={conversation.avatar}
+                      alt={conversation.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    {conversation.isOnline && (
+                      <div
+                        className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
+                      ></div>
+                    )}
+                    {conversation.unreadCount > 0 && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                        {conversation.unreadCount}
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">
-                        {group.name}
+                      <span className="text-sm font-medium text-gray-900 truncate">
+                        {conversation.name}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {group.members}
+                        {conversation.timestamp}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">
-                      {group.description}
-                    </p>
+                    <div className="flex items-center">
+                      <p
+                        className={`text-xs truncate ${
+                          conversation.unreadCount > 0
+                            ? "text-gray-900 font-medium"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {conversation.isTyping
+                          ? "Typing..."
+                          : conversation.lastMessage}
+                      </p>
+                      {conversation.isTyping && (
+                        <div className="ml-2 flex space-x-1">
+                          <div
+                            className={`w-1 h-1 bg-purple-500 rounded-full ${styles.animateTyping}`}
+                            style={{ animationDelay: "0s" }}
+                          ></div>
+                          <div
+                            className={`w-1 h-1 bg-purple-500 rounded-full ${styles.animateTyping}`}
+                            style={{ animationDelay: "0.2s" }}
+                          ></div>
+                          <div
+                            className={`w-1 h-1 bg-purple-500 rounded-full ${styles.animateTyping}`}
+                            style={{ animationDelay: "0.4s" }}
+                          ></div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Online Users List */}
-          <div className="p-4 border-t border-gray-200">
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-              Online ({filteredUsers.filter((u) => u.isOnline).length})
-            </h3>
-            <div className="space-y-2">
-              {filteredUsers
-                .filter((user) => user.isOnline)
-                .map((user, index) => (
-                  <div
-                    key={user.id}
-                    className={`${styles.userListItem} flex items-center space-x-3 p-3 rounded-lg cursor-pointer ${styles.animateSlideInLeft}`}
-                    style={{
-                      animationDelay: `${(index + chatGroups.length) * 0.1}s`,
-                    }}
-                  >
-                    <div className="relative">
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <div
-                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {user.name}
-                    </span>
-                  </div>
-                ))}
             </div>
           </div>
         </div>
@@ -706,32 +688,28 @@ const PublicChat = () => {
           } transition-all duration-300 z-30 ${styles.animateFadeIn}`}
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {!isSidebarOpen && (
-                <button
-                  onClick={() => setIsSidebarOpen(true)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 lg:hidden"
-                >
-                  <Users className="w-5 h-5 text-gray-600" />
-                </button>
-              )}
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white">
-                  {typeof currentGroup?.icon === "string" ? (
-                    <span className="text-lg">{currentGroup.icon}</span>
-                  ) : (
-                    <Hash className="w-5 h-5" />
-                  )}
-                </div>
-                <div>
-                  <h1 className="text-xl font-semibold text-gray-900">
-                    {currentGroup?.name || "Chat"}
-                  </h1>
-                  <p className="text-sm text-gray-500">
-                    {currentGroup?.members} members •{" "}
-                    {onlineUsers.filter((u) => u.isOnline).length} online
-                  </p>
-                </div>
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <img
+                  src={currentConversation?.avatar}
+                  alt={currentConversation?.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                {currentConversation?.isOnline && (
+                  <div
+                    className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
+                  ></div>
+                )}
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  {currentConversation?.name}
+                </h1>
+                <p className="text-sm text-gray-500">
+                  {currentConversation?.isOnline
+                    ? "Online"
+                    : "Last seen recently"}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -744,26 +722,24 @@ const PublicChat = () => {
               </button>
 
               <button
-                onClick={() => navigate("/private-chat")}
+                onClick={() => navigate("/public-chat")}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                title="Private Chat"
+                title="Public Chat"
               >
-                <MessageCircle className="w-5 h-5 text-gray-600" />
+                <Hash className="w-5 h-5 text-gray-600" />
               </button>
 
               <button
                 onClick={() => setShowFriendsModal(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                title="Friends & People"
+                title="Friends"
               >
                 <UserPlus className="w-5 h-5 text-gray-600" />
               </button>
 
               <div className="relative dropdown-container">
                 <button
-                  onClick={() => {
-                    setShowMoreMenu(!showMoreMenu);
-                  }}
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
                 >
                   <MoreVertical className="w-5 h-5 text-gray-600" />
@@ -802,7 +778,7 @@ const PublicChat = () => {
         <div
           className={`flex-1 overflow-y-auto p-4 space-y-4 pt-20 ${styles.scrollableChat}`}
         >
-          {groupMessages.map((message, index) => (
+          {messages.map((message, index) => (
             <div
               key={message.id}
               className={`${styles.messageContainer} ${
@@ -821,18 +797,20 @@ const PublicChat = () => {
                     : ""
                 }`}
               >
-                <div className="relative flex-shrink-0">
-                  <img
-                    src={message.avatar}
-                    alt={message.user}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  {message.isOnline && (
-                    <div
-                      className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
-                    ></div>
-                  )}
-                </div>
+                {!message.isCurrentUser && (
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={currentConversation?.avatar}
+                      alt={currentConversation?.name}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                    {currentConversation?.isOnline && (
+                      <div
+                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
+                      ></div>
+                    )}
+                  </div>
+                )}
 
                 <div
                   className={`${styles.floatingElement} ${
@@ -841,12 +819,6 @@ const PublicChat = () => {
                       : "bg-white border border-gray-200 text-gray-900"
                   } rounded-lg px-4 py-3 shadow-sm`}
                 >
-                  {!message.isCurrentUser && (
-                    <p className="text-xs font-medium text-purple-600 mb-1">
-                      {message.user}
-                    </p>
-                  )}
-
                   {message.image && (
                     <div className="mb-2">
                       <img
@@ -948,7 +920,7 @@ const PublicChat = () => {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={`Message #${currentGroup?.name || "chat"}...`}
+                placeholder={`Message ${currentConversation?.name || ""}...`}
                 rows="1"
                 className={`${styles.messageInput} w-full resize-none border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                 style={{ minHeight: "48px", maxHeight: "120px" }}
@@ -1058,7 +1030,7 @@ const PublicChat = () => {
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    Requests ({friendRequests.length})
+                    Requests ({pendingRequests.length})
                   </button>
                   <button
                     onClick={() => setFriendsModalTab("sent")}
@@ -1068,7 +1040,7 @@ const PublicChat = () => {
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    Sent (0)
+                    Sent ({sentRequests.length})
                   </button>
                   <button
                     onClick={() => setFriendsModalTab("suggestions")}
@@ -1078,7 +1050,7 @@ const PublicChat = () => {
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    Suggestions ({suggestedFriends.length})
+                    Suggestions ({suggestions.length})
                   </button>
                 </nav>
               </div>
@@ -1126,8 +1098,8 @@ const PublicChat = () => {
                                   <h5 className="font-medium text-gray-900">
                                     {friend.name}
                                   </h5>
-                                  <p className="text-sm text-gray-500">
-                                    {friend.status}
+                                  <p className="text-sm text-purple-600">
+                                    {friend.username}
                                   </p>
                                   <p className="text-xs text-gray-500">
                                     {friend.mutualFriends} mutual friends
@@ -1137,7 +1109,7 @@ const PublicChat = () => {
                               <div className="flex space-x-2">
                                 <button
                                   onClick={() => {
-                                    console.log("Message", friend.name);
+                                    setActiveConversation(friend.id);
                                     setShowFriendsModal(false);
                                   }}
                                   className="px-3 py-1 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors"
@@ -1145,7 +1117,9 @@ const PublicChat = () => {
                                   Message
                                 </button>
                                 <button
-                                  onClick={() => handleRemoveFriend(friend.id)}
+                                  onClick={() =>
+                                    console.log("Remove friend", friend.id)
+                                  }
                                   className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors"
                                 >
                                   Remove
@@ -1161,10 +1135,10 @@ const PublicChat = () => {
                     {friendsModalTab === "requests" && (
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-                          Friend Requests ({friendRequests.length})
+                          Friend Requests ({pendingRequests.length})
                         </h4>
                         <div className="space-y-3">
-                          {friendRequests.map((request) => (
+                          {pendingRequests.map((request) => (
                             <div
                               key={request.id}
                               className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200"
@@ -1179,24 +1153,26 @@ const PublicChat = () => {
                                   <h5 className="font-medium text-gray-900">
                                     {request.name}
                                   </h5>
-                                  <p className="text-sm text-gray-500">
-                                    {request.mutualFriends} mutual friends
+                                  <p className="text-sm text-purple-600">
+                                    {request.username}
                                   </p>
-                                  <p className="text-xs text-gray-400">
-                                    Sent {request.requestDate}
+                                  <p className="text-xs text-gray-500">
+                                    {request.mutualFriends} mutual friends
                                   </p>
                                 </div>
                               </div>
                               <div className="flex space-x-2">
                                 <button
-                                  onClick={() => handleAcceptFriend(request.id)}
+                                  onClick={() =>
+                                    handleAcceptFriendRequest(request.id)
+                                  }
                                   className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
                                 >
                                   Accept
                                 </button>
                                 <button
                                   onClick={() =>
-                                    handleDeclineFriend(request.id)
+                                    handleDeclineFriendRequest(request.id)
                                   }
                                   className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors"
                                 >
@@ -1205,9 +1181,9 @@ const PublicChat = () => {
                               </div>
                             </div>
                           ))}
-                          {friendRequests.length === 0 && (
+                          {pendingRequests.length === 0 && (
                             <div className="text-center py-8">
-                              <UserPlus className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                              <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                               <p className="text-gray-500 text-sm">
                                 No pending friend requests
                               </p>
@@ -1221,15 +1197,58 @@ const PublicChat = () => {
                     {friendsModalTab === "sent" && (
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-                          Sent Requests (0)
+                          Sent Requests ({sentRequests.length})
                         </h4>
                         <div className="space-y-3">
-                          <div className="text-center py-8">
-                            <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500 text-sm">
-                              No sent friend requests
-                            </p>
-                          </div>
+                          {sentRequests.map((request) => (
+                            <div
+                              key={request.id}
+                              className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <img
+                                  src={request.avatar}
+                                  alt={request.name}
+                                  className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div>
+                                  <h5 className="font-medium text-gray-900">
+                                    {request.name}
+                                  </h5>
+                                  <p className="text-sm text-purple-600">
+                                    {request.username}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {request.mutualFriends} mutual friends
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                <button
+                                  disabled
+                                  className="px-3 py-1 bg-gray-400 text-white text-sm rounded-lg cursor-not-allowed"
+                                >
+                                  Pending
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    console.log("Cancel request", request.id)
+                                  }
+                                  className="px-3 py-1 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          {sentRequests.length === 0 && (
+                            <div className="text-center py-8">
+                              <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                              <p className="text-gray-500 text-sm">
+                                No sent friend requests
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1238,10 +1257,10 @@ const PublicChat = () => {
                     {friendsModalTab === "suggestions" && (
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-                          People You May Know ({suggestedFriends.length})
+                          People You May Know ({suggestions.length})
                         </h4>
                         <div className="space-y-3">
-                          {suggestedFriends.map((suggestion) => (
+                          {suggestions.map((suggestion) => (
                             <div
                               key={suggestion.id}
                               className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200"
@@ -1256,10 +1275,10 @@ const PublicChat = () => {
                                   <h5 className="font-medium text-gray-900">
                                     {suggestion.name}
                                   </h5>
-                                  <p className="text-sm text-gray-500">
-                                    {suggestion.reason}
+                                  <p className="text-sm text-purple-600">
+                                    {suggestion.username}
                                   </p>
-                                  <p className="text-xs text-gray-400">
+                                  <p className="text-xs text-gray-500">
                                     {suggestion.mutualFriends} mutual friends
                                   </p>
                                 </div>
@@ -1287,9 +1306,9 @@ const PublicChat = () => {
                               </div>
                             </div>
                           ))}
-                          {suggestedFriends.length === 0 && (
+                          {suggestions.length === 0 && (
                             <div className="text-center py-8">
-                              <UserPlus className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                              <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                               <p className="text-gray-500 text-sm">
                                 No friend suggestions available
                               </p>
@@ -1306,61 +1325,194 @@ const PublicChat = () => {
         </div>
       )}
 
-      {/* CREATE GROUP MODAL */}
-      {showCreateGroup && (
+      {/* NEW CONVERSATION MODAL */}
+      {showNewConversation && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div
-            className={`bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 ${styles.animateBounceIn}`}
+            className={`bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col ${styles.animateBounceIn}`}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Create New Group
-              </h3>
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    New Conversation
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Search for users to start chatting
+                  </p>
+                </div>
+              </div>
               <button
-                onClick={() => setShowCreateGroup(false)}
+                onClick={() => {
+                  setShowNewConversation(false);
+                  setUserSearchQuery("");
+                }}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Group Name
-                </label>
+
+            <div className="p-4 border-b border-gray-200">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Enter group name..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Search by name or username..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  autoFocus
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  placeholder="Enter group description..."
-                  rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                />
-              </div>
-              <div className="flex space-x-3 pt-4">
-                <button
-                  onClick={() => setShowCreateGroup(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setShowCreateGroup(false);
-                    console.log("Creating new group...");
-                  }}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200"
-                >
-                  Create Group
-                </button>
-              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {userSearchQuery === "" ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">
+                    Start typing to search for users
+                  </p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-8">
+                  <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">
+                    No users found matching "{userSearchQuery}"
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredUsers.map((user, index) => {
+                    const hasExistingConversation = conversations.find(
+                      (conv) => conv.id === user.id
+                    );
+                    const currentFriendState =
+                      friendRequestStates[user.id] || user.friendshipStatus;
+
+                    const renderActionButton = () => {
+                      switch (currentFriendState) {
+                        case "friends":
+                          return hasExistingConversation ? (
+                            <button
+                              onClick={() => {
+                                setActiveConversation(user.id);
+                                setShowNewConversation(false);
+                                setUserSearchQuery("");
+                              }}
+                              className="px-3 py-1 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors"
+                            >
+                              Open Chat
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleStartConversation(user.id)}
+                              className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                              Start Chat
+                            </button>
+                          );
+
+                        case "pending_sent":
+                        case "pending":
+                          return (
+                            <button
+                              disabled
+                              className="px-3 py-1 bg-gray-400 text-white text-sm rounded-lg cursor-not-allowed"
+                            >
+                              Request Sent
+                            </button>
+                          );
+
+                        case "pending_received":
+                          return (
+                            <div className="flex space-x-1">
+                              <button
+                                onClick={() =>
+                                  handleAcceptFriendRequest(user.id)
+                                }
+                                className="px-2 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeclineFriendRequest(user.id)
+                                }
+                                className="px-2 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          );
+
+                        default:
+                          return (
+                            <button
+                              onClick={() => handleSendFriendRequest(user.id)}
+                              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              Add Friend
+                            </button>
+                          );
+                      }
+                    };
+
+                    return (
+                      <div
+                        key={user.id}
+                        className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${styles.animateSlideInLeft}`}
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="relative">
+                            <img
+                              src={user.avatar}
+                              alt={user.name}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                            {user.isOnline && (
+                              <div
+                                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
+                              ></div>
+                            )}
+                          </div>
+                          <div>
+                            <h5 className="font-medium text-gray-900">
+                              {user.name}
+                            </h5>
+                            <p className="text-sm text-purple-600">
+                              {user.username}
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <p className="text-xs text-gray-500">
+                                {user.mutualFriends} mutual friends
+                              </p>
+                              {currentFriendState === "friends" && (
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                  Friends
+                                </span>
+                              )}
+                              {currentFriendState === "pending_received" && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                                  Wants to connect
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          {renderActionButton()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1369,4 +1521,4 @@ const PublicChat = () => {
   );
 };
 
-export default PublicChat;
+export default PrivateChat;
