@@ -228,6 +228,8 @@ function EventPage() {
             </div>
           </div>
 
+
+        {/* SubHeader, basically where event filter should be, will fix in the next iteration */}
           <div className="header-bottom">
             <h1 className="page-title">All Events</h1>
 
