@@ -210,6 +210,10 @@ function EventPage() {
               />
             </div>
             <div className="right-group">
+              <span className="tooltip-wrapper">
+                <Plus className="create-icon" onClick={() => setIsCreateModalOpen(true)} />
+                <span className="tooltip">Create Event</span>
+              </span>
               <div className="icon-container">
                 <span className="tooltip-wrapper">
                   <img src="../assets/images/img_notification.svg" alt="Notifications" className="notification-icon" />
@@ -219,17 +223,13 @@ function EventPage() {
                   <img src="../assets/images/img_DM_icon.svg" alt="Direct Messages" className="dm-icon" width="18" height="18" />
                   <span className="tooltip">Direct Messages</span>
                 </span>
-                <span className="tooltip-wrapper">
-                  <Plus className="create-icon" onClick={() => setIsCreateModalOpen(true)} />
-                  <span className="tooltip">Create Event</span>
-                </span>
               </div>
               <UserDropdown />
             </div>
           </div>
 
 
-        {/* SubHeader, basically where event filter should be, will fix in the next iteration */}
+          {/* SubHeader, basically where event filter should be, will fix in the next iteration */}
           <div className="header-bottom">
             <h1 className="page-title">All Events</h1>
 
