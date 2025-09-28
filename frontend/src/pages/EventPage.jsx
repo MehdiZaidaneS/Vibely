@@ -48,8 +48,7 @@ function EventPage() {
       id: "freshers",
       title: "Freshers' Welcome Party",
       description:
-        "Location: Helsinki Student Union Hall\nCapacity: 120 people\nDescription: Meet new friends, enjoy music, snacks, and games.",
-      time: "Date & Time: 7 Oct, 7:00 PM – 11:30 PM",
+        "Location: Helsinki Student Union Hall\nCapacity: 120 people\nDescription: Meet new friends, enjoy music, snacks, and games.\nDate & Time: 7 Oct, 7:00 PM – 11:30 PM",
       image: "../assets/images/img_main_admin_spon.png",
       className: "event-large",
       background: "url('../assets/images/img_mainadminsponsoredeventimage.png')",
@@ -57,8 +56,7 @@ function EventPage() {
     {
       id: "football",
       title: "Weekend Football Match",
-      description: "Töölönlahden Football Field\n15/22 players",
-      time: "3:00 PM – 6:00 PM",
+      description: "Töölönlahden Football Field\n15/22 players\n3:00 PM – 6:00 PM",
       image: "../assets/images/img_football_event.png",
       className: "event-medium",
       background: "url('../assets/images/img_footballmatch_event_image.png')",
@@ -67,8 +65,7 @@ function EventPage() {
       id: "gaming",
       title: "LAN Gaming Session",
       description:
-        "Metropolia IT Lab, Room B203\n27/30 players\nDescription: Multiplayer gaming night — Valorant, FIFA, CS2, and more. PCs provided.",
-      time: "5:00 PM – 12AM",
+        "Metropolia IT Lab, Room B203\n27/30 players\nDescription: Multiplayer gaming night — Valorant, FIFA, CS2, and more. PCs provided.\n5:00 PM – 12AM",
       image: "../assets/images/img_gaming_event_host_group.png",
       className: "event-medium",
       background: "url('../assets/images/img_gaming_event_image.png')",
@@ -77,9 +74,8 @@ function EventPage() {
       id: "photography",
       title: "Photography Walk",
       description:
-        "Location: Senate Square, Helsinki\nCapacity: 20 people\nDescription: Capture the city's architecture, lights, and vibes with fellow photographers.",
-      time: "3:00 PM – 6:00 PM",
-      image: "../assets/images/img_football_event.png",
+        "Location: Senate Square, Helsinki\nCapacity: 20 people\nDescription: Capture the city's architecture, lights, and vibes with fellow photographers.\n3:00 PM – 6:00 PM",
+      image: "../assets/images/img_Photography_event_host_group.png",
       className: "event-medium photography-event",
       background: "url('../assets/images/img_photography_event_image.png')",
     },
@@ -96,10 +92,10 @@ function EventPage() {
           id: ev._id, // use MongoDB _id for all events from backend
         }));
 
-        
+
         setEvents(normalized);
 
-        
+
       } catch (err) {
         console.error("Error fetching events:", err);
       }
@@ -137,18 +133,18 @@ function EventPage() {
     setSelectedEvent(event);
     setIsModalOpen(true);
 
-    
+
   };
 
   const confirmJoin = async () => {
     try {
       const eventID = selectedEvent._id
       console.log(eventID)
-      
+
       const response = await fetch(`http://localhost:5000/api/events/${eventID}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({"user": localStorage.getItem("userId")})
+        body: JSON.stringify({ "user": localStorage.getItem("userId") })
       });
 
       if (!response.ok) {
@@ -237,6 +233,13 @@ function EventPage() {
             <nav className="header-menu">
               <a
                 href="#"
+                className={`header-menu-item ${activeMenu === "All Events" ? "active" : ""}`}
+                onClick={() => setActiveMenu("All Events")}
+              >
+                All Events
+              </a>
+              <a
+                href="#"
                 className={`header-menu-item ${activeMenu === "recommended" ? "active" : ""}`}
                 onClick={() => setActiveMenu("recommended")}
               >
@@ -244,10 +247,10 @@ function EventPage() {
               </a>
               <a
                 href="#"
-                className={`header-menu-item ${activeMenu === "ongoing" ? "active" : ""}`}
-                onClick={() => setActiveMenu("ongoing")}
+                className={`header-menu-item ${activeMenu === "Joined" ? "active" : ""}`}
+                onClick={() => setActiveMenu("Joined")}
               >
-                Ongoing
+                Joined
               </a>
               <button
                 className="header-menu-item create-event-button"
@@ -255,6 +258,7 @@ function EventPage() {
               >
                 Create your own event
               </button>
+
             </nav>
           </div>
         </header>

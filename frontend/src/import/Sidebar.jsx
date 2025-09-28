@@ -12,10 +12,6 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
           className="sidebar-logo animate-logo"
         />
 
-        <div className="ai-recommended-badge">
-          <span className="ai-recommended-text">AI recommended events</span>
-        </div>
-
         <nav className="sidebar-menu">
           <Link to="/events" className="menu-item">
             <img src="../assets/images/img_Events_icon.svg" alt="" width="18" height="18" />
@@ -25,10 +21,10 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
             <img src="../assets/images/img_people.svg" alt="" width="18" height="20" />
             <span className="menu-text">People</span>
           </a>
-                    <a href="#" className="menu-item">
+            <Link to="/public-chat" className="menu-item">
             <img src="../assets/images/img_PublicChat_Icon.svg" alt="" width="25" height="20" />
             <span className="menu-text">Public Chat</span>
-          </a>
+          </Link>
           <a href="#" className="menu-item">
             <img src="../assets/images/img_duofinder_icon.svg" alt="" width="24" height="24" />
             <span className="menu-text">DuoFinder</span>
