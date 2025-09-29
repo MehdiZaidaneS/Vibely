@@ -8,7 +8,9 @@ router.post('/', chatRoomControllers.createChatRoom);
 // Edit a message
 router.patch('/edit/:messageId', chatRoomControllers.editMessage);
 
-router.get('/search/:userId', chatRoomControllers.searchChatRoomByUser);
+router.get('/searchPri/:userId', chatRoomControllers.getPrivateChat);
+
+router.get('/searchPub/:userId', chatRoomControllers.getPublicChat);
 
 // Get all participants in a chatroom
 router.get('/participants/:roomId', chatRoomControllers.getParticipants);

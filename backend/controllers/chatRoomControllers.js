@@ -2,7 +2,7 @@ const Message = require('../models/messageModel');
 const ChatRoom = require('../models/chatRoomModel');
 
 exports.createChatRoom = async (req, res) => {
-  const { name, participants, isGroup } = req.body; 
+  const { name, participants, isGroup, description} = req.body; 
 
   try {
     let chatRoom;
@@ -18,7 +18,8 @@ exports.createChatRoom = async (req, res) => {
       chatRoom = new ChatRoom({
         name: isGroup ? name : undefined,
         isGroup: !!isGroup,
-        participants
+        participants,
+        description
       });
       await chatRoom.save();
     }
@@ -99,7 +100,7 @@ exports.editMessage = async (req, res) => {
 
 const User = require('../models/userModel'); // Assuming your user model is here
 
-exports.searchChatRoomByUser = async (req, res) => {
+exports.getPrivateChat = async (req, res) => {
   const { userId } = req.params;
   try {
     const chatrooms = await ChatRoom.find({ participants: userId })
@@ -135,6 +136,34 @@ exports.searchChatRoomByUser = async (req, res) => {
     res.json(formattedChatrooms);
   } catch (error) {
     res.status(500).json({ error: 'Failed to search for chatrooms.' });
+  }
+};
+
+exports.getPublicChat = async (req, res) => {
+  try {
+    const publicGroups = await ChatRoom.find({ isGroup: true })
+      .populate('lastMessage')
+      .sort({ updatedAt: -1 });
+
+    if (!publicGroups || publicGroups.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const formattedGroups = publicGroups.map((group) => {
+      // You can format the response here to match the frontend's needs
+      return {
+        id: group._id,
+        name: group.name,
+        description: group.description, // Assuming you add this field to your model
+        members: group.participants.length, // Display member count
+        lastMessage: group.lastMessage?.content || 'No messages yet.',
+        lastMessageTime: group.lastMessage?.createdAt || group.updatedAt,
+      };
+    });
+
+    res.json(formattedGroups);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch public groups.' });
   }
 };
 

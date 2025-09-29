@@ -5,7 +5,8 @@ const chatRoomSchema = new mongoose.Schema({
   isGroup: { type: Boolean, default: false },
   participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
-  avatar: { type: String, default: '/default-group-avatar.png' }, // Add this line
+  avatar: { type: String, default: '/default-group-avatar.png' }, 
+  description: {type: String}
 }, { timestamps: true });
 
 module.exports = mongoose.model('ChatRoom', chatRoomSchema);

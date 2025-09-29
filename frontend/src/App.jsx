@@ -3,7 +3,7 @@ import Auth from "./components/auth/authPage";
 import WelcomePage from "./components/auth/welcomePage";
 import EventPage from "./pages/EventPage";
 // import CreateEvent from "./pages/CreateEvent";
-import PublicChat from "./components/chat/publicChat";
+import PublicChat from "./components/chat/public-chat/publicChat";
 import PrivateChat from "./components/chat/privateChat";
 import "./App.css";
 import React, { useState } from "react";

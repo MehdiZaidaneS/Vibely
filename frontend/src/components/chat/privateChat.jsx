@@ -31,7 +31,7 @@ const PrivateChat = () => {
   useEffect(() => {
     const getChatrooms = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/chatrooms/search/${userId}`);
+        const response = await fetch(`${API_URL}/api/chatrooms/searchPri/${userId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch chatrooms");
         }
