@@ -651,3 +651,10 @@ button:focus, a:focus, input:focus {
   align-items: center;
   gap: 16px; /* Space between icons container and UserDropdown */
 }
+
+.no-events-message {
+  text-align: center;
+  font-size: 18px;
+  color: #768391;
+  margin-top: 40px;
+}

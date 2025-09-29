@@ -11,7 +11,7 @@ import "./EventPage.css";
 
 function EventPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("recommended");
+  const [activeMenu, setActiveMenu] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -31,9 +31,7 @@ function EventPage() {
       }
 
       const savedEvent = await response.json();
-
-      setEvents((prev) => [...prev, savedEvent]);
-
+      setEvents((prev) => [...prev, { ...savedEvent, id: savedEvent._id }]);
       setIsCreateModalOpen(false);
       setToast({ visible: true, message: "Event created successfully!" });
     } catch (error) {
@@ -42,70 +40,86 @@ function EventPage() {
     }
   };
 
-  // mock events
+  // Mock events with category and joinedUsers
   const [events, setEvents] = useState([
     {
       id: "freshers",
+      _id: "freshers", // For consistency with backend
       title: "Freshers' Welcome Party",
       description:
         "Location: Helsinki Student Union Hall\nCapacity: 120 people\nDescription: Meet new friends, enjoy music, snacks, and games.\nDate & Time: 7 Oct, 7:00 PM – 11:30 PM",
       image: "../assets/images/img_main_admin_spon.png",
       className: "event-large",
       background: "url('../assets/images/img_mainadminsponsoredeventimage.png')",
+      category: "recommended",
+      joinedUsers: [], // Mock empty joined users
     },
     {
       id: "football",
+      _id: "football",
       title: "Weekend Football Match",
       description: "Töölönlahden Football Field\n15/22 players\n3:00 PM – 6:00 PM",
       image: "../assets/images/img_football_event.png",
       className: "event-medium",
       background: "url('../assets/images/img_footballmatch_event_image.png')",
+      category: "ongoing",
+      joinedUsers: [],
     },
     {
       id: "gaming",
+      _id: "gaming",
       title: "LAN Gaming Session",
       description:
         "Metropolia IT Lab, Room B203\n27/30 players\nDescription: Multiplayer gaming night — Valorant, FIFA, CS2, and more. PCs provided.\n5:00 PM – 12AM",
       image: "../assets/images/img_gaming_event_host_group.png",
       className: "event-medium",
       background: "url('../assets/images/img_gaming_event_image.png')",
+      category: "recommended",
+      joinedUsers: [],
     },
     {
       id: "photography",
+      _id: "photography",
       title: "Photography Walk",
       description:
         "Location: Senate Square, Helsinki\nCapacity: 20 people\nDescription: Capture the city's architecture, lights, and vibes with fellow photographers.\n3:00 PM – 6:00 PM",
       image: "../assets/images/img_Photography_event_host_group.png",
       className: "event-medium photography-event",
       background: "url('../assets/images/img_photography_event_image.png')",
+      category: "ongoing",
+      joinedUsers: [],
     },
   ]);
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/events");
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
-
-        const normalized = data.map(ev => ({
+        const normalized = data.map((ev) => ({
           ...ev,
-          id: ev._id, // use MongoDB _id for all events from backend
+          id: ev._id, // Normalize for consistency
         }));
-
         setEvents(normalized);
-
       } catch (err) {
         console.error("Error fetching events:", err);
       }
     };
-
     fetchEvents();
   }, []);
 
   const filteredEvents = events.filter((event) => {
     const titleLower = event.title.toLowerCase();
     const descLower = event.description.toLowerCase();
-    return titleLower.includes(searchTerm) || descLower.includes(searchTerm) || searchTerm === "";
+    const userId = localStorage.getItem("userId");
+    const matchesSearch = titleLower.includes(searchTerm) || descLower.includes(searchTerm) || searchTerm === "";
+    const matchesMenu =
+      activeMenu === "all" ||
+      (activeMenu === "recommended" && event.category?.toLowerCase() === "recommended") ||
+      (activeMenu === "ongoing" && event.category?.toLowerCase() === "ongoing") ||
+      (activeMenu === "joined" && event.joinedUsers?.includes(userId));
+    return matchesSearch && matchesMenu;
   });
 
   // Sidebar handlers
@@ -125,36 +139,37 @@ function EventPage() {
     });
   };
 
-  // join flow
+  // Join flow
   const handleJoinClick = (event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
-
   };
 
   const confirmJoin = async () => {
     try {
-      const eventID = selectedEvent._id
-      console.log(eventID)
-
-      const response = await fetch(`http://localhost:5000/api/events/${eventID}/join`, {
+      const eventId = selectedEvent._id || selectedEvent.id; // Handle both mock and backend IDs
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ "user": localStorage.getItem("userId") })
+        body: JSON.stringify({ user: localStorage.getItem("userId") }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to joinn event");
+        throw new Error("Failed to join event");
       }
 
       const joinedEvent = await response.json();
-
-      setIsCreateModalOpen(false);
+      setEvents((prev) =>
+        prev.map((ev) =>
+          ev.id === eventId ? { ...ev, joinedUsers: [...(ev.joinedUsers || []), localStorage.getItem("userId")] } : ev
+        )
+      );
+      setIsModalOpen(false); // Fix: Close join modal, not create modal
       setSelectedEvent(null);
       setToast({ visible: true, message: `You've joined "${joinedEvent.title}"` });
     } catch (error) {
-      setToast({ visible: true, message: `failed to join` });
-      setIsCreateModalOpen(false);
+      setToast({ visible: true, message: "Failed to join" });
+      setIsModalOpen(false);
       setSelectedEvent(null);
     }
   };
@@ -228,68 +243,73 @@ function EventPage() {
             </div>
           </div>
 
-
-          {/* SubHeader, basically where event filter should be, will fix in the next iteration */}
           <div className="header-bottom">
             <h1 className="page-title">All Events</h1>
 
             <nav className="header-menu">
-              <a
-                href="#"
-                className={`header-menu-item ${activeMenu === "All Events" ? "active" : ""}`}
-                onClick={() => setActiveMenu("All Events")}
+              <button
+                className={`header-menu-item ${activeMenu === "all" ? "active" : ""}`}
+                onClick={() => setActiveMenu("all")}
               >
                 All Events
-              </a>
-              <a
-                href="#"
+              </button>
+              <button
                 className={`header-menu-item ${activeMenu === "recommended" ? "active" : ""}`}
                 onClick={() => setActiveMenu("recommended")}
               >
                 Recommended
-              </a>
-              <a
-                href="#"
-                className={`header-menu-item ${activeMenu === "Joined" ? "active" : ""}`}
-                onClick={() => setActiveMenu("Joined")}
+              </button>
+              <button
+                className={`header-menu-item ${activeMenu === "ongoing" ? "active" : ""}`}
+                onClick={() => setActiveMenu("ongoing")}
+              >
+                Ongoing
+              </button>
+              <button
+                className={`header-menu-item ${activeMenu === "joined" ? "active" : ""}`}
+                onClick={() => setActiveMenu("joined")}
               >
                 Joined
-              </a>
+              </button>
             </nav>
           </div>
         </header>
 
         {/* Main Content */}
         <main className="main-content">
-          <div className="events-grid">
-            {filteredEvents.map((event) => (
-              <article
-                key={event.id}
-                className={`event-card ${event.className} animate-card`}
-                style={{ backgroundImage: event.background, backgroundSize: "cover", backgroundPosition: "center" }}
-                onClick={() => console.log("Event card clicked:", event.title)}
-              >
-                <div>
-                  <h2 className="event-title">{event.title}</h2>
-                  <p className="event-description">{event.description}</p>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                  <button
-                    className="join-button"
-                    aria-label={`Join ${event.title.toLowerCase()}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleJoinClick(event);
-                    }}
-                  >
-                    <img src="../assets/images/img_join_football_event_button.svg" alt="Join" width="20" height="20" />
-                  </button>
-                  <p className="event-time">{event.time}</p>
-                </div>
-                <img src={event.image} alt="Event host" className="event-host" />
-              </article>
-            ))}
-          </div>
+          {filteredEvents.length === 0 ? (
+            <p className="no-events-message">No events found. Try a different search or menu!</p>
+          ) : (
+            <div className="events-grid">
+              {filteredEvents.map((event) => (
+                <article
+                  key={event.id}
+                  className={`event-card ${event.className} animate-card`}
+                  style={{ backgroundImage: event.background, backgroundSize: "cover", backgroundPosition: "center" }}
+                  onClick={() => console.log("Event card clicked:", event.title)}
+                >
+                  <div>
+                    <h2 className="event-title">{event.title}</h2>
+                    <p className="event-description">{event.description}</p>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                    <button
+                      className="join-button"
+                      aria-label={`Join ${event.title.toLowerCase()}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinClick(event);
+                      }}
+                    >
+                      <img src="../assets/images/img_join_football_event_button.svg" alt="Join" width="20" height="20" />
+                    </button>
+                    <p className="event-time">{event.time}</p>
+                  </div>
+                  <img src={event.image} alt="Event host" className="event-host" />
+                </article>
+              ))}
+            </div>
+          )}
         </main>
       </div>
 
@@ -299,7 +319,6 @@ function EventPage() {
         onSubmit={createEvent}
       />
 
-      {/* Modal + Toast */}
       <Modal
         isOpen={isModalOpen}
         title="Join event?"

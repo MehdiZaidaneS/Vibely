@@ -1,4 +1,4 @@
-//src/import/CreateEventModal.jsx
+// src/import/CreateEventModal.jsx
 import React, { useState } from "react";
 import styles from "./CreateEvent.module.css";
 
@@ -16,7 +16,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
       alert("Title is required!");
       return;
     }
-    onSubmit();
+    onSubmit({ title, eventType, date, time, location, description }); // Pass form data
     // Reset form
     setTitle("");
     setEventType("");
@@ -24,6 +24,7 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
     setTime("");
     setLocation("");
     setDescription("");
+    onClose(); // Close modal after submit
   };
 
   if (!isOpen) return null;
