@@ -349,6 +349,16 @@ const PrivateChat = () => {
                       } rounded-lg px-4 py-3 shadow-sm`}
                   >
                     {message.content}
+                    <p
+                      className={`text-xs mt-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-gray-500"
+                        }`}
+                    >
+                      {new Date(message.createdAt || Date.now()).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>

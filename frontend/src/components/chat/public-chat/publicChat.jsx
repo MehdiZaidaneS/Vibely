@@ -346,6 +346,7 @@ const PublicChat = () => {
           isTyping={isTyping}
           messagesEndRef={messagesEndRef}
           styles={styles}
+          userId={userId}
         />
 
         <PublicMessageInput
