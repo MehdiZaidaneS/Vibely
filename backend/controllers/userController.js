@@ -26,13 +26,28 @@ const getAllUsers = async (req, res) => {
     }
 }
 
+const getUserbyId = async (req,res)=>{
+    const userId = req.params.userId
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: "Not valid ID" })
+    }
+
+    try {
+        const user = await UserModel.findOne({_id: userId})
+        res.status(200).json(user)
+    } catch (error) {
+        res.status(404).json({message: "Couldnt find the user"})
+    }
+}
+
 
 const createNewUser = async (req, res) => {
 
-    const { name, email, phone, password } = req.body
+    const { name, email, phone, password, profile_pic } = req.body
 
     try {
-        const newUser = await UserModel.signup(name, email, phone, password)
+        const newUser = await UserModel.signup(name, email, phone, password,profile_pic)
 
         const token = generateToken(newUser._id)
         res.status(201).json({ user: newUser, token })
@@ -155,5 +170,6 @@ module.exports = {
     getRegisteredUser,
     addInfo,
     getJoinedEvents,
-    leaveEventFromUserPage
+    leaveEventFromUserPage,
+    getUserbyId
 }

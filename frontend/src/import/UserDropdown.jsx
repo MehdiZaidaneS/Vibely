@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./UserDropdown.module.css";
 
-function UserDropdown() {
+function UserDropdown({user}) {
+
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -12,11 +13,11 @@ function UserDropdown() {
     <div className={styles.dropdown}>
       <button className={styles.trigger} onClick={toggleDropdown} aria-label="User menu">
         <img
-          src="../assets/images/img_image_of_userlogin.png"
+          src={user?.profile_pic}
           alt="User profile"
           className={styles.avatar}
         />
-        <span className={styles.name}>John Doe</span>
+        <span className={styles.name}>{user?.username}</span>
         <img
           src="../assets/images/img_dropdownoptionsiconuserlogin.svg"
           alt="Dropdown"

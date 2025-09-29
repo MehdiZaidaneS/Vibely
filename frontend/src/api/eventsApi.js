@@ -91,8 +91,8 @@ export const getJoinedEvents = async (setEvents, setActiveMenu) => {
     const token = localStorage.getItem("user")
     const userId = localStorage.getItem("userId")
     try {
-        const response = await fetch(`http://localhost:5000/api/users/${userId}/joined-events`,{
-            headers:{
+        const response = await fetch(`http://localhost:5000/api/users/${userId}/joined-events`, {
+            headers: {
                 "Authorization": `Bearer ${token}`
             }
         });
@@ -111,26 +111,30 @@ export const getJoinedEvents = async (setEvents, setActiveMenu) => {
     }
 }
 
-export const leaveEvent = async(event) =>{
+export const leaveEvent = async (event,setIsCreateModalOpen,setSelectedEvent,setToast) => {
     const userId = localStorage.getItem("userId")
     const token = localStorage.getItem("user")
 
-     try {
-        const response = await fetch(`http://localhost:5000/api/users/${userId}/leave-event`,{
+    try {
+        const response = await fetch(`http://localhost:5000/api/users/${userId}/leave-event`, {
             method: "PATCH",
-            body: JSON.stringify(event),
-            headers:{
+            body: JSON.stringify({event: event._id}),
+            headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             }
         });
         if (!response.ok) throw new Error("Failed to leave event");
-        const data = await response.json();
+        const leftEvent = await response.json();
 
-        return data
+        setIsCreateModalOpen(false);
+        setSelectedEvent(null);
+        setToast({ visible: true, message: `You've left "${event.title}"` });
 
-    } catch (err) {
-        console.error("Error trying to leave events:", err);
+    } catch (error) {
+        setToast({ visible: true, message: `failed to leave` });
+        setIsCreateModalOpen(false);
+        setSelectedEvent(null);
     }
 
 }

@@ -17,7 +17,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={ <EventPage />}
+          element={ <EventPage isAuthenticated={isAuthenticated} />}
         />
         <Route path="/register" element={<Auth />} />
         <Route path="/welcome" element={<WelcomePage />} />

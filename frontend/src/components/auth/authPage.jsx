@@ -31,6 +31,7 @@ const Auth = () => {
     email: "",
     password: "",
     countryCode: "+358", // Default to Finland
+    profile_pic: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
   });
 
   const navigate = useNavigate()
@@ -117,6 +118,7 @@ const Auth = () => {
         email: "",
         password: "",
         countryCode: "+358",
+         profile_pic: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
       });
       // Force a small delay to ensure proper animation reset
       setTimeout(() => {

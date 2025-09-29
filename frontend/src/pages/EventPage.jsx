@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
 import Modal from "../import/JoinEvent";
+import { getUserbyId } from "../api/userApi";
 import { joinEvent, getAllEvents, getJoinedEvents, leaveEvent } from "../api/eventsApi";
 import Toast from "../import/NotificationJoin";
 import CreateEventModal from "../import/CreateEventModal";
@@ -10,7 +11,7 @@ import UserDropdown from "../import/UserDropdown";
 import { Plus } from 'lucide-react';
 import "./EventPage.css";
 
-function EventPage() {
+function EventPage({isAuthenticated}) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("recommended");
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,11 +20,18 @@ function EventPage() {
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [events, setEvents] = useState([]);
+  const [user, setUser] = useState()
 
 
   useEffect(() => {
     getAllEvents(setEvents, setActiveMenu)
+
+    if (isAuthenticated) {
+      getUserbyId(setUser)
+    }
+
   }, []);
+
 
   const filteredEvents = events.filter((event) => {
     const titleLower = event.title.toLowerCase();
@@ -52,7 +60,6 @@ function EventPage() {
   const handleJoinLeaveClick = (event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
-
   };
 
   const cancelJoin = () => {
@@ -63,9 +70,10 @@ function EventPage() {
   // Joining events
   const confirmJoinLeave = async () => {
     if (activeMenu === "Joined Events") {
-      leaveEvent({event: selectedEvent._id})
+      await leaveEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast)
+      await getJoinedEvents(setEvents, setActiveMenu)
     } else {
-      joinEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast)
+      await joinEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast)
     }
 
     setIsModalOpen(false)
@@ -134,7 +142,7 @@ function EventPage() {
                   <span className="tooltip">Direct Messages</span>
                 </span>
               </div>
-              <UserDropdown />
+              <UserDropdown user={user} />
             </div>
           </div>
 
@@ -210,7 +218,7 @@ function EventPage() {
                   </button>
                   <p className="event-time">{event.time}</p>
                 </div>
-                <img src={event.image} alt="Event host" className="event-host" />
+                <img src={user?.profile_pic} alt="Event host" className="event-host" />
               </article>
             ))}
           </div>
