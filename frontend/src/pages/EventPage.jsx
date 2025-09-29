@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
 import Modal from "../import/JoinEvent";
+import { joinEvent, getAllEvents, getJoinedEvents, leaveEvent } from "../api/eventsApi";
 import Toast from "../import/NotificationJoin";
 import CreateEventModal from "../import/CreateEventModal";
 import UserDropdown from "../import/UserDropdown";
@@ -17,89 +18,11 @@ function EventPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [events, setEvents] = useState([]);
 
-  const createEvent = async (newEventData) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEventData),
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to create event");
-      }
-
-      const savedEvent = await response.json();
-
-      setEvents((prev) => [...prev, savedEvent]);
-
-      setIsCreateModalOpen(false);
-      setToast({ visible: true, message: "Event created successfully!" });
-    } catch (error) {
-      console.error(error);
-      setToast({ visible: true, message: "Error creating event!" });
-    }
-  };
-
-  // mock events
-  const [events, setEvents] = useState([
-    {
-      id: "freshers",
-      title: "Freshers' Welcome Party",
-      description:
-        "Location: Helsinki Student Union Hall\nCapacity: 120 people\nDescription: Meet new friends, enjoy music, snacks, and games.\nDate & Time: 7 Oct, 7:00 PM – 11:30 PM",
-      image: "../assets/images/img_main_admin_spon.png",
-      className: "event-large",
-      background: "url('../assets/images/img_mainadminsponsoredeventimage.png')",
-    },
-    {
-      id: "football",
-      title: "Weekend Football Match",
-      description: "Töölönlahden Football Field\n15/22 players\n3:00 PM – 6:00 PM",
-      image: "../assets/images/img_football_event.png",
-      className: "event-medium",
-      background: "url('../assets/images/img_footballmatch_event_image.png')",
-    },
-    {
-      id: "gaming",
-      title: "LAN Gaming Session",
-      description:
-        "Metropolia IT Lab, Room B203\n27/30 players\nDescription: Multiplayer gaming night — Valorant, FIFA, CS2, and more. PCs provided.\n5:00 PM – 12AM",
-      image: "../assets/images/img_gaming_event_host_group.png",
-      className: "event-medium",
-      background: "url('../assets/images/img_gaming_event_image.png')",
-    },
-    {
-      id: "photography",
-      title: "Photography Walk",
-      description:
-        "Location: Senate Square, Helsinki\nCapacity: 20 people\nDescription: Capture the city's architecture, lights, and vibes with fellow photographers.\n3:00 PM – 6:00 PM",
-      image: "../assets/images/img_Photography_event_host_group.png",
-      className: "event-medium photography-event",
-      background: "url('../assets/images/img_photography_event_image.png')",
-    },
-  ]);
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/events");
-        if (!response.ok) throw new Error("Failed to fetch events");
-        const data = await response.json();
-
-        const normalized = data.map(ev => ({
-          ...ev,
-          id: ev._id, // use MongoDB _id for all events from backend
-        }));
-
-        setEvents(normalized);
-
-      } catch (err) {
-        console.error("Error fetching events:", err);
-      }
-    };
-
-    fetchEvents();
+    getAllEvents(setEvents, setActiveMenu)
   }, []);
 
   const filteredEvents = events.filter((event) => {
@@ -126,42 +49,29 @@ function EventPage() {
   };
 
   // join flow
-  const handleJoinClick = (event) => {
+  const handleJoinLeaveClick = (event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
 
   };
 
-  const confirmJoin = async () => {
-    try {
-      const eventID = selectedEvent._id
-      console.log(eventID)
-
-      const response = await fetch(`http://localhost:5000/api/events/${eventID}/join`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ "user": localStorage.getItem("userId") })
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to joinn event");
-      }
-
-      const joinedEvent = await response.json();
-
-      setIsCreateModalOpen(false);
-      setSelectedEvent(null);
-      setToast({ visible: true, message: `You've joined "${joinedEvent.title}"` });
-    } catch (error) {
-      setToast({ visible: true, message: `failed to join` });
-      setIsCreateModalOpen(false);
-      setSelectedEvent(null);
-    }
-  };
-
   const cancelJoin = () => {
     setIsModalOpen(false);
+    setSelectedEvent(null)
   };
+
+  // Joining events
+  const confirmJoinLeave = async () => {
+    if (activeMenu === "Joined Events") {
+      leaveEvent({event: selectedEvent._id})
+    } else {
+      joinEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast)
+    }
+
+    setIsModalOpen(false)
+  }
+
+
 
   const closeToast = () => setToast({ ...toast, visible: false });
 
@@ -231,27 +141,24 @@ function EventPage() {
 
           {/* SubHeader, basically where event filter should be, will fix in the next iteration */}
           <div className="header-bottom">
-            <h1 className="page-title">All Events</h1>
+            <h1 className="page-title">{activeMenu}</h1>
 
             <nav className="header-menu">
               <a
-                href="#"
                 className={`header-menu-item ${activeMenu === "All Events" ? "active" : ""}`}
-                onClick={() => setActiveMenu("All Events")}
+                onClick={() => getAllEvents(setEvents, setActiveMenu)}
               >
                 All Events
               </a>
               <a
-                href="#"
-                className={`header-menu-item ${activeMenu === "recommended" ? "active" : ""}`}
-                onClick={() => setActiveMenu("recommended")}
+                className={`header-menu-item ${activeMenu === "Recommended" ? "active" : ""}`}
+                onClick={() => setActiveMenu("Recommended")}
               >
                 Recommended
               </a>
               <a
-                href="#"
-                className={`header-menu-item ${activeMenu === "Joined" ? "active" : ""}`}
-                onClick={() => setActiveMenu("Joined")}
+                className={`header-menu-item ${activeMenu === "Joined Events" ? "active" : ""}`}
+                onClick={() => getJoinedEvents(setEvents, setActiveMenu)}
               >
                 Joined
               </a>
@@ -264,7 +171,7 @@ function EventPage() {
           <div className="events-grid">
             {filteredEvents.map((event) => (
               <article
-                key={event.id}
+                key={event._id}
                 className={`event-card ${event.className} animate-card`}
                 style={{ backgroundImage: event.background, backgroundSize: "cover", backgroundPosition: "center" }}
                 onClick={() => console.log("Event card clicked:", event.title)}
@@ -275,14 +182,31 @@ function EventPage() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                   <button
-                    className="join-button"
-                    aria-label={`Join ${event.title.toLowerCase()}`}
+                    className={`join-button ${activeMenu === "Joined Events" ? "leave-style" : ""}`}
+                    aria-label={
+                      activeMenu === "Joined Events"
+                        ? `Leave ${event.title.toLowerCase()}`
+                        : `Join ${event.title.toLowerCase()}`
+                    }
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleJoinClick(event);
+                      if (activeMenu === "Joined Events") {
+                        handleJoinLeaveClick(event);
+                      } else {
+                        handleJoinLeaveClick(event);
+                      }
                     }}
                   >
-                    <img src="../assets/images/img_join_football_event_button.svg" alt="Join" width="20" height="20" />
+                    <img
+                      src={
+                        activeMenu === "Joined Events"
+                          ? "../assets/images/img_join_football_event_button.svg" // icon for leaving
+                          : "../assets/images/img_join_football_event_button.svg" // icon for joining
+                      }
+                      alt={activeMenu === "Joined Events" ? "Leave" : "Join"}
+                      width="20"
+                      height="20"
+                    />
                   </button>
                   <p className="event-time">{event.time}</p>
                 </div>
@@ -296,16 +220,25 @@ function EventPage() {
       <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={createEvent}
+        setEvents={setEvents}
+        setIsCreateModalOpen={setIsCreateModalOpen}
+        setToast={setToast}
       />
 
       {/* Modal + Toast */}
       <Modal
         isOpen={isModalOpen}
-        title="Join event?"
-        message={selectedEvent ? `Do you want to join "${selectedEvent.title}"?` : "Do you want to join this event?"}
-        onConfirm={confirmJoin}
+        title="Are you sure?"
+        message={
+          selectedEvent
+            ? activeMenu === "Joined Events"
+              ? `Do you want to leave "${selectedEvent.title}"?`
+              : `Do you want to join "${selectedEvent.title}"?`
+            : "Loading..."
+        }
+        onConfirm={confirmJoinLeave}
         onCancel={cancelJoin}
+        activeMenu={activeMenu}
       />
       <Toast message={toast.message} visible={toast.visible} onClose={closeToast} />
     </div>

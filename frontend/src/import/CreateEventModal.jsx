@@ -1,8 +1,9 @@
 //src/import/CreateEventModal.jsx
 import React, { useState } from "react";
 import styles from "./CreateEvent.module.css";
+import { createEvent } from "../api/eventsApi";
 
-function CreateEventModal({ isOpen, onClose, onSubmit }) {
+function CreateEventModal({ isOpen, onClose, setEvents, setIsCreateModalOpen, setToast }) {
   const [title, setTitle] = useState("");
   const [eventType, setEventType] = useState("");
   const [date, setDate] = useState("");
@@ -12,11 +13,23 @@ function CreateEventModal({ isOpen, onClose, onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const newEventData ={
+      author: localStorage.getItem("userId"),
+      title,
+      description,
+      type: eventType,
+      date,
+      time,
+      location,
+    }
+
+    createEvent(newEventData, setEvents, setIsCreateModalOpen, setToast)
+
     if (!title.trim()) {
       alert("Title is required!");
       return;
     }
-    onSubmit();
     // Reset form
     setTitle("");
     setEventType("");

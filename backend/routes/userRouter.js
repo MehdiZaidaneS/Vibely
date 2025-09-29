@@ -20,12 +20,14 @@ router.post("/",createNewUser)
 
 router.post("/login", getRegisteredUser)
 
-router.get('/joined-events', getJoinedEvents);
 
-router.patch('/leave-event/:eventId', leaveEventFromUserPage);
+
+
 
 router.use(requireAuth);
 
+router.patch('/:userId/leave-event', leaveEventFromUserPage);
+router.get('/:userId/joined-events', getJoinedEvents);
 router.patch("/:userId", addInfo)
 
 
