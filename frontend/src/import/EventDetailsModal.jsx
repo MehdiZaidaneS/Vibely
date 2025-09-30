@@ -10,7 +10,7 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('en-US', options);
 };
 
-const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, activeMenu }) => {
+const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, activeMenu, isAuthenticated }) => {
   if (!isOpen || !event) return null;
 
   const getEventBackground = (event) => {
@@ -176,7 +176,11 @@ const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, acti
 
           {/* Action Buttons */}
           <div className="event-modal-actions">
-            {activeMenu === "Joined Events" ? (
+            {!isAuthenticated ? (
+              <div className="event-modal-login-message">
+                Log in to join event
+              </div>
+            ) : activeMenu === "Joined Events" ? (
               <button
                 className="event-modal-join-button leave-style"
                 onClick={(e) => {

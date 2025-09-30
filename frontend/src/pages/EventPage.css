@@ -713,6 +713,15 @@
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 
+/* Login Message */
+.event-card-login-message {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+  font-style: italic;
+  padding: 8px 12px;
+}
+
 .event-large {
   height: 300px;
   background-size: cover;

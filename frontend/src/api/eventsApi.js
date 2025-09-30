@@ -177,7 +177,17 @@ export const recommendEvents = async (setActiveMenu, setEvents) => {
   const token = localStorage.getItem("user");
   const userId = localStorage.getItem("userId");
 
+  setActiveMenu("Recommended");
+
+  if (!userId || !token) {
+    console.log("User not authenticated");
+    setEvents([]);
+    return;
+  }
+
   try {
+    console.log("Fetching recommendations for user:", userId);
+
     const response = await fetch("http://localhost:5000/api/events/recommend-event", {
       method: "POST",
       body: JSON.stringify({ userId, preferences: [] }),
@@ -187,26 +197,40 @@ export const recommendEvents = async (setActiveMenu, setEvents) => {
       }
     });
 
-    if (!response.ok) throw new Error("Failed to get recommended events");
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("API error:", errorData);
+      throw new Error("Failed to get recommended events");
+    }
 
     const recommendedEventsResponse = await response.json();
+    console.log("Recommendation response:", recommendedEventsResponse);
+
     const recommendedArray = Array.isArray(recommendedEventsResponse.matches)
       ? recommendedEventsResponse.matches
       : [];
 
+    console.log("Matches found:", recommendedArray.length);
+
+    if (recommendedArray.length === 0) {
+      console.log("No recommendations found");
+      setEvents([]);
+      return;
+    }
+
     const recommended = await Promise.all(
       recommendedArray.map(async (match) => {
-        const event = await getEventById(match.eventId); // use match.eventId
-        return { matchScore: match.matchScore, ...event }; 
+        const event = await getEventById(match.eventId);
+        if (!event) return null;
+        return { matchScore: match.matchScore, ...event };
       })
     );
 
-    console.log(recommended);
-    setEvents(recommended);
+    const validRecommended = recommended.filter(e => e !== null);
+    console.log("Valid recommended events:", validRecommended);
+    setEvents(validRecommended);
   } catch (error) {
-    console.error("Error fetching events:", error);
-    setEvents([]); // fallback to empty array
+    console.error("Error fetching recommended events:", error);
+    setEvents([]);
   }
-
-  setActiveMenu("Recommended");
 };

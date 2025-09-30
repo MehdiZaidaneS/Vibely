@@ -252,18 +252,22 @@ function EventPage({isAuthenticated}) {
               >
                 All Events
               </a>
-              <a
-                className={`header-menu-item ${activeMenu === "Recommended" ? "active" : ""}`}
-                onClick={() => recommendEvents(setActiveMenu, setEvents)}
-              >
-                Recommended
-              </a>
-              <a
-                className={`header-menu-item ${activeMenu === "Joined Events" ? "active" : ""}`}
-                onClick={() => getJoinedEvents(setEvents, setActiveMenu)}
-              >
-                Joined
-              </a>
+              {isAuthenticated && (
+                <>
+                  <a
+                    className={`header-menu-item ${activeMenu === "Recommended" ? "active" : ""}`}
+                    onClick={() => recommendEvents(setActiveMenu, setEvents)}
+                  >
+                    Recommended
+                  </a>
+                  <a
+                    className={`header-menu-item ${activeMenu === "Joined Events" ? "active" : ""}`}
+                    onClick={() => getJoinedEvents(setEvents, setActiveMenu)}
+                  >
+                    Joined
+                  </a>
+                </>
+              )}
             </nav>
           </div>
         </header>
@@ -376,7 +380,11 @@ function EventPage({isAuthenticated}) {
                       )}
                     </div>
 
-                    {activeMenu === "Joined Events" ? (
+                    {!isAuthenticated ? (
+                      <div className="event-card-login-message">
+                        Log in to join event
+                      </div>
+                    ) : activeMenu === "Joined Events" ? (
                       <button
                         className="event-card-join-btn leave"
                         aria-label={`Leave ${event.title.toLowerCase()}`}
@@ -445,6 +453,7 @@ function EventPage({isAuthenticated}) {
         onJoinLeave={handleJoinLeaveFromModal}
         isJoined={detailsEvent?.participant?.some(p => (p._id || p) === user?._id)}
         activeMenu={activeMenu}
+        isAuthenticated={isAuthenticated}
       />
 
       <Toast message={toast.message} visible={toast.visible} onClose={closeToast} />
