@@ -10,7 +10,7 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('en-US', options);
 };
 
-const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined }) => {
+const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, activeMenu }) => {
   if (!isOpen || !event) return null;
 
   const getEventBackground = (event) => {
@@ -176,15 +176,31 @@ const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined }) =>
 
           {/* Action Buttons */}
           <div className="event-modal-actions">
-            <button
-              className={`event-modal-join-button ${isJoined ? 'leave-style' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onJoinLeave(event);
-              }}
-            >
-              {isJoined ? 'Leave Event' : 'Join Event'}
-            </button>
+            {activeMenu === "Joined Events" ? (
+              <button
+                className="event-modal-join-button leave-style"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onJoinLeave(event);
+                }}
+              >
+                Leave Event
+              </button>
+            ) : isJoined ? (
+              <div className="event-modal-joined-badge">
+                ✓ Joined
+              </div>
+            ) : (
+              <button
+                className="event-modal-join-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onJoinLeave(event);
+                }}
+              >
+                Join Event
+              </button>
+            )}
           </div>
         </div>
       </div>

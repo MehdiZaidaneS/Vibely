@@ -42,8 +42,10 @@ export const createEvent = async (newEventData, setEvents, setIsCreateModalOpen,
 
 
 
-export const joinEvent = async (selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast) => {
+export const joinEvent = async (selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast, setEvents) => {
     const token = localStorage.getItem("user")
+    const userId = localStorage.getItem("userId")
+
     try {
         const eventID = selectedEvent._id
         console.log(eventID)
@@ -54,14 +56,25 @@ export const joinEvent = async (selectedEvent, setIsCreateModalOpen, setSelected
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({ "user": localStorage.getItem("userId") })
+            body: JSON.stringify({ "user": userId })
         });
 
         if (!response.ok) {
-            throw new Error("Failed to joinn event");
+            throw new Error("Failed to join event");
         }
 
         const joinedEvent = await response.json();
+
+        // Update local state to reflect the join
+        if (setEvents) {
+            setEvents(prevEvents =>
+                prevEvents.map(e =>
+                    e._id === eventID
+                        ? { ...e, participant: [...(e.participant || []), userId] }
+                        : e
+                )
+            );
+        }
 
         setIsCreateModalOpen(false);
         setSelectedEvent(null);

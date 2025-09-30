@@ -134,7 +134,7 @@ function EventPage({isAuthenticated}) {
       await leaveEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast)
       await getJoinedEvents(setEvents, setActiveMenu)
     } else {
-      await joinEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast)
+      await joinEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast, setEvents)
     }
 
     setIsModalOpen(false)
@@ -376,25 +376,35 @@ function EventPage({isAuthenticated}) {
                       )}
                     </div>
 
-                    <button
-                      className={`event-card-join-btn ${activeMenu === "Joined Events" ? "leave" : ""}`}
-                      aria-label={
-                        activeMenu === "Joined Events"
-                          ? `Leave ${event.title.toLowerCase()}`
-                          : `Join ${event.title.toLowerCase()}`
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleJoinLeaveClick(event);
-                      }}
-                    >
-                      {activeMenu === "Joined Events" ? (
+                    {activeMenu === "Joined Events" ? (
+                      <button
+                        className="event-card-join-btn leave"
+                        aria-label={`Leave ${event.title.toLowerCase()}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJoinLeaveClick(event);
+                        }}
+                      >
                         <span style={{ fontSize: '16px' }}>✖️</span>
-                      ) : (
+                        <span>Leave</span>
+                      </button>
+                    ) : event.participant?.some(p => (p._id || p) === user?._id) ? (
+                      <div className="event-card-joined-badge">
+                        ✓ Joined
+                      </div>
+                    ) : (
+                      <button
+                        className="event-card-join-btn"
+                        aria-label={`Join ${event.title.toLowerCase()}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJoinLeaveClick(event);
+                        }}
+                      >
                         <span style={{ fontSize: '16px' }}>➕</span>
-                      )}
-                      <span>{activeMenu === "Joined Events" ? "Leave" : "Join"}</span>
-                    </button>
+                        <span>Join</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </article>
@@ -433,7 +443,8 @@ function EventPage({isAuthenticated}) {
         onClose={() => setIsDetailsModalOpen(false)}
         event={detailsEvent}
         onJoinLeave={handleJoinLeaveFromModal}
-        isJoined={activeMenu === "Joined Events"}
+        isJoined={detailsEvent?.participant?.some(p => (p._id || p) === user?._id)}
+        activeMenu={activeMenu}
       />
 
       <Toast message={toast.message} visible={toast.visible} onClose={closeToast} />
