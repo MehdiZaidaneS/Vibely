@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Auth from "./components/auth/authPage";
-import WelcomePage from "./components/auth/welcomePage";
+import Auth from "./components/auth/Register-Login/authPage";
+import WelcomePage from "./components/auth/WelcomePage/welcomePage";
 import EventPage from "./pages/EventPage";
 // import CreateEvent from "./pages/CreateEvent";
 import PublicChat from "./components/chat/public-chat/publicChat";
