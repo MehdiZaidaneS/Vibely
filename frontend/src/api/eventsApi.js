@@ -6,14 +6,22 @@ export const createEvent = async (newEventData, setEvents, setIsCreateModalOpen,
     const token = localStorage.getItem("user")
 
     try {
+        // Check if newEventData is FormData (for image uploads) or regular object
+        const isFormData = newEventData instanceof FormData;
+
+        const headers = {
+            "Authorization": `Bearer ${token}`
+        };
+
+        // Only set Content-Type for JSON, let browser set it for FormData
+        if (!isFormData) {
+            headers["Content-Type"] = "application/json";
+        }
+
         const response = await fetch("http://localhost:5000/api/events", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(newEventData),
-
+            headers: headers,
+            body: isFormData ? newEventData : JSON.stringify(newEventData),
         });
 
         if (!response.ok) {
