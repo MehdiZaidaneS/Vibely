@@ -32,22 +32,8 @@ function EventPage({isAuthenticated}) {
     if (isAuthenticated) {
       getUserbyId(setUser)
     }
-
   }, []);
 
-
-  const filteredEvents = events.filter((event) => {
-    const titleLower = event.title.toLowerCase();
-    const descLower = event.description.toLowerCase();
-    const userId = localStorage.getItem("userId");
-    const matchesSearch = titleLower.includes(searchTerm) || descLower.includes(searchTerm) || searchTerm === "";
-    const matchesMenu =
-      activeMenu === "all" ||
-      (activeMenu === "recommended" && event.category?.toLowerCase() === "recommended") ||
-      (activeMenu === "ongoing" && event.category?.toLowerCase() === "ongoing") ||
-      (activeMenu === "joined" && event.joinedUsers?.includes(userId));
-    return matchesSearch && matchesMenu;
-  });
 
   // Sidebar handlers
   const openSidebar = () => {
@@ -208,7 +194,7 @@ function EventPage({isAuthenticated}) {
         {/* Main Content */}
         <main className="main-content">
           <div className="events-grid">
-            {filteredEvents.map((event) => (
+            {events.map((event) => (
               <article
                 key={event._id}
                 className={`event-card ${event.className} animate-card`}

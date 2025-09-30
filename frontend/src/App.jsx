@@ -9,7 +9,9 @@ import "./App.css";
 import React, { useState } from "react";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("user"));
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem("user") || false
+  );
 
   return (
     <BrowserRouter>
@@ -27,7 +29,6 @@ function App() {
           element={isAuthenticated ? <Navigate to="/" /> : <Auth setIsAuthenticated={setIsAuthenticated} />} 
         />
         <Route path="/welcome" element={<WelcomePage />} />
-        <Route path="/events" element={<EventPage />} />
 
         {/* <Route path="create-event" element={<CreateEvent />} /> */}
         <Route path="/public-chat" element={<PublicChat />} />

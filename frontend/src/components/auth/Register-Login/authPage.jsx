@@ -5,7 +5,7 @@ import BrandPresentation from "./BrandPresentation";
 import AuthForm from "./AuthForm";
 import { defaultFormData } from "./constants";
 
-const Auth = () => {
+const Auth = ({isAuthenticated, setIsAuthenticated}) => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,14 +25,20 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
+    console.log(isAuthenticated)
     try {
       if (isLogin) {
         await logUser(formData);
-        navigate("/events");
+        setIsAuthenticated(true)
+        console.log(isAuthenticated)
+        navigate("/");
+        
       } else {
         await createUser(formData);
+        setIsAuthenticated(true)
+        console.log(isAuthenticated)
         navigate("/welcome");
+        
       }
     } catch (err) {
       setError(

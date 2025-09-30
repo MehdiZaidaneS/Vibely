@@ -47,7 +47,7 @@ const WelcomePage = () => {
 
     setTimeout(() => {
       setIsLoading(false);
-      navigate("/events");
+      navigate("/");
       alert(
         `Welcome ${username}! You selected: ${selectedInterests
           .map((id) => interests.find((i) => i.id === id)?.title)
