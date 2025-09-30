@@ -1,7 +1,7 @@
 // src/import/Modal.jsx
 import React from "react";
 
-export default function Modal({ isOpen, title, message, onConfirm, onCancel }) {
+export default function Modal({ isOpen, title, message, onConfirm, onCancel, activeMenu }) {
   if (!isOpen) return null;
 
   return (
@@ -14,7 +14,9 @@ export default function Modal({ isOpen, title, message, onConfirm, onCancel }) {
             Cancel
           </button>
           <button className="btn btn-confirm" onClick={onConfirm}>
-            Yes, join
+            {
+              activeMenu === "Joined Events" ? "Yes, leave" : "Yes, join"
+            }
           </button>
         </div>
       </div>

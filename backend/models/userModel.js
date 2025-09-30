@@ -42,6 +42,11 @@ const userSchema = new Schema(
             required: false
 
         }],
+        profile_pic:{
+          type:String,
+          required: false,
+          default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+        },
         joinedEvents:
             [{
                 type: mongoose.Schema.Types.ObjectId,
@@ -52,7 +57,7 @@ const userSchema = new Schema(
 );
 
 
-userSchema.statics.signup = async function (name, email, phone, password) {
+userSchema.statics.signup = async function (name, email, phone, password, profile_pic) {
     if (!name || !email || !phone || !password) {
         throw Error("All fields are required. Please complete the form.");
     }
@@ -80,7 +85,8 @@ userSchema.statics.signup = async function (name, email, phone, password) {
         name,
         email,
         phone,
-        password: hashedPassword
+        password: hashedPassword,
+        profile_pic
     })
 
     return user

@@ -2,7 +2,7 @@ const Message = require('../models/messageModel');
 const ChatRoom = require('../models/chatRoomModel');
 
 exports.createChatRoom = async (req, res) => {
-  const { name, participants, isGroup } = req.body; 
+  const { name, participants, isGroup, description} = req.body; 
 
   try {
     let chatRoom;
@@ -18,7 +18,8 @@ exports.createChatRoom = async (req, res) => {
       chatRoom = new ChatRoom({
         name: isGroup ? name : undefined,
         isGroup: !!isGroup,
-        participants
+        participants,
+        description
       });
       await chatRoom.save();
     }
@@ -64,6 +65,7 @@ exports.postMessage = async (req, res) => {
   }
 };
 
+
 exports.editMessage = async (req, res) => {
   const { messageId } = req.params;
   const { userId, content } = req.body;
@@ -96,25 +98,87 @@ exports.editMessage = async (req, res) => {
   }
 };
 
+const User = require('../models/userModel'); // Assuming your user model is here
 
-exports.getChatHistory = async (req, res) => {
-  const { roomId } = req.params;
-
+exports.getPrivateChat = async (req, res) => {
+  const { userId } = req.params;
   try {
+    const chatrooms = await ChatRoom.find({ participants: userId })
+      .populate('participants', 'name avatar isOnline')
+      .populate('lastMessage')
+      .sort({ updatedAt: -1 });
 
-    const chatRoom = await ChatRoom.findById(roomId).populate('participants','name email');
-    if (!chatRoom) {
-      return res.status(404).json({ message: 'Chat room not found' });
+    if (!chatrooms || chatrooms.length === 0) {
+      return res.status(200).json([]); // Return an empty array if no chatrooms are found
     }
 
-    const messages = await Message.find({ chatRoom: roomId })
-      .populate('sender', 'name email')
-      .sort({ createdAt: 1 });
+    const formattedChatrooms = chatrooms.map((room) => {
+      const otherParticipant = room.isGroup
+        ? null
+        : room.participants.find((p) => p._id.toString() !== userId);
 
-    res.json({ room: chatRoom, messages });
+      const lastMessageContent = room.lastMessage
+        ? room.lastMessage.content
+        : 'No messages yet.';
+
+      return {
+        id: room._id, // Use 'id' to match frontend key
+        name: room.isGroup ? room.name : (otherParticipant?.name || 'Unknown User'),
+        avatar: room.isGroup ? room.avatar || '/default-group-avatar.png' : (otherParticipant?.avatar || '/default-avatar.png'),
+        isOnline: room.isGroup ? true : (otherParticipant?.isOnline || false),
+        lastMessage: lastMessageContent,
+        lastMessageTime: room.lastMessage ? room.lastMessage.createdAt : room.updatedAt,
+        unreadCount: 0, // This logic needs to be implemented separately
+        isTyping: false, // This is a frontend state, not a database field
+      };
+    });
+
+    res.json(formattedChatrooms);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to search for chatrooms.' });
   }
+};
+
+exports.getPublicChat = async (req, res) => {
+  try {
+    const publicGroups = await ChatRoom.find({ isGroup: true })
+      .populate('lastMessage')
+      .sort({ updatedAt: -1 });
+
+    if (!publicGroups || publicGroups.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const formattedGroups = publicGroups.map((group) => {
+      // You can format the response here to match the frontend's needs
+      return {
+        id: group._id,
+        name: group.name,
+        description: group.description, // Assuming you add this field to your model
+        members: group.participants.length, // Display member count
+        lastMessage: group.lastMessage?.content || 'No messages yet.',
+        lastMessageTime: group.lastMessage?.createdAt || group.updatedAt,
+      };
+    });
+
+    res.json(formattedGroups);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch public groups.' });
+  }
+};
+
+exports.getChatHistory = async (req, res) => {
+    const { roomId } = req.params;
+    try {
+        const messages = await Message.find({ chatRoom: roomId })
+            .populate('sender', 'name email')
+            .sort({ createdAt: 1 });
+        
+        // Only return the messages array
+        res.json(messages); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
 exports.getParticipants = async (req, res) => {

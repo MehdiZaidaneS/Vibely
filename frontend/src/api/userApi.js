@@ -30,6 +30,26 @@ export const createUser = async (body) => {
     }
 }
 
+export const getUserbyId = async (setUser)=>{
+    const userId = localStorage.getItem("userId")
+    try {
+        const response = await fetch(`${API_URL}/${userId}`)
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Request failed with status ${response.status}`);
+        }
+        const user = await response.json()
+        setUser(user)
+        return user
+        
+    } catch (error) {
+        console.error("Error getting user:", error.message)
+        throw error;
+        
+    }
+}
+
 export const logUser = async (body) => {
     try {
         const response = await fetch(`${API_URL}/login`, {

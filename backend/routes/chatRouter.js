@@ -5,16 +5,22 @@ const chatRoomControllers = require('../controllers/chatRoomControllers');
 // Create a new chatroom
 router.post('/', chatRoomControllers.createChatRoom);
 
+// Edit a message
+router.patch('/edit/:messageId', chatRoomControllers.editMessage);
+
+router.get('/searchPri/:userId', chatRoomControllers.getPrivateChat);
+
+router.get('/searchPub/:userId', chatRoomControllers.getPublicChat);
+
 // Get all participants in a chatroom
-router.get('/:roomId/participants', chatRoomControllers.getParticipants);
+router.get('/participants/:roomId', chatRoomControllers.getParticipants);
 
 // Get chat history (messages) for a room
-router.get('/:roomId/messages', chatRoomControllers.getChatHistory);
+router.get('/history/:roomId', chatRoomControllers.getChatHistory);
 
 // Post a message to a chatroom
-router.post('/:roomId/messages', chatRoomControllers.postMessage);
+router.post('/messages/:roomId', chatRoomControllers.postMessage);
 
-// Edit a message
-router.patch('/messages/:messageId', chatRoomControllers.editMessage);
+
 
 module.exports = router;

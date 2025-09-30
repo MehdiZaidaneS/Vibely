@@ -8,7 +8,8 @@ const {
  getRegisteredUser,
  addInfo,
  getJoinedEvents,
- leaveEventFromUserPage
+ leaveEventFromUserPage,
+ getUserbyId
 } = require("../controllers/userController.js")
 
 
@@ -20,12 +21,16 @@ router.post("/",createNewUser)
 
 router.post("/login", getRegisteredUser)
 
-router.get('/joined-events', getJoinedEvents);
+router.get("/:userId", getUserbyId)
 
-router.patch('/leave-event/:eventId', leaveEventFromUserPage);
+
+
+
 
 router.use(requireAuth);
 
+router.patch('/:userId/leave-event', leaveEventFromUserPage);
+router.get('/:userId/joined-events', getJoinedEvents);
 router.patch("/:userId", addInfo)
 
 
