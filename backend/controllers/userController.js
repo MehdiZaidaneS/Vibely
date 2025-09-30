@@ -115,16 +115,28 @@ const addInfo = async (req, res) => {
 }
 
 const getJoinedEvents = async (req, res) => {
-    
-     const { userId } = req.params
+    const { userId } = req.params;
 
     try {
-        const user = await UserModel.findById(userId).populate('joinedEvents');
+        const user = await UserModel.findById(userId)
+            .populate({
+                path: 'joinedEvents',        // populate the events the user joined
+                populate: {
+                    path: 'author',          // nested populate: populate author inside each event
+                    select: 'name email profile_pic' // select fields you want from author
+                }
+            });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
         res.status(200).json(user.joinedEvents);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching joined events', error });
     }
 };
+
 const leaveEventFromUserPage = async (req, res) => {
   try {
     const userId = req.params.userId;

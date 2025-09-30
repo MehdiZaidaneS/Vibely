@@ -27,7 +27,7 @@ exports.createEvent = async (req, res) => {
 exports.getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
-      .populate('author', 'username email')
+      .populate('author', 'username email profile_pic')
       .populate('participant', 'username email');
     res.status(200).json(events);
   } catch (error) {
@@ -38,7 +38,7 @@ exports.getAllEvents = async (req, res) => {
 exports.getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId)
-      .populate('author', 'username email')
+      .populate('author', 'username email profile_pic')
       .populate('participant', 'username email');
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });

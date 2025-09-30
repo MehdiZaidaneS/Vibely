@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
 import Modal from "../import/JoinEvent";
 import { getUserbyId } from "../api/userApi";
-import { joinEvent, getAllEvents, getJoinedEvents, leaveEvent } from "../api/eventsApi";
+import { joinEvent, getAllEvents, getJoinedEvents, leaveEvent, recommendEvents } from "../api/eventsApi";
 import Toast from "../import/NotificationJoin";
 import CreateEventModal from "../import/createEventPopup";
 import UserDropdown from "../import/UserDropdown";
@@ -177,7 +177,7 @@ function EventPage({isAuthenticated}) {
               </a>
               <a
                 className={`header-menu-item ${activeMenu === "Recommended" ? "active" : ""}`}
-                onClick={() => setActiveMenu("Recommended")}
+                onClick={() => recommendEvents(setActiveMenu, setEvents)}
               >
                 Recommended
               </a>
@@ -234,8 +234,9 @@ function EventPage({isAuthenticated}) {
                     />
                   </button>
                   <p className="event-time">{event.time}</p>
+                  {activeMenu === "Recommended" && <p>{event.matchScore}/100 match</p>}
                 </div>
-                <img src={event.host?.profile_pic} alt="Event host" className="event-host" /> {/* Fixed to use event.host */}
+                <img src={event.author?.profile_pic} alt="Event host" className="event-host" /> {/* Fixed to use event.host */}
               </article>
             ))}
           </div>

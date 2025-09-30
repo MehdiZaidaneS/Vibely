@@ -111,14 +111,14 @@ export const getJoinedEvents = async (setEvents, setActiveMenu) => {
     }
 }
 
-export const leaveEvent = async (event,setIsCreateModalOpen,setSelectedEvent,setToast) => {
+export const leaveEvent = async (event, setIsCreateModalOpen, setSelectedEvent, setToast) => {
     const userId = localStorage.getItem("userId")
     const token = localStorage.getItem("user")
 
     try {
         const response = await fetch(`http://localhost:5000/api/users/${userId}/leave-event`, {
             method: "PATCH",
-            body: JSON.stringify({event: event._id}),
+            body: JSON.stringify({ event: event._id }),
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
@@ -138,3 +138,54 @@ export const leaveEvent = async (event,setIsCreateModalOpen,setSelectedEvent,set
     }
 
 }
+
+const getEventById = async (eventId) => {
+    try {
+        const response = await fetch(`http://localhost:5000/api/events/${eventId}`)
+        const event = await response.json()
+
+        return event
+    } catch (error) {
+        console.log("Error getting event by id")
+    }
+
+}
+
+
+export const recommendEvents = async (setActiveMenu, setEvents) => {
+  const token = localStorage.getItem("user");
+  const userId = localStorage.getItem("userId");
+
+  try {
+    const response = await fetch("http://localhost:5000/api/events/recommend-event", {
+      method: "POST",
+      body: JSON.stringify({ userId, preferences: [] }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) throw new Error("Failed to get recommended events");
+
+    const recommendedEventsResponse = await response.json();
+    const recommendedArray = Array.isArray(recommendedEventsResponse.matches)
+      ? recommendedEventsResponse.matches
+      : [];
+
+    const recommended = await Promise.all(
+      recommendedArray.map(async (match) => {
+        const event = await getEventById(match.eventId); // use match.eventId
+        return { matchScore: match.matchScore, ...event }; 
+      })
+    );
+
+    console.log(recommended);
+    setEvents(recommended);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    setEvents([]); // fallback to empty array
+  }
+
+  setActiveMenu("Recommended");
+};
