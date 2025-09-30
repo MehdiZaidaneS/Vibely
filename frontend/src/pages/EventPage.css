@@ -494,6 +494,118 @@
   line-height: 1.6;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
+
+/* Loading Recommendations */
+.loading-recommendations {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  min-height: 60vh;
+}
+
+.loading-cards-container {
+  position: relative;
+  width: 250px;
+  height: 300px;
+  margin-bottom: 40px;
+  perspective: 1000px;
+}
+
+.loading-card {
+  position: absolute;
+  width: 180px;
+  height: 240px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.9), rgba(124, 58, 237, 0.9));
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  left: 50%;
+  transform-origin: center;
+}
+
+.loading-card.card-1 {
+  animation: spinCard1 3s ease-in-out infinite;
+  z-index: 3;
+}
+
+.loading-card.card-2 {
+  animation: spinCard2 3s ease-in-out infinite;
+  z-index: 2;
+  background: linear-gradient(135deg, rgba(228, 90, 146, 0.9), rgba(255, 172, 172, 0.9));
+}
+
+.loading-card.card-3 {
+  animation: spinCard3 3s ease-in-out infinite;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(93, 47, 119, 0.9), rgba(62, 30, 104, 0.9));
+}
+
+@keyframes spinCard1 {
+  0%, 100% {
+    transform: translateX(-50%) translateY(-100px) rotateX(0deg);
+    opacity: 1;
+  }
+  33% {
+    transform: translateX(-50%) translateY(0px) rotateX(180deg);
+    opacity: 0.7;
+  }
+  66% {
+    transform: translateX(-50%) translateY(100px) rotateX(360deg);
+    opacity: 0.4;
+  }
+}
+
+@keyframes spinCard2 {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0px) rotateX(0deg);
+    opacity: 0.7;
+  }
+  33% {
+    transform: translateX(-50%) translateY(100px) rotateX(180deg);
+    opacity: 0.4;
+  }
+  66% {
+    transform: translateX(-50%) translateY(-100px) rotateX(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes spinCard3 {
+  0%, 100% {
+    transform: translateX(-50%) translateY(100px) rotateX(0deg);
+    opacity: 0.4;
+  }
+  33% {
+    transform: translateX(-50%) translateY(-100px) rotateX(180deg);
+    opacity: 1;
+  }
+  66% {
+    transform: translateX(-50%) translateY(0px) rotateX(360deg);
+    opacity: 0.7;
+  }
+}
+
+.loading-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  max-width: 600px;
+  line-height: 1.5;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 .animate-card {
   animation: fadeInUp 450ms ease both;
 }

@@ -89,7 +89,8 @@ function EventPage({isAuthenticated}) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isDmOpen, setIsDmOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [detailsEvent, setDetailsEvent] = useState(null); 
+  const [detailsEvent, setDetailsEvent] = useState(null);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false); 
 
   useEffect(() => {
     getAllEvents(setEvents, setActiveMenu)
@@ -256,7 +257,11 @@ function EventPage({isAuthenticated}) {
                 <>
                   <a
                     className={`header-menu-item ${activeMenu === "Recommended" ? "active" : ""}`}
-                    onClick={() => recommendEvents(setActiveMenu, setEvents)}
+                    onClick={async () => {
+                      setIsLoadingRecommendations(true);
+                      await recommendEvents(setActiveMenu, setEvents);
+                      setIsLoadingRecommendations(false);
+                    }}
                   >
                     Recommended
                   </a>
@@ -274,7 +279,16 @@ function EventPage({isAuthenticated}) {
 
         {/* Main Content */}
         <main className="main-content">
-          {events.length === 0 ? (
+          {isLoadingRecommendations ? (
+            <div className="loading-recommendations">
+              <div className="loading-cards-container">
+                <div className="loading-card card-1"></div>
+                <div className="loading-card card-2"></div>
+                <div className="loading-card card-3"></div>
+              </div>
+              <h2 className="loading-text">Generating recommended events based on your interests!</h2>
+            </div>
+          ) : events.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">📭</div>
               <h3 className="empty-state-title">
