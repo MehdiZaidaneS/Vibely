@@ -19,11 +19,11 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
         </div>
 
         <nav className="sidebar-menu">
-          <Link to="/events" className="menu-item">
+          <Link to="/" className="menu-item">
             <img src="../assets/images/img_Events_icon.svg" alt="" width="18" height="18" />
             <span className="menu-text">Events</span>
           </Link>
-          <a href="#" className="menu-item">
+          <a href="/people" className="menu-item">
             <img src="../assets/images/img_people.svg" alt="" width="18" height="20" />
             <span className="menu-text">People</span>
           </a>
