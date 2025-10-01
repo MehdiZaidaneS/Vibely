@@ -1,7 +1,9 @@
+// Corrected src/App.jsx (this is the router - do not put mocks or component logic here)
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./components/auth/Register-Login/authPage";
 import WelcomePage from "./components/auth/WelcomePage/welcomePage";
 import EventPage from "./pages/EventPage";
+import PeoplePage from "./pages/PeoplePage"; // Import the separate PeoplePage component
 // import CreateEvent from "./pages/CreateEvent";
 import PublicChat from "./components/chat/public-chat/publicChat";
 import PrivateChat from "./components/chat/privateChat";
@@ -29,11 +31,14 @@ function App() {
           element={isAuthenticated ? <Navigate to="/" /> : <Auth setIsAuthenticated={setIsAuthenticated} />} 
         />
         <Route path="/welcome" element={<WelcomePage />} />
+        
 
         {/* <Route path="create-event" element={<CreateEvent />} /> */}
         <Route path="/public-chat" element={<PublicChat />} />
         <Route path="/private-chat" element={<PrivateChat />} />
         <Route path="/private-chat/:chatroomId" element={<PrivateChat />} />
+        <Route path="/people" element={<PeoplePage />} />
+
       </Routes>
     </BrowserRouter>
   );

@@ -1,0 +1,486 @@
+/* src/pages/PeoplePage.module.css */
+
+/* Animations from publicChat.module.css */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes onlineIndicator {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+}
+
+/* Floating effect from publicChat */
+.floatingElement {
+  position: relative;
+}
+
+.floatingElement::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #8b5cf6, #3b82f6, #8b5cf6);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.floatingElement:hover::before {
+  opacity: 0.1;
+}
+
+/* Page Container */
+.pageContainer {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 2rem;
+}
+
+/* Content Wrapper */
+.contentWrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* Sidebar */
+.sidebar {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  width: 25%;
+  position: sticky;
+  top: 1.5rem;
+  height: fit-content;
+}
+
+.sidebarTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.friendsList {
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f9fafb;
+}
+
+.friendsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.friendsList::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 3px;
+}
+
+.friendsList::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.friendsList::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.noResults {
+  text-align: center;
+  color: #6b7280;
+  padding: 1rem;
+}
+
+/* Main Content */
+.mainContent {
+  flex: 1;
+}
+
+.discoveryCard {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.searchContainer {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #9ca3af;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+  cursor: pointer;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  color: #6b7280;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.activeTab {
+  border-bottom: 2px solid #6366f1;
+  color: #111827;
+  font-weight: bold;
+}
+
+.userGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* User Card */
+.userCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.userCard:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.userHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.avatarContainer {
+  position: relative;
+}
+
+.avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.onlineIndicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.userName {
+  font-weight: 500;
+  color: #111827;
+}
+
+.username {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.bio {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.tag {
+  padding: 0.25rem 0.5rem;
+  background: #e0e7ff;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+}
+
+.info {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.activity {
+  font-size: 0.75rem;
+  color: #4f46e5;
+  margin-bottom: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.primaryButton {
+  flex: 1;
+  background: #4f46e5;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  background: #4338ca;
+}
+
+.secondaryButton {
+  flex: 1;
+  background: #e5e7eb;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.secondaryButton:hover {
+  background: #d1d5db;
+}
+
+.messageButton {
+  flex: 1;
+  background: #3b82f6;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.messageButton:hover {
+  background: #2563eb;
+}
+
+.inviteButton {
+  flex: 1;
+  background: #22c55e;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.inviteButton:hover {
+  background: #16a34a;
+}
+
+.moreMenu {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.actionButton {
+  padding: 0.25rem;
+  border-radius: 0.375rem;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  background: #f3f4f6;
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #6366f1;
+}
+
+.iconSmall {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  max-width: 28rem;
+  width: 100%;
+}
+
+.closeButton {
+  float: right;
+  padding: 0.25rem;
+  cursor: pointer;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Accept/Decline Buttons for Requests */
+.acceptButton {
+  flex: 1;
+  background: #22c55e;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.acceptButton:hover {
+  background: #16a34a;
+}
+
+.declineButton {
+  flex: 1;
+  background: #ef4444;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.declineButton:hover {
+  background: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .contentWrapper {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+}
