@@ -1,5 +1,6 @@
 
 const notificationModel = require("../models/notificationModel")
+const UserModel = require("../models/userModel")
 const mongoose = require("mongoose")
 
 
@@ -15,14 +16,42 @@ const getAll = async (req, res) => {
 
 const createNotification = async (req, res) => {
     try {
-        const notification = await notificationModel.create({ ...req.body })
+        let { sender, receiver, content, type } = req.body;
 
-        res.status(201).json(notification)
+        if (!mongoose.Types.ObjectId.isValid(receiver)) {
+            return res.status(400).json({ message: "Invalid receiver ID" });
+        }
+
+        const senderInfo = await UserModel.findById(sender);
+
+        if (!senderInfo) {
+            return res.status(400).json({ message: "Invalid sender" });
+        }
+
+        if (type === "Friend Request") {
+            content = `${senderInfo.username} wants to send you a friend request!`;
+        }
+
+        // Create the notification
+        const notification = await notificationModel.create({
+            sender,
+            receiver,
+            content,
+            type
+        });
+
+        res.status(201).json({
+            message: "Notification created successfully",
+            notification
+        });
 
     } catch (error) {
-        res.status(400).json({ message: "Failed creating the notification" })
+        console.error("Error creating notification:", error);
+        res.status(400).json({ message: "Failed creating the notification" });
     }
-}
+};
+
+
 
 const getMyNotifications = async (req, res) => {
 

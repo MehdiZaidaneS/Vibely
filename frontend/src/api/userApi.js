@@ -30,7 +30,7 @@ export const createUser = async (body) => {
     }
 }
 
-export const getUserbyId = async (setUser)=>{
+export const getUserbyId = async (setUser) => {
     const userId = localStorage.getItem("userId")
     try {
         const response = await fetch(`${API_URL}/${userId}`)
@@ -42,11 +42,11 @@ export const getUserbyId = async (setUser)=>{
         const user = await response.json()
         setUser(user)
         return user
-        
+
     } catch (error) {
         console.error("Error getting user:", error.message)
         throw error;
-        
+
     }
 }
 
@@ -106,4 +106,60 @@ export const addInfo = async (body) => {
         throw error;
 
     }
+}
+
+
+export const declineFriendRequest = async (friend_request_id) => {
+
+    const token = localStorage.getItem("user")
+    try {
+
+        const response = await fetch(`${API_URL}/delete/${friend_request_id}`,{
+            method: "DELETE",
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json(); 
+        return data;
+
+
+    } catch (error) {
+        console.error("Error declining friend request:", error);
+        throw error;
+
+    }
+}
+
+
+export const acceptFriendResquest = async(friend_request_id) =>{
+    const token = localStorage.getItem("user")
+    try {
+
+        const response = await fetch(`${API_URL}/accept/${friend_request_id}`,{
+            method: "POST",
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json(); 
+        return data;
+
+
+    } catch (error) {
+        console.error("Error accept friend request:", error);
+        throw error;
+
+    }
+
 }
