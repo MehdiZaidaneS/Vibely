@@ -1,7 +1,7 @@
 import React from "react";
 import { User, ArrowRight, Check } from "lucide-react";
 
-const UsernameStep = ({ username, usernameStatus, onUsernameChange, onSubmit }) => {
+const UsernameStep = ({ username, usernameStatus, onUsernameChange, onSubmit }) => {  
   return (
     <>
       {/* Welcome header section */}

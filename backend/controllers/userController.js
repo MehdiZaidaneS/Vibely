@@ -76,6 +76,22 @@ const getRegisteredUser = async (req, res) => {
 
 }
 
+const checkUserName = async (req,res) =>{
+    const {username} = req.params
+    try {
+        const findUser = await UserModel.findOne({username: username})
+
+        if(findUser){
+            return res.status(200).json({status: "taken"})
+        }else{
+             return res.status(200).json({status: "available"})
+        }
+
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
 
 const addInfo = async (req, res) => {
 
@@ -319,5 +335,7 @@ module.exports = {
     getUserbyId,
     addFriendRequest,
     acceptFriendRequest,
-    deleteFriendRequest
+    deleteFriendRequest,
+    checkUserName
+    
 }

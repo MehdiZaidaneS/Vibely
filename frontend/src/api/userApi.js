@@ -163,3 +163,21 @@ export const acceptFriendResquest = async(friend_request_id) =>{
     }
 
 }
+
+export const checkUserName =async (username) =>{
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/check-username/${username}`)
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json(); 
+        console.log(data.status)
+        return data.status;
+        
+    } catch (error) {
+        console.error("Error checking usermae:", error);
+        throw error;
+    }
+}

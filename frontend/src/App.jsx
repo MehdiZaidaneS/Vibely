@@ -34,10 +34,10 @@ function App() {
         
 
         {/* <Route path="create-event" element={<CreateEvent />} /> */}
-        <Route path="/public-chat" element={<PublicChat />} />
-        <Route path="/private-chat" element={<PrivateChat />} />
-        <Route path="/private-chat/:chatroomId" element={<PrivateChat />} />
-        <Route path="/people" element={<PeoplePage />} />
+        <Route path="/public-chat" element={ <PublicChat />} />
+        <Route path="/private-chat" element={isAuthenticated ? <PrivateChat /> : <Navigate to="/register" />} />
+        <Route path="/private-chat/:chatroomId" element={isAuthenticated ? <PrivateChat /> : <Navigate to="/register" />} />
+        <Route path="/people" element={isAuthenticated ? <PeoplePage /> : <Navigate to="/register" />} />
 
       </Routes>
     </BrowserRouter>

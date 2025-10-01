@@ -12,7 +12,8 @@ const {
  getUserbyId,
  addFriendRequest,
  acceptFriendRequest,
- deleteFriendRequest
+ deleteFriendRequest,
+ checkUserName
 } = require("../controllers/userController.js")
 
 
@@ -28,7 +29,7 @@ router.get("/:userId", getUserbyId)
 
 
 
-
+router.get("/check-username/:username", checkUserName)
 
 router.use(requireAuth);
 
@@ -38,6 +39,7 @@ router.patch("/:userId", addInfo)
 router.post("/:userId", addFriendRequest)
 router.post("/accept/:requested_friend_id", acceptFriendRequest)
 router.delete("/delete/:requested_friend_id", deleteFriendRequest)
+
 
 
 module.exports = router
