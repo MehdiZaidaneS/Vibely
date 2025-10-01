@@ -3,7 +3,7 @@ const User = require('../models/userModel');
 
 exports.createEvent = async (req, res) => {
   try {
-    const newEvent = new Event({
+    const eventData = {
       author: req.body.author,
       title: req.body.title,
       description: req.body.description,
@@ -11,16 +11,22 @@ exports.createEvent = async (req, res) => {
       date: req.body.date,
       time: req.body.time,
       endTime: req.body.endTime,
-      image: req.body.image,
       location: req.body.location,
       capacity: req.body.capacity,
       participant: req.body.participant || []
-    });
+    };
 
+    // If image file was uploaded, add the path
+    if (req.file) {
+      eventData.imageUrl = `/uploads/events/${req.file.filename}`;
+    }
+
+    const newEvent = new Event(eventData);
     const savedEvent = await newEvent.save();
     res.status(201).json(savedEvent);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating event', error });
+    console.error('Error creating event:', error);
+    res.status(500).json({ message: 'Error creating event', error: error.message });
   }
 };
 

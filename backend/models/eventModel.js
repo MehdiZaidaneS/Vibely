@@ -11,6 +11,7 @@ const eventSchema = new Schema(
     time: { type: String, required: true },
     endTime: { type: String, required: false },
     image: { type: String, required: false },
+    imageUrl: { type: String, required: false },
     location: { type: String, required: true },
     capacity: { type: Number, required: false },
     participant: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]

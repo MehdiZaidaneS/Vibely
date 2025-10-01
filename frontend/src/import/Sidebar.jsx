@@ -6,11 +6,17 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
   return (
     <>
       <aside className={`sidebar ${isOpen ? "open" : "closed"}`} aria-hidden={!isOpen}>
-        <img
-          src="../assets/images/img_sidebar_logo.png"
-          alt="Vibely Logo"
-          className="sidebar-logo animate-logo"
-        />
+        <div className="sidebar-logo">
+          {["V", "i", "b", "e", "l", "y"].map((letter, index) => (
+            <span
+              key={index}
+              className="sidebar-logo-letter"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {letter}
+            </span>
+          ))}
+        </div>
 
         <nav className="sidebar-menu">
           <Link to="/events" className="menu-item">
@@ -30,16 +36,6 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
             <span className="menu-text">DuoFinder</span>
           </a>
         </nav>
-
-        <div className="upgrade-section">
-          <img
-            src="../assets/images/img_DuoFinder_Icon_group.svg"
-            alt="Upgrade to DuoFinder"
-            className="upgrade-icon"
-          />
-          <p className="upgrade-text">Upgrade to DuoFinder to grow your network</p>
-          <button className="upgrade-button">Upgrade</button>
-        </div>
       </aside>
 
       {/* Desktop chevron toggle - visible on wider screens */}
