@@ -1,10 +1,9 @@
 const UserModel = require("../models/userModel.js")
 const Event = require("../models/eventModel");
-
 const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken")
-const dotenv = require("dotenv") 
-dotenv.config() 
+const dotenv = require("dotenv")
+dotenv.config()
 
 
 
@@ -26,7 +25,7 @@ const getAllUsers = async (req, res) => {
     }
 }
 
-const getUserbyId = async (req,res)=>{
+const getUserbyId = async (req, res) => {
     const userId = req.params.userId
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -34,10 +33,10 @@ const getUserbyId = async (req,res)=>{
     }
 
     try {
-        const user = await UserModel.findOne({_id: userId})
+        const user = await UserModel.findOne({ _id: userId })
         res.status(200).json(user)
     } catch (error) {
-        res.status(404).json({message: "Couldnt find the user"})
+        res.status(404).json({ message: "Couldnt find the user" })
     }
 }
 
@@ -47,7 +46,7 @@ const createNewUser = async (req, res) => {
     const { name, email, phone, password, profile_pic } = req.body
 
     try {
-        const newUser = await UserModel.signup(name, email, phone, password,profile_pic)
+        const newUser = await UserModel.signup(name, email, phone, password, profile_pic)
 
         const token = generateToken(newUser._id)
         res.status(201).json({ user: newUser, token })
@@ -114,6 +113,140 @@ const addInfo = async (req, res) => {
     }
 }
 
+
+const addFriendRequest = async (req, res) => {
+    const { userId } = req.params
+    const currentUserId = req.user._id
+    try {
+        const targetUser = await UserModel.findById(userId)
+        if (!targetUser) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        const currentUser = await UserModel.findById(currentUserId)
+
+        if (currentUser.friends.includes(userId)) {
+            return res.status(400).json({ message: "You are already friends" });
+        }
+
+        if (targetUser.friend_requests.includes(currentUserId)) {
+            return res.status(400).json({ message: "Friend request already sent" });
+        }
+
+        targetUser.friend_requests.push(currentUserId);
+        await targetUser.save();
+
+        return res.status(200).json({ message: "Friend request sent successfully" });
+
+
+    } catch (err) {
+        console.error("Error adding friend:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
+
+const acceptFriendRequest = async (req, res) => {
+    const userId = req.user._id; // logged in user
+    const { requested_friend_id } = req.params; // the one who sent the request
+
+    try {
+        if (!mongoose.Types.ObjectId.isValid(requested_friend_id)) {
+            return res.status(400).json({ message: "Invalid user id" });
+        }
+
+        const targetUser = await UserModel.findById(requested_friend_id);
+        if (!targetUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Current user not found" });
+        }
+
+        const hasRequest = user.friend_requests.some(id =>
+            id.equals(requested_friend_id)
+        );
+
+        if (!hasRequest) {
+            return res.status(400).json({ message: "User has not sent you a friend request" });
+        }
+
+        // add each other as friends
+        if (!user.friends.some(id => id.equals(requested_friend_id))) {
+            user.friends.push(targetUser._id);
+        }
+
+        if (!targetUser.friends.some(id => id.equals(userId))) {
+            targetUser.friends.push(user._id);
+        }
+
+        user.friend_requests.pull(requested_friend_id);
+
+
+        await user.save();
+        await targetUser.save();
+
+        return res.status(200).json({ 
+            message: "Friend request accepted successfully",
+            friends: user.friends 
+        });
+
+    } catch (err) {
+        console.error("Error accepting friend:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+const deleteFriendRequest = async (req,res) =>{
+
+    const userId = req.user._id;
+    const { requested_friend_id } = req.params;
+
+    try {
+        if (!mongoose.Types.ObjectId.isValid(requested_friend_id)) {
+            return res.status(400).json({ message: "Invalid user id" });
+        }
+
+        const targetUser = await UserModel.findById(requested_friend_id);
+        if (!targetUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Current user not found" });
+        }
+
+        const hasRequest = user.friend_requests.some(id =>
+            id.equals(requested_friend_id)
+        );
+
+        if (!hasRequest) {
+            return res.status(400).json({ message: "User has not sent you a friend request" });
+        }
+
+        user.friend_requests.pull(requested_friend_id);
+
+        await user.save();
+        await targetUser.save();
+
+        return res.status(200).json({ 
+            message: "Friend request deleted successfully",
+            friends: user.friends 
+        });
+
+    } catch (err) {
+        console.error("Error deleting friend:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+
+    
+
+}
+
+
 const getJoinedEvents = async (req, res) => {
     const { userId } = req.params;
 
@@ -138,41 +271,41 @@ const getJoinedEvents = async (req, res) => {
 };
 
 const leaveEventFromUserPage = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const eventId = req.body.event;
+    try {
+        const userId = req.params.userId;
+        const eventId = req.body.event;
 
-    const event = await Event.findById(eventId);
-    if (!event) return res.status(404).json({ message: 'Event not found' });
+        const event = await Event.findById(eventId);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    const user = await UserModel.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+        const user = await UserModel.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Remove user from event.participant
-    const participantIndex = event.participant.findIndex(
-      id => id.toString() === userId
-    );
-    if (participantIndex !== -1) {
-      event.participant.splice(participantIndex, 1);
-      await event.save();
+        // Remove user from event.participant
+        const participantIndex = event.participant.findIndex(
+            id => id.toString() === userId
+        );
+        if (participantIndex !== -1) {
+            event.participant.splice(participantIndex, 1);
+            await event.save();
+        }
+
+        // Remove event from user.joinedEvents
+        const eventIndex = user.joinedEvents.findIndex(
+            id => id.toString() === eventId
+        );
+        if (eventIndex !== -1) {
+            user.joinedEvents.splice(eventIndex, 1);
+            await user.save();
+        }
+
+        res.status(200).json({ message: 'Successfully left event' });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error leaving event from user page',
+            error: error.message,
+        });
     }
-
-    // Remove event from user.joinedEvents
-    const eventIndex = user.joinedEvents.findIndex(
-      id => id.toString() === eventId
-    );
-    if (eventIndex !== -1) {
-      user.joinedEvents.splice(eventIndex, 1);
-      await user.save();
-    }
-
-    res.status(200).json({ message: 'Successfully left event' });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error leaving event from user page',
-      error: error.message,
-    });
-  }
 };
 
 
@@ -183,5 +316,8 @@ module.exports = {
     addInfo,
     getJoinedEvents,
     leaveEventFromUserPage,
-    getUserbyId
+    getUserbyId,
+    addFriendRequest,
+    acceptFriendRequest,
+    deleteFriendRequest
 }

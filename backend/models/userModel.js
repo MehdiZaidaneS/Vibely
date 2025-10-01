@@ -51,7 +51,31 @@ const userSchema = new Schema(
             [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Event'
-            }],
+            }]
+            
+        ,
+        notifications:
+        [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Notification'
+            }
+        ]
+        ,
+        friends:
+        [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            }
+        ],
+        friend_requests:
+        [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            }
+        ]
 
     }, { timestamps: true }
 );

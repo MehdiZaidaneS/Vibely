@@ -9,7 +9,10 @@ const {
  addInfo,
  getJoinedEvents,
  leaveEventFromUserPage,
- getUserbyId
+ getUserbyId,
+ addFriendRequest,
+ acceptFriendRequest,
+ deleteFriendRequest
 } = require("../controllers/userController.js")
 
 
@@ -32,6 +35,9 @@ router.use(requireAuth);
 router.patch('/:userId/leave-event', leaveEventFromUserPage);
 router.get('/:userId/joined-events', getJoinedEvents);
 router.patch("/:userId", addInfo)
+router.post("/:userId", addFriendRequest)
+router.post("/accept/:requested_friend_id", acceptFriendRequest)
+router.delete("/delete/:requested_friend_id", deleteFriendRequest)
 
 
 module.exports = router

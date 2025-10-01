@@ -1,13 +1,22 @@
-// src/import/NotificationPopup.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getMyNotifications, deleteNotification } from "../api/notificationsApi";
 
 function NotificationPopup({ onClose }) {
-  // Mock data for notifications
-  const notifications = [
-    { id: 1, message: "John joined your event 'Football Match'", time: "2 hours ago", unread: true },
-    { id: 2, message: "New comment on 'Tech Conference'", time: "1 day ago", unread: false },
-    { id: 3, message: "Event 'Music Festival' is starting soon", time: "3 days ago", unread: false },
-  ];
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    getMyNotifications(setNotifications);
+  }, []);
+
+  const handleAccept = (notif) => {
+    console.log("Accept clicked for:", notif);
+    // Add your accept logic here
+  };
+
+  const handleDecline = (notif) => {
+    console.log("Decline clicked for:", notif);
+    // Add your decline logic here
+  };
 
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -18,24 +27,54 @@ function NotificationPopup({ onClose }) {
         {notifications.length > 0 ? (
           notifications.map((notif) => (
             <li
-              key={notif.id}
-              className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${notif.unread ? "bg-blue-50" : ""}`}
-              onClick={() => console.log("Notification clicked:", notif.message)} // Placeholder for navigation/action
+              key={notif._id}
+              className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex justify-between items-center ${notif.unread ? "bg-blue-50" : ""}`}
+              onClick={() => console.log("Notification clicked:", notif.content)}
             >
-              <p className="text-sm text-gray-800">{notif.message}</p>
-              <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+              <span className="text-sm text-gray-800">{notif.content}</span>
+
+              <div className="flex space-x-2">
+                {notif.type === "Message" && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                     deleteNotification(notif._id);
+                    }}
+                    className="px-2 py-1 bg-red-500 text-white text-xs rounded"
+                  >
+                    Remove
+                  </button>
+                )}
+
+                {notif.type === "Friend Request" && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAccept(notif);
+                      }}
+                      className="px-2 py-1 bg-green-500 text-white text-xs rounded"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDecline(notif);
+                      }}
+                      className="px-2 py-1 bg-gray-300 text-gray-800 text-xs rounded"
+                    >
+                      Decline
+                    </button>
+                  </>
+                )}
+              </div>
             </li>
           ))
         ) : (
           <li className="p-4 text-center text-gray-500">No notifications</li>
         )}
       </ul>
-      <div className="p-4 border-t border-gray-200 text-center">
-        <button className="text-sm text-blue-600 hover:underline" onClick={() => console.log("View all notifications")}>
-          View all
-        </button>
-      </div>
-      {/* Close on outside click can be handled in parent, but add a close button if needed */}
     </div>
   );
 }
