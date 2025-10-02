@@ -3,7 +3,7 @@ const router = express.Router()
 const multer = require("multer")
 const path = require("path")
 const requireAuth = require("../middleware/requireAuth");
-const EventMatches = require("../controllers/AIeventController.js")
+const {EventMatches} = require("../controllers/AIeventController.js")
 
 const {
   createEvent,
@@ -48,9 +48,10 @@ const upload = multer({
 router.get("/", getAllEvents);
 router.get("/search", searchEvent);
 router.get("/:eventId", getEventById);
-router.post("/recommend-event", EventMatches)
+
 
 router.use(requireAuth);
+router.post("/recommend-event", EventMatches)
 
 
 

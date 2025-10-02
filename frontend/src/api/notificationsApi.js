@@ -2,10 +2,16 @@
 
 export const getMyNotifications = async (setNotifications)=>{
 
-    const userId = localStorage.getItem("userId")
+    const token = localStorage.getItem("user")
 
     try {
-        const response = await fetch(`http://localhost:5000/api/notifications/${userId}`)
+        const response = await fetch(`http://localhost:5000/api/notifications/getNotifications`,{
+          method: "POST",
+           headers:{
+                "Authorization": `Bearer ${token}`,
+          }
+        }
+        )
 
         if (!response.ok) throw new Error("Failed to fetch joined events");
         const data = await response.json();

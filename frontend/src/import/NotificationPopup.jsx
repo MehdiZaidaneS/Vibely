@@ -10,31 +10,21 @@ function NotificationPopup({ onClose }) {
   }, []);
 
   const handleAccept = async (notif) => {
-
-    const friends = [await getFriends()]
-
-    if (friends.includes(notif.sender)) {
-      await acceptFriendResquest(notif.sender)
-      await deleteNotification(notif._id)
-    } else {
-      await deleteNotification(notif._id)
-    }
-
-
+   
+    await acceptFriendResquest(notif.sender);
+    
   };
+
 
   const handleDecline = async (notif) => {
-    const friends = [await getFriends()]
+ 
 
-    if (friends.includes(notif.sender)) {
-      await declineFriendRequest(notif.sender)
-      await deleteNotification(notif._id)
-    } else {
-      await deleteNotification(notif._id)
-    }
-
-
+  
+    await declineFriendRequest(notif.sender);
+  
+    
   };
+
 
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -47,7 +37,6 @@ function NotificationPopup({ onClose }) {
             <li
               key={notif._id}
               className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex justify-between items-center ${notif.unread ? "bg-blue-50" : ""}`}
-              onClick={() => console.log("Notification clicked:", notif.content)}
             >
               <span className="text-sm text-gray-800">{notif.content}</span>
 

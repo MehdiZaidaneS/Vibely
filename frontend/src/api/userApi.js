@@ -217,7 +217,7 @@ export const checkUserName =async (username) =>{
         }
 
         const data = await response.json(); 
-        console.log(data.status)
+    
         return data.status;
         
     } catch (error) {
@@ -240,7 +240,6 @@ export const sendFriendRequest = async (userId) =>{
         }
 
         const data = await response.json(); 
-        console.log("Friend request sent")
         return data;
         
     } catch (error) {
@@ -265,6 +264,29 @@ export const getFriends =async () =>{
 
         const data = await response.json(); 
         return data;
+        
+    } catch (error) {
+        console.error("Error geetting requests:", error);
+        throw error;
+    }
+}
+
+
+export const getSuggestedUsers =async () =>{
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/matched-users`,{
+            method: "POST",
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json(); 
+        return data.matches;
         
     } catch (error) {
         console.error("Error geetting requests:", error);

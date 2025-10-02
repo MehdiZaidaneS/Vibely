@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
+const {UserMatches} = require("../controllers/AIeventController.js")
 const requireAuth = require("../middleware/requireAuth");
+
 
 const {
  getAllUsers,
@@ -13,7 +15,6 @@ const {
  addFriendRequest,
  acceptFriendRequest,
  deleteFriendRequest,
- checkUserName,
  getFriendRequests,
  getFriends,
  removeFriend,
@@ -40,6 +41,7 @@ router.get("/check-username/:username", checkUserName)
 
 
 router.use(requireAuth);
+router.post("/matched-users", UserMatches)
 
 router.get("/", getAllUsers)
 router.post("/friend-requests", getFriendRequests)

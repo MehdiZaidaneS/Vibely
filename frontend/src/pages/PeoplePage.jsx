@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Search, UserPlus, MessageSquare, BellOff, MoreVertical, X, Check, UserCheck, UserX, Globe, MapPin, Gamepad, Music, Code, Heart, Star, Users } from 'lucide-react';
 import styles from './PeoplePage.module.css';
 import Sidebar from '../import/Sidebar'; // Using the general Sidebar.jsx for navigation
-import { getAllUsers,declineFriendRequest, getFriendRequests, sendFriendRequest, acceptFriendResquest } from '../api/userApi';
+import { getAllUsers, getFriends, declineFriendRequest, getFriendRequests, sendFriendRequest, acceptFriendResquest, getSuggestedUsers } from '../api/userApi';
 
 
 const PeoplePage = () => {
@@ -24,6 +24,12 @@ const PeoplePage = () => {
     setActiveUsers(users);
   };
 
+  const fetchSuggestedUsers = async () =>{
+      const suggested = await getSuggestedUsers()
+      setSuggestedUsers(suggested)
+      setActiveTab("suggestions")
+    }
+
   useEffect(() => {
 
     const fetchRequests = async () => {
@@ -31,8 +37,17 @@ const PeoplePage = () => {
       setFriendRequests(friend_requests);
     };
 
+    const fetchFriends = async () =>{
+      const friends = await getFriends()
+      setFriends(friends)
+    }
+
+    
+
     fetchUsers();
     fetchRequests();
+    fetchFriends();
+
   }, []);
 
 
@@ -41,11 +56,11 @@ const PeoplePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 
-  const addFriend = async (userId) => {
+  const addFriend = async (userId, setState) => {
     try {
       await sendFriendRequest(userId);
 
-      setActiveUsers(prev =>
+      setState(prev =>
         prev.map(u =>
           u._id === userId
             ? { ...u, friendRequestPending: "Pending" }
@@ -66,32 +81,19 @@ const PeoplePage = () => {
 
   const acceptRequest = async (requestId) => {
     acceptFriendResquest(requestId)
-    setFriendRequests(prev => prev.filter(r => r.user._id !== requestId));
+
+    setFriendRequests(prev => prev.filter(r => r._id !== requestId));
     setActiveUsers(prev => prev.filter(r => r._id !== requestId))
+    setSuggestedUsers(prev => prev.filter(r => r._id !== requestId))
   };
 
   const declineRequest = async (requestId) => {
     declineFriendRequest(requestId)
-    setFriendRequests(prev => prev.filter(r => r.user._id !== requestId));
+    setFriendRequests(prev => prev.filter(r => r._id !== requestId));
      setActiveUsers(prev => prev.filter(r => r._id !== requestId))
+     setSuggestedUsers(prev => prev.filter(r => r._id !== requestId))
   };
 
-  const removeFriend = async (friendId) => {
-    // TODO: DELETE to /api/friends/remove
-    console.log('Removing friend:', friendId);
-    setFriends(prev => prev.filter(f => f.id !== friendId));
-  };
-
-  const blockUser = async (userId) => {
-    // TODO: POST to /api/users/block
-    console.log('Blocking user:', userId);
-    setActiveUsers(prev => prev.filter(u => u.id !== userId));
-  };
-
-  const reportUser = async (userId) => {
-    // TODO: POST to /api/users/report
-    console.log('Reporting user:', userId);
-  };
 
   const inviteToEvent = async (userId, eventId) => {
     console.log('Inviting user to event:', userId, eventId);
@@ -107,20 +109,14 @@ const PeoplePage = () => {
       (filter === 'mutual' && user.mutualFriends > 0))
   );
 
-  // Filtered friends by category
-  const filteredFriends = friends.filter(f =>
-    friendsCategory === 'all' || f.category === friendsCategory
-  ).sort((a, b) => b.isOnline - a.isOnline); // Online first
+
 
   return (
     <div className={`${styles.pageContainer} ${styles.animateFadeIn}`}>
       {/* Imported Sidebar - toggles on button click */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      {/* Add a toggle button for the sidebar, e.g., hamburger */}
-      <button onClick={() => setIsSidebarOpen(true)} className={styles.sidebarToggle}>
-        ☰ Menu
-      </button>
+      
       <div className={styles.contentWrapper}>
 
         <aside className={`${styles.sidebar} ${styles.animateSlideInLeft}`}>
@@ -129,28 +125,27 @@ const PeoplePage = () => {
           </h2>
 
           <div className={styles.friendsList}>
-            {filteredFriends.map(friend => (
-              <div key={friend.id} className={`${styles.userCard} ${styles.animateSlideUp}`}>
+            {friends.map(friend => (
+              <div key={friend._id} className={`${styles.userCard} ${styles.animateSlideUp}`}>
                 <div className={styles.userInfo}>
                   <div className={styles.avatarContainer}>
-                    <img src={friend.avatar} alt={friend.name} className={styles.avatar} />
-                    {friend.isOnline && <span className={`${styles.onlineIndicator} ${styles.animateOnlineIndicator}`}></span>}
+                    <img src={friend.profile_pic} alt={friend.name} className={styles.avatar} />
                   </div>
                   <div>
                     <p className={styles.userName}>{friend.name}</p>
+                    <p className={styles.userName}>{friend.username}</p>
                     <p className={styles.lastMessage}>{friend.lastMessage}</p>
                   </div>
                 </div>
                 <div className={styles.actions}>
-                  <button onClick={() => sendMessage(friend.id)} className={styles.actionButton}><MessageSquare className={styles.iconSmall} /></button>
+                  <button onClick={() => sendMessage(friend._id)} className={styles.actionButton}><MessageSquare className={styles.iconSmall} /></button>
                   <div className="relative">
                     <button className={styles.actionButton}><MoreVertical className={styles.iconSmall} /></button>
-                    {/* Dropdown for quick actions: Mute, Unfriend, Block */}
                   </div>
                 </div>
               </div>
             ))}
-            {filteredFriends.length === 0 && <p className={styles.noResults}>No friends in this category</p>}
+            {friends.length === 0 && <p className={styles.noResults}>No friends in this category</p>}
           </div>
         </aside>
 
@@ -176,14 +171,14 @@ const PeoplePage = () => {
 
             {/* Tabs for sections */}
             <div className={styles.tabs}>
-              <button onClick={() => setActiveTab('discovery')} className={`${styles.tab} ${activeTab === 'discovery' ? styles.activeTab : ''}`}>Active Users</button>
+              <button onClick={() => setActiveTab('discovery')} className={`${styles.tab} ${activeTab === 'discovery' ? styles.activeTab : ''}`}>Find Users</button>
               <button onClick={() => setActiveTab('requests')} className={`${styles.tab} ${activeTab === 'requests' ? styles.activeTab : ''}`}>Requests ({friendRequests.length})</button>
-              <button onClick={() => setActiveTab('suggestions')} className={`${styles.tab} ${activeTab === 'suggestions' ? styles.activeTab : ''}`}>Suggestions ({suggestedUsers.length})</button>
+              <button onClick={() =>  fetchSuggestedUsers()} className={`${styles.tab} ${activeTab === 'suggestions' ? styles.activeTab : ''}`}>Suggestions ({suggestedUsers.length})</button>
             </div>
 
             <div className={styles.userGrid}>
               {activeTab === 'discovery' && filteredActiveUsers.map(user => (
-                <div key={user.id} className={`${styles.userCard} ${styles.animateSlideInRight}`}>
+                <div key={user._id} className={`${styles.userCard} ${styles.animateSlideInRight}`}>
                   <div className={styles.userHeader}>
                     <div className={styles.avatarContainer}>
                       <img src={user.profile_pic} alt={user.name} className={styles.avatar} />
@@ -224,7 +219,7 @@ const PeoplePage = () => {
                       <button
                         onClick={
                           user.friendRequestPending === "Add Friend"
-                            ? () => addFriend(user._id)
+                            ? () => addFriend(user._id, setActiveUsers)
                             : () => console.log("Friend request pending")
                         }
                         className={styles.primaryButton}
@@ -248,24 +243,24 @@ const PeoplePage = () => {
               ))}
 
               {activeTab === 'requests' && friendRequests.map(request => (
-                <div key={request.user._id} className={`${styles.userCard} ${styles.animateSlideInRight}`}>
+                <div key={request._id} className={`${styles.userCard} ${styles.animateSlideInRight}`}>
                   <div className={styles.userHeader}>
                     <div className={styles.avatarContainer}>
-                      <img src={request.user.profile_pic} alt={request.user.name} className={styles.avatar} />
+                      <img src={request.profile_pic} alt={request.name} className={styles.avatar} />
                     </div>
                     <div>
-                      <p className={styles.userName}>{request.user.name}</p>
-                      <p className={styles.username}>{request.user.username}</p>
+                      <p className={styles.userName}>{request.name}</p>
+                      <p className={styles.username}>{request.username}</p>
                     </div>
                   </div>
                   <p className={styles.info}>{request.mutualFriends} mutual friends</p>
                   <p className={styles.info}>Sent {format(new Date(request.sentAt), "PPP p")}</p>
 
                   <div className={styles.actions}>
-                    <button onClick={() => acceptRequest(request.user._id)} className={styles.acceptButton}>
+                    <button onClick={() => acceptRequest(request._id)} className={styles.acceptButton}>
                       <Check className={styles.iconSmall} /> Accept
                     </button>
-                    <button onClick={() => declineRequest(request.user._id)} className={styles.declineButton}>
+                    <button onClick={() => declineRequest(request._id)} className={styles.declineButton}>
                       <X className={styles.iconSmall} /> Decline
                     </button>
                   </div>
@@ -273,7 +268,7 @@ const PeoplePage = () => {
               ))}
 
               {activeTab === 'suggestions' && suggestedUsers.map(sugg => (
-                <div key={sugg.id} className={`${styles.userCard} ${styles.animateSlideInRight}`}>
+                <div key={sugg._id} className={`${styles.userCard} ${styles.animateSlideInRight}`}>
                   <div className={styles.userHeader}>
                     <div className={styles.avatarContainer}>
                       <img src={sugg.profile_pic} alt={sugg.name} className={styles.avatar} />
@@ -284,11 +279,39 @@ const PeoplePage = () => {
                     </div>
                   </div>
                   <p className={styles.activity}>{sugg.reason}</p>
-                  <p className={styles.info}>{sugg.mutualFriends} mutual friends</p>
+                  <p className={styles.info}><MapPin className={styles.iconSmall} /> Joined: {format(new Date(sugg.createdAt), "PPP")}</p>
+                  <p className={styles.info}>{sugg.matchScore}/100 match</p>
                   <div className={styles.actions}>
-                    <button onClick={() => addFriend(sugg.id)} className={styles.primaryButton}>
-                      <UserPlus className={styles.iconSmall} /> Add Friend
-                    </button>
+                    {sugg.friendRequestReceived ? (
+                      // Received a friend request from this user → show Accept / Decline
+                      <div className={styles.buttonGroup}>
+                        <button
+                          onClick={() => acceptRequest(sugg._id)}
+                          className={styles.primaryButton}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => declineRequest(sugg._id)}
+                          className={styles.secondaryButton}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    ) : (
+                      // No request received, check if current user sent one
+                      <button
+                        onClick={
+                          sugg.friendRequestPending === "Add Friend"
+                            ? () => addFriend(sugg._id, setSuggestedUsers)
+                            : () => console.log("Friend request pending")
+                        }
+                        className={styles.primaryButton}
+                        disabled={sugg.friendRequestPending === "Pending"} // disable if pending
+                      >
+                        <UserPlus className={styles.iconSmall} /> {sugg.friendRequestPending}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
