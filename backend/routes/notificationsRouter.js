@@ -13,10 +13,7 @@ const {
 
 
 router.get("/", getAll)
-
-
 router.get("/:userId", getMyNotifications)
-
 router.delete("/:notificationId", deleteNotification)
 router.post("/", createNotification)
 

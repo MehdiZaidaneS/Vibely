@@ -1,7 +1,29 @@
-
 const API_URL = `http://localhost:5000/api/users`;
 
 
+export const getAllUsers = async () =>{
+     const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(API_URL, {
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json()
+        return data
+
+        
+    } catch (error) {
+        console.error("Error getting users:", error.message)
+        throw error;
+    }
+}
 
 export const createUser = async (body) => {
 
@@ -164,6 +186,28 @@ export const acceptFriendResquest = async(friend_request_id) =>{
 
 }
 
+export const getFriendRequests =async () =>{
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/friend-requests`,{
+            method: "POST",
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json(); 
+        return data;
+        
+    } catch (error) {
+        console.error("Error geetting requests:", error);
+        throw error;
+    }
+}
+
 export const checkUserName =async (username) =>{
     const token = localStorage.getItem("user")
     try {
@@ -178,6 +222,52 @@ export const checkUserName =async (username) =>{
         
     } catch (error) {
         console.error("Error checking usermae:", error);
+        throw error;
+    }
+}
+
+export const sendFriendRequest = async (userId) =>{
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/add/${userId}`,{
+            method: "POST",
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json(); 
+        console.log("Friend request sent")
+        return data;
+        
+    } catch (error) {
+        console.error("Error sending friend request", error);
+        throw error;
+    }
+}
+
+
+export const getFriends =async () =>{
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/friends`,{
+            method: "POST",
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json(); 
+        return data;
+        
+    } catch (error) {
+        console.error("Error geetting requests:", error);
         throw error;
     }
 }

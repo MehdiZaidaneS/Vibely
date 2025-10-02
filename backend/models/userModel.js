@@ -42,38 +42,37 @@ const userSchema = new Schema(
             required: false
 
         }],
-        profile_pic:{
-          type:String,
-          required: false,
-          default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+        profile_pic: {
+            type: String,
+            required: false,
+            default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
         },
         joinedEvents:
             [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Event'
             }]
-            
+
         ,
         notifications:
-        [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Notification'
-            }
-        ]
+            [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Notification'
+                }
+            ]
         ,
         friends:
-        [
+            [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User"
+                }
+            ],
+        friend_requests: [
             {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User"
-            }
-        ],
-        friend_requests:
-        [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User"
+                user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                sentAt: { type: Date, default: Date.now }
             }
         ]
 
@@ -99,7 +98,7 @@ userSchema.statics.signup = async function (name, email, phone, password, profil
 
     const userExists = await this.findOne({ email });
     if (userExists) {
-       throw Error("An account with this email already exists. Please log in instead.");
+        throw Error("An account with this email already exists. Please log in instead.");
     }
 
     const salt = await bcrypt.genSalt(10);

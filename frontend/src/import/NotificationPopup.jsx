@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getMyNotifications, deleteNotification } from "../api/notificationsApi";
-import { declineFriendRequest, acceptFriendResquest } from "../api/userApi";
+import { declineFriendRequest, acceptFriendResquest, getFriends } from "../api/userApi";
 
 function NotificationPopup({ onClose }) {
   const [notifications, setNotifications] = useState([]);
@@ -10,14 +10,29 @@ function NotificationPopup({ onClose }) {
   }, []);
 
   const handleAccept = async (notif) => {
-    await acceptFriendResquest(notif.sender)
-    await deleteNotification(notif._id)
+
+    const friends = [await getFriends()]
+
+    if (friends.includes(notif.sender)) {
+      await acceptFriendResquest(notif.sender)
+      await deleteNotification(notif._id)
+    } else {
+      await deleteNotification(notif._id)
+    }
+
 
   };
 
   const handleDecline = async (notif) => {
-    await declineFriendRequest(notif.sender)
-    await deleteNotification(notif._id)
+    const friends = [await getFriends()]
+
+    if (friends.includes(notif.sender)) {
+      await declineFriendRequest(notif.sender)
+      await deleteNotification(notif._id)
+    } else {
+      await deleteNotification(notif._id)
+    }
+
 
   };
 

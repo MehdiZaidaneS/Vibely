@@ -40,5 +40,26 @@ export const deleteNotification = async (notificationId) => {
   }
 };
 
+// export const createNotification = async (body)=>{
+
+//    const token = localStorage.getItem("user")
+//   try {
+//     const response = await fetch(`http://localhost:5000/api/notifications`, {
+//       method: "POST",
+//       body: JSON.stringify({
+//       })
+//     });
+
+//     if (!response.ok) {
+//       throw new Error("Failed to create notification");
+//     }
+//     const data = await response.json();
+
+//     return data;
+
+//   } catch (err) {
+//     console.error("Error creating notifications:", err);
+//   }
+// }
 
 
