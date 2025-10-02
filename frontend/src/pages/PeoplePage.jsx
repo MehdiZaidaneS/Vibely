@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Search, UserPlus, MessageSquare, BellOff, MoreVertical, X, Check, UserCheck, UserX, Globe, MapPin, Gamepad, Music, Code, Heart, Star, Users } from 'lucide-react';
 import styles from './PeoplePage.module.css';
 import Sidebar from '../import/Sidebar'; // Using the general Sidebar.jsx for navigation
-import { getAllUsers, getFriends, declineFriendRequest, getFriendRequests, sendFriendRequest, acceptFriendResquest, getSuggestedUsers } from '../api/userApi';
+import { getAllUsers, getFriends, declineFriendRequest, getFriendRequests, sendFriendRequest, acceptFriendResquest, getSuggestedUsers, getPrivateChatRoom } from '../api/userApi';
 
 
 const PeoplePage = () => {
@@ -24,11 +24,11 @@ const PeoplePage = () => {
     setActiveUsers(users);
   };
 
-  const fetchSuggestedUsers = async () =>{
-      const suggested = await getSuggestedUsers()
-      setSuggestedUsers(suggested)
-      setActiveTab("suggestions")
-    }
+  const fetchSuggestedUsers = async () => {
+    const suggested = await getSuggestedUsers()
+    setSuggestedUsers(suggested)
+    setActiveTab("suggestions")
+  }
 
   useEffect(() => {
 
@@ -37,12 +37,12 @@ const PeoplePage = () => {
       setFriendRequests(friend_requests);
     };
 
-    const fetchFriends = async () =>{
+    const fetchFriends = async () => {
       const friends = await getFriends()
       setFriends(friends)
     }
 
-    
+
 
     fetchUsers();
     fetchRequests();
@@ -75,8 +75,13 @@ const PeoplePage = () => {
 
 
   const sendMessage = async (userId) => {
-    console.log('Messaging user:', userId);
-    navigate('/private-chat'); // Redirect to private-chat
+    const room = await getPrivateChatRoom(userId);
+    if (!room) {
+      console.log('No private chat exists yet.');
+      return; // stop here
+    }
+    navigate(`/private-chat/${room}`);
+
   };
 
   const acceptRequest = async (requestId) => {
@@ -90,8 +95,8 @@ const PeoplePage = () => {
   const declineRequest = async (requestId) => {
     declineFriendRequest(requestId)
     setFriendRequests(prev => prev.filter(r => r._id !== requestId));
-     setActiveUsers(prev => prev.filter(r => r._id !== requestId))
-     setSuggestedUsers(prev => prev.filter(r => r._id !== requestId))
+    setActiveUsers(prev => prev.filter(r => r._id !== requestId))
+    setSuggestedUsers(prev => prev.filter(r => r._id !== requestId))
   };
 
 
@@ -116,7 +121,7 @@ const PeoplePage = () => {
       {/* Imported Sidebar - toggles on button click */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      
+
       <div className={styles.contentWrapper}>
 
         <aside className={`${styles.sidebar} ${styles.animateSlideInLeft}`}>
@@ -173,7 +178,7 @@ const PeoplePage = () => {
             <div className={styles.tabs}>
               <button onClick={() => setActiveTab('discovery')} className={`${styles.tab} ${activeTab === 'discovery' ? styles.activeTab : ''}`}>Find Users</button>
               <button onClick={() => setActiveTab('requests')} className={`${styles.tab} ${activeTab === 'requests' ? styles.activeTab : ''}`}>Requests ({friendRequests.length})</button>
-              <button onClick={() =>  fetchSuggestedUsers()} className={`${styles.tab} ${activeTab === 'suggestions' ? styles.activeTab : ''}`}>Suggestions ({suggestedUsers.length})</button>
+              <button onClick={() => fetchSuggestedUsers()} className={`${styles.tab} ${activeTab === 'suggestions' ? styles.activeTab : ''}`}>Suggestions ({suggestedUsers.length})</button>
             </div>
 
             <div className={styles.userGrid}>

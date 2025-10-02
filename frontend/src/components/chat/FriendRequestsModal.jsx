@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { UserCheck, UserX, X, Users, Inbox } from "lucide-react";
 import Avatar from "../common/Avatar";
-
-const API_URL = "http://localhost:5000";
+import {
+  getFriendRequests,
+  acceptFriendResquest,
+  declineFriendRequest,
+} from "../../api/userApi"; 
 
 const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("user");
 
   useEffect(() => {
     if (isOpen) {
@@ -17,75 +18,43 @@ const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
   }, [isOpen]);
 
   const fetchFriendRequests = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/users/${userId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const userData = await response.json();
-
-      // Populate friend requests with user data
-      if (userData.friend_requests && userData.friend_requests.length > 0) {
-        const requestsData = await Promise.all(
-          userData.friend_requests.map(async (requesterId) => {
-            const userResponse = await fetch(`${API_URL}/api/users/${requesterId}`);
-            if (userResponse.ok) {
-              return await userResponse.json();
-            }
-            return null;
-          })
-        );
-        setFriendRequests(requestsData.filter(req => req !== null));
-      } else {
-        setFriendRequests([]);
-      }
+      const data = await getFriendRequests();
+      // backend returns user objects inside `data` already
+      setFriendRequests(data || []);
     } catch (err) {
       console.error("Failed to fetch friend requests:", err);
+      setFriendRequests([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const acceptFriendRequest = async (requesterId) => {
+  const handleAccept = async (requesterId) => {
     try {
-      const response = await fetch(`${API_URL}/api/users/accept/${requesterId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      });
+      await acceptFriendResquest(requesterId);
+      setFriendRequests((prev) =>
+        prev.filter((req) => req._id !== requesterId)
+      );
+      if (onUpdate) onUpdate();
 
-      if (response.ok) {
-        // Remove from list
-        setFriendRequests(friendRequests.filter(req => req._id !== requesterId));
-        // Notify parent to refresh
-        if (onUpdate) onUpdate();
-
-        // Dispatch event to refresh conversations in sidebar
-        window.dispatchEvent(new CustomEvent('friendAdded', { detail: { friendId: requesterId } }));
-      }
+      // notify sidebar (conversations refresh)
+      window.dispatchEvent(
+        new CustomEvent("friendAdded", { detail: { friendId: requesterId } })
+      );
     } catch (err) {
       console.error("Failed to accept friend request:", err);
     }
   };
 
-  const rejectFriendRequest = async (requesterId) => {
+  const handleReject = async (requesterId) => {
     try {
-      const response = await fetch(`${API_URL}/api/users/delete/${requesterId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      });
-
-      if (response.ok) {
-        // Remove from list
-        setFriendRequests(friendRequests.filter(req => req._id !== requesterId));
-        // Notify parent to refresh
-        if (onUpdate) onUpdate();
-      }
+      await declineFriendRequest(requesterId);
+      setFriendRequests((prev) =>
+        prev.filter((req) => req._id !== requesterId)
+      );
+      if (onUpdate) onUpdate();
     } catch (err) {
       console.error("Failed to reject friend request:", err);
     }
@@ -101,7 +70,9 @@ const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Users className="w-6 h-6 text-purple-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Friend Requests</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Friend Requests
+              </h2>
               {friendRequests.length > 0 && (
                 <span className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
                   {friendRequests.length}
@@ -147,8 +118,10 @@ const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
                         <h3 className="font-semibold text-gray-900 truncate">
                           {request.name}
                         </h3>
-                        <p className="text-sm text-gray-500 truncate">{request.email}</p>
-                        {request.interests && request.interests.length > 0 && (
+                        <p className="text-sm text-gray-500 truncate">
+                          {request.email}
+                        </p>
+                        {request.interests?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {request.interests.slice(0, 3).map((interest, idx) => (
                               <span
@@ -171,7 +144,7 @@ const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
                     {/* Action Buttons */}
                     <div className="flex space-x-2 ml-4">
                       <button
-                        onClick={() => acceptFriendRequest(request._id)}
+                        onClick={() => handleAccept(request._id)}
                         className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                         title="Accept"
                       >
@@ -179,7 +152,7 @@ const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
                         <span className="hidden sm:inline">Accept</span>
                       </button>
                       <button
-                        onClick={() => rejectFriendRequest(request._id)}
+                        onClick={() => handleReject(request._id)}
                         className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                         title="Reject"
                       >

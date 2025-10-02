@@ -2,7 +2,7 @@ const Message = require('../models/messageModel');
 const ChatRoom = require('../models/chatRoomModel');
 
 exports.createChatRoom = async (req, res) => {
-  const { name, participants, isGroup, description} = req.body; 
+  const { name, participants, isGroup, description } = req.body;
 
   try {
     let chatRoom;
@@ -34,7 +34,7 @@ exports.createChatRoom = async (req, res) => {
 
 exports.postMessage = async (req, res) => {
   const { roomId } = req.params;
-  const { sender, content, type} = req.body;
+  const { sender, content, type } = req.body;
 
   try {
     const chatRoom = await ChatRoom.findById(roomId);
@@ -89,7 +89,7 @@ exports.editMessage = async (req, res) => {
     }
 
     message.content = content;
-    message.edited = true; 
+    message.edited = true;
     await message.save();
 
     res.json(message);
@@ -102,42 +102,46 @@ const User = require('../models/userModel'); // Assuming your user model is here
 
 exports.getPrivateChat = async (req, res) => {
   const { userId } = req.params;
+
   try {
-    const chatrooms = await ChatRoom.find({ participants: userId })
+    // Find all private chatrooms where this user is a participant
+    const chatrooms = await ChatRoom.find({ 
+      participants: userId, 
+      isGroup: false 
+    })
       .populate('participants', 'name avatar isOnline')
       .populate('lastMessage')
       .sort({ updatedAt: -1 });
 
     if (!chatrooms || chatrooms.length === 0) {
-      return res.status(200).json([]); // Return an empty array if no chatrooms are found
+      return res.status(200).json([]); // No private chats found
     }
 
-    const formattedChatrooms = chatrooms.map((room) => {
-      const otherParticipant = room.isGroup
-        ? null
-        : room.participants.find((p) => p._id.toString() !== userId);
-
-      const lastMessageContent = room.lastMessage
-        ? room.lastMessage.content
-        : 'No messages yet.';
+    // Format private chats
+    const formattedChats = chatrooms.map(room => {
+      // Find the other participant
+      const otherParticipant = room.participants.find(
+        p => p._id.toString() !== userId
+      );
 
       return {
-        id: room._id, // Use 'id' to match frontend key
-        name: room.isGroup ? room.name : (otherParticipant?.name || 'Unknown User'),
-        avatar: room.isGroup ? room.avatar || '/default-group-avatar.png' : (otherParticipant?.avatar || '/default-avatar.png'),
-        isOnline: room.isGroup ? true : (otherParticipant?.isOnline || false),
-        lastMessage: lastMessageContent,
-        lastMessageTime: room.lastMessage ? room.lastMessage.createdAt : room.updatedAt,
-        unreadCount: 0, // This logic needs to be implemented separately
-        isTyping: false, // This is a frontend state, not a database field
+        id: room._id,
+        otherUserId: otherParticipant?._id.toString() || null,
+        name: otherParticipant?.name || 'Unknown User',
+        avatar: otherParticipant?.avatar || '/default-avatar.png',
+        isOnline: otherParticipant?.isOnline || false,
+        lastMessage: room.lastMessage?.content || 'No messages yet.',
+        lastMessageTime: room.lastMessage?.createdAt || room.updatedAt
       };
     });
 
-    res.json(formattedChatrooms);
+    res.json(formattedChats);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to search for chatrooms.' });
+    console.error('Error fetching private chats:', error);
+    res.status(500).json({ error: 'Failed to search for private chatrooms.' });
   }
 };
+
 
 exports.getPublicChat = async (req, res) => {
   try {
@@ -168,17 +172,17 @@ exports.getPublicChat = async (req, res) => {
 };
 
 exports.getChatHistory = async (req, res) => {
-    const { roomId } = req.params;
-    try {
-        const messages = await Message.find({ chatRoom: roomId })
-            .populate('sender', 'name email profile_pic')
-            .sort({ createdAt: 1 });
+  const { roomId } = req.params;
+  try {
+    const messages = await Message.find({ chatRoom: roomId })
+      .populate('sender', 'name email profile_pic')
+      .sort({ createdAt: 1 });
 
-        // Only return the messages array
-        res.json(messages);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    // Only return the messages array
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 exports.getParticipants = async (req, res) => {
