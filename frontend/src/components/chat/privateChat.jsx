@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Send, Users, Search, ChevronLeft, Home, Hash } from "lucide-react";
+import { Send, Users, Search, ChevronLeft, Home, Hash, UserPlus, Bell } from "lucide-react";
 import io from "socket.io-client";
 import styles from "./privateChat.module.css";
+import PeopleModal from "./PeopleModal";
+import FriendRequestsModal from "./FriendRequestsModal";
+import Avatar from "../common/Avatar";
 
 const API_URL = "http://localhost:5000";
-const socket = io(API_URL);
 
 const PrivateChat = () => {
   const navigate = useNavigate();
   const { chatroomId } = useParams();
+  const socketRef = useRef(null);
 
   // ============================================================================
   // STATE MANAGEMENT
@@ -19,6 +22,14 @@ const PrivateChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [currentChatroom, setCurrentChatroom] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [isPeopleModalOpen, setIsPeopleModalOpen] = useState(false);
+  const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
+  const [currentUserData, setCurrentUserData] = useState(null);
+  const [friendRequestCount, setFriendRequestCount] = useState(0);
 
   const messagesEndRef = useRef(null);
   const userId = localStorage.getItem("userId");
@@ -26,6 +37,66 @@ const PrivateChat = () => {
   // ============================================================================
   // EFFECTS
   // ============================================================================
+
+  // Effect 0: Fetch current user data
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/users/${userId}`);
+        if (response.ok) {
+          const user = await response.json();
+          setCurrentUserData(user);
+          setFriendRequestCount(user.friend_requests?.length || 0);
+        }
+      } catch (err) {
+        console.error("Failed to fetch current user:", err);
+      }
+    };
+    fetchCurrentUser();
+  }, [userId]);
+
+  const refreshUserData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/users/${userId}`);
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUserData(user);
+        setFriendRequestCount(user.friend_requests?.length || 0);
+      }
+    } catch (err) {
+      console.error("Failed to refresh user data:", err);
+    }
+  };
+
+  // Effect 1: Initialize Socket.IO connection
+  useEffect(() => {
+    socketRef.current = io(API_URL, {
+      transports: ['polling', 'websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current.on('connect', () => {
+      setSocketConnected(true);
+    });
+
+    socketRef.current.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setSocketConnected(false);
+    });
+
+    socketRef.current.on('disconnect', () => {
+      setSocketConnected(false);
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
 
   // Effect 1: Fetch chatrooms and set current chatroom
   useEffect(() => {
@@ -37,7 +108,6 @@ const PrivateChat = () => {
         }
         const chatrooms = await response.json();
         setConversations(chatrooms);
-        console.log(chatrooms);
         if (chatroomId) {
           const room = chatrooms.find(c => c.id === chatroomId);
           if (room) {
@@ -51,6 +121,42 @@ const PrivateChat = () => {
       }
     };
     getChatrooms();
+
+    // Listen for chat deletion events
+    const handleChatDeleted = (event) => {
+      console.log("Chat deleted event received:", event.detail);
+      const deletedChatroomId = event.detail.chatroomId;
+      console.log("Deleted chatroom ID:", deletedChatroomId);
+      console.log("Current chatroom ID:", chatroomId);
+
+      // Remove deleted chat from conversations
+      setConversations(prev => {
+        const filtered = prev.filter(c => c.id !== deletedChatroomId);
+        console.log("Conversations before filter:", prev.length);
+        console.log("Conversations after filter:", filtered.length);
+        return filtered;
+      });
+
+      // If currently viewing the deleted chat, navigate away
+      if (chatroomId === deletedChatroomId) {
+        console.log("Currently viewing deleted chat, navigating away");
+        navigate("/private-chat");
+      }
+    };
+
+    // Listen for friend added events to refresh sidebar
+    const handleFriendAdded = () => {
+      console.log("Friend added event received, refreshing conversations");
+      getChatrooms();
+    };
+
+    window.addEventListener('chatDeleted', handleChatDeleted);
+    window.addEventListener('friendAdded', handleFriendAdded);
+
+    return () => {
+      window.removeEventListener('chatDeleted', handleChatDeleted);
+      window.removeEventListener('friendAdded', handleFriendAdded);
+    };
   }, [userId, chatroomId, navigate]);
 
   // Effect 2: Fetch messages for the active chatroom
@@ -77,33 +183,75 @@ const PrivateChat = () => {
 
   // Effect 3: Handle real-time WebSocket communication
   useEffect(() => {
-    if (!chatroomId) return;
+    if (!chatroomId || !socketRef.current || !socketConnected) return;
 
-    socket.emit("joinRoom", chatroomId);
+    socketRef.current.emit("joinRoom", chatroomId);
 
     const handleNewMessage = (message) => {
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => {
+        // Prevent duplicate messages
+        if (prev.some(m => m._id === message._id)) {
+          return prev;
+        }
+        return [...prev, message];
+      });
     };
 
-    socket.on("receiveMessage", handleNewMessage);
+    socketRef.current.on("receiveMessage", handleNewMessage);
 
     return () => {
-      socket.off("receiveMessage", handleNewMessage);
-      socket.emit("leaveRoom", chatroomId);
+      if (socketRef.current) {
+        socketRef.current.off("receiveMessage", handleNewMessage);
+      }
     };
-  }, [chatroomId]);
+  }, [chatroomId, socketConnected]);
 
   // Effect 4: Auto-scroll to the bottom of the message list
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Effect 5: Search for friends only
+  useEffect(() => {
+    const searchForUsers = async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const response = await fetch(
+          `${API_URL}/api/users/search?query=${encodeURIComponent(searchQuery)}&userId=${userId}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to search users");
+        }
+        const users = await response.json();
+        // Filter to show only friends
+        const friendUsers = users.filter(user =>
+          currentUserData?.friends?.includes(user._id)
+        );
+        setSearchResults(friendUsers);
+      } catch (err) {
+        console.error("Failed to search users:", err);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(searchForUsers, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, userId, currentUserData]);
+
   // ============================================================================
   // EVENT HANDLERS
   // ============================================================================
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() === "" || !chatroomId) return;
+    if (newMessage.trim() === "" || !chatroomId || !socketRef.current || !socketConnected) return;
     const message = {
       sender: userId,
       content: newMessage.trim(),
@@ -118,8 +266,8 @@ const PrivateChat = () => {
         throw new Error("Failed to send message");
       }
       const sentMessage = await response.json();
-      setMessages((prev) => [...prev, sentMessage]);
-      socket.emit("sendMessage", { chatroomId, message: sentMessage });
+      // Emit to socket for real-time updates to all users
+      socketRef.current.emit("sendMessage", { chatroomId, message: sentMessage });
       setNewMessage("");
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -137,27 +285,47 @@ const PrivateChat = () => {
     navigate(`/private-chat/${id}`);
     const conversation = conversations.find(c => c.id === id);
     setCurrentChatroom(conversation);
+    setSearchQuery("");
+    setSearchResults([]);
   };
-  useEffect(() => {
-    const getMessages = async () => {
-      if (!chatroomId) {
-        setMessages([]);
-        return;
+
+  const handleStartNewChat = async (selectedUser) => {
+    // Check if user is a friend
+    if (!currentUserData?.friends?.includes(selectedUser._id)) {
+      alert("You can only chat with your friends. Send them a friend request first!");
+      return;
+    }
+
+    try {
+      // Create or get existing chatroom
+      const response = await fetch(`${API_URL}/api/chatrooms`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          participants: [userId, selectedUser._id],
+          isGroup: false,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to create chatroom");
       }
-      try {
-        const response = await fetch(`http://localhost:5000/api/chatrooms/history/${chatroomId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch messages");
-        }
-        const msgs = await response.json();
-        setMessages(msgs);
-      } catch (err) {
-        console.error("Failed to fetch messages:", err);
-        setMessages([]);
+      const chatroom = await response.json();
+
+      // Refresh conversations list
+      const conversationsResponse = await fetch(`${API_URL}/api/chatrooms/searchPri/${userId}`);
+      if (conversationsResponse.ok) {
+        const updatedConversations = await conversationsResponse.json();
+        setConversations(updatedConversations);
       }
-    };
-    getMessages();
-  }, [chatroomId]);
+
+      // Navigate to new chat
+      navigate(`/private-chat/${chatroom._id}`);
+      setSearchQuery("");
+      setSearchResults([]);
+    } catch (err) {
+      console.error("Failed to start new chat:", err);
+    }
+  };
 
   // ============================================================================
   // RENDER LOGIC
@@ -186,22 +354,76 @@ const PrivateChat = () => {
                 </p>
               </div>
             </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setIsFriendRequestsModalOpen(true)}
+                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all relative"
+                title="Friend Requests"
+              >
+                <Bell className="w-5 h-5" />
+                {friendRequestCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
+                    {friendRequestCount}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setIsPeopleModalOpen(true)}
+                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+                title="Find People"
+              >
+                <UserPlus className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-200" />
             <input
               type="text"
-              placeholder="Search conversations..."
+              placeholder="Search users to chat..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
-              disabled
             />
           </div>
         </div>
         {/* Conversations List */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
+            {/* Search Results */}
+            {searchQuery && (
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2 px-2">
+                  {isSearching ? "Searching..." : `Friends (${searchResults.length})`}
+                </p>
+                <div className="space-y-1">
+                  {searchResults.map((user) => (
+                    <div
+                      key={user._id}
+                      onClick={() => handleStartNewChat(user)}
+                      className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-all duration-200"
+                    >
+                      <Avatar user={user} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {user.name}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {!isSearching && searchResults.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No friends found. Add friends using the + button above.
+                    </p>
+                  )}
+                </div>
+                <div className="border-t border-gray-200 my-3"></div>
+              </div>
+            )}
+            {/* Conversations */}
             <div className="space-y-1">
-              {conversations.map((conversation, index) => (
+              {!searchQuery && conversations.map((conversation, index) => (
                 <div
                   key={conversation.id}
                   onClick={() => handleSelectConversation(conversation.id)}
@@ -214,10 +436,9 @@ const PrivateChat = () => {
                 >
                   {/* Avatar + Online + Unread Badge */}
                   <div className="relative">
-                    <img
-                      src={conversation.avatar || "/default-avatar.png"}
-                      alt={conversation.name}
-                      className="w-12 h-12 rounded-full object-cover"
+                    <Avatar
+                      user={{ name: conversation.name, profile_pic: conversation.avatar }}
+                      size="md"
                     />
                     {conversation.isOnline && (
                       <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
@@ -274,10 +495,9 @@ const PrivateChat = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <img
-                  src={currentChatroom?.avatar || "/default-avatar.png"}
-                  alt={currentChatroom?.name}
-                  className="w-10 h-10 rounded-full object-cover"
+                <Avatar
+                  user={{ name: currentChatroom?.name, profile_pic: currentChatroom?.avatar }}
+                  size="sm"
                 />
                 {currentChatroom?.isOnline && (
                   <div
@@ -332,33 +552,48 @@ const PrivateChat = () => {
                     : ""
                     }`}
                 >
-                  {console.log(message.sender._id)}
-                  {message.sender._id?.toString() !== userId && (
-                    <div className="relative flex-shrink-0">
-                      <img
-                        src={otherParticipant?.avatar || "/default-avatar.png"}
-                        alt={otherParticipant?.name || 'Unknown User'}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div
-                    className={`${styles.floatingElement} ${message.sender._id?.toString() === userId
-                      ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
-                      : "bg-white border border-gray-200 text-gray-900"
-                      } rounded-lg px-4 py-3 shadow-sm`}
-                  >
-                    {message.content}
-                    <p
-                      className={`text-xs mt-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-gray-500"
-                        }`}
+                  {/* Profile Picture */}
+                  <div className="relative flex-shrink-0 mb-1">
+                    <Avatar
+                      user={{
+                        name: message.sender._id?.toString() === userId
+                          ? "You"
+                          : message.sender.name || otherParticipant?.name,
+                        profile_pic: message.sender._id?.toString() === userId
+                          ? currentChatroom?.participants?.find(p => p._id.toString() === userId)?.avatar
+                          : message.sender.profile_pic || otherParticipant?.avatar
+                      }}
+                      size="sm"
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => navigate(`/profile/${message.sender._id}`)}
+                    />
+                  </div>
+
+                  {/* Message Bubble */}
+                  <div className="flex flex-col">
+                    <div
+                      className={`${styles.floatingElement} ${message.sender._id?.toString() === userId
+                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                        : "bg-white border border-gray-200 text-gray-900"
+                        } rounded-lg px-4 py-3 shadow-sm`}
                     >
-                      {new Date(message.createdAt || Date.now()).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </p>
+                      <p className={`text-xs font-semibold mb-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-gray-700"}`}>
+                        {message.sender._id?.toString() === userId
+                          ? "You"
+                          : message.sender.name || otherParticipant?.name}
+                      </p>
+                      {message.content}
+                      <p
+                        className={`text-xs mt-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-gray-500"
+                          }`}
+                      >
+                        {new Date(message.createdAt || Date.now()).toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -398,6 +633,20 @@ const PrivateChat = () => {
           </div>
         </div>
       </div>
+
+      {/* People Modal */}
+      <PeopleModal
+        isOpen={isPeopleModalOpen}
+        onClose={() => setIsPeopleModalOpen(false)}
+        onUpdate={refreshUserData}
+      />
+
+      {/* Friend Requests Modal */}
+      <FriendRequestsModal
+        isOpen={isFriendRequestsModalOpen}
+        onClose={() => setIsFriendRequestsModalOpen(false)}
+        onUpdate={refreshUserData}
+      />
     </div>
   );
 };

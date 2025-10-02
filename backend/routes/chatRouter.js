@@ -21,6 +21,8 @@ router.get('/history/:roomId', chatRoomControllers.getChatHistory);
 // Post a message to a chatroom
 router.post('/messages/:roomId', chatRoomControllers.postMessage);
 
-
+// Delete a chatroom
+router.delete('/:roomId', chatRoomControllers.deleteChatRoom);
 
 module.exports = router;
+

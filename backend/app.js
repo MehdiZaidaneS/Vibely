@@ -46,7 +46,7 @@ const io = new Server(server, {
 });
 // Socket.io connection
 io.on('connection', (socket) => {
-  console.log('A user connected: ' + socket.id);
+  console.log('New client connected:', socket.id);
 
   // Join a chatroom
   socket.on('joinRoom', (roomId) => {
@@ -55,15 +55,13 @@ io.on('connection', (socket) => {
   });
 
   // Listen for new messages
-  socket.on('sendMessage', (message) => {
-    const { roomId, sender, content } = message;
-
-    // broadcast to all users in the room except sender
-    socket.to(roomId).emit('receiveMessage', message);
+  socket.on('sendMessage', ({ chatroomId, message }) => {
+    // Broadcast to ALL users in the room (including sender)
+    io.to(chatroomId).emit('receiveMessage', message);
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected: ' + socket.id);
+    console.log('Client disconnected:', socket.id);
   });
 });
 

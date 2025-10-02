@@ -45,7 +45,7 @@ const userSchema = new Schema(
         profile_pic:{
           type:String,
           required: false,
-          default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+          default: ''
         },
         joinedEvents:
             [{
@@ -110,7 +110,7 @@ userSchema.statics.signup = async function (name, email, phone, password, profil
         email,
         phone,
         password: hashedPassword,
-        profile_pic
+        profile_pic: profile_pic || ''
     })
 
     return user
