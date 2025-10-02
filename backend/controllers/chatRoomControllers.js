@@ -57,7 +57,7 @@ exports.postMessage = async (req, res) => {
     chatRoom.lastMessage = message._id;
     await chatRoom.save();
 
-    const populatedMessage = await Message.findById(message._id).populate('sender', 'name email');
+    const populatedMessage = await Message.findById(message._id).populate('sender', 'name email profile_pic');
 
     res.status(201).json(populatedMessage);
   } catch (error) {
@@ -171,11 +171,11 @@ exports.getChatHistory = async (req, res) => {
     const { roomId } = req.params;
     try {
         const messages = await Message.find({ chatRoom: roomId })
-            .populate('sender', 'name email')
+            .populate('sender', 'name email profile_pic')
             .sort({ createdAt: 1 });
-        
+
         // Only return the messages array
-        res.json(messages); 
+        res.json(messages);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -194,6 +194,27 @@ exports.getParticipants = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 
+};
+
+exports.deleteChatRoom = async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    const chatRoom = await ChatRoom.findById(roomId);
+    if (!chatRoom) {
+      return res.status(404).json({ message: 'Chat room not found' });
+    }
+
+    // Delete all messages in the chatroom
+    await Message.deleteMany({ chatRoom: roomId });
+
+    // Delete the chatroom itself
+    await ChatRoom.findByIdAndDelete(roomId);
+
+    res.status(200).json({ message: 'Chat room deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 

@@ -96,6 +96,31 @@ const getFriends = async (req, res) => {
 };
 
 
+const searchUsers = async (req, res) => {
+    const { query } = req.query;
+    const currentUserId = req.query.userId;
+
+    try {
+        if (!query) {
+            return res.status(200).json([]);
+        }
+
+        const users = await UserModel.find({
+            _id: { $ne: currentUserId }, // Exclude current user
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { email: { $regex: query, $options: 'i' } }
+            ]
+        })
+        .select('name email profile_pic')
+        .limit(10);
+
+        res.status(200).json(users);
+    } catch (err) {
+        res.status(500).json({ message: "Failed searching users" });
+    }
+}
+
 const getUserbyId = async (req, res) => {
     const userId = req.params.userId
 
@@ -204,19 +229,40 @@ const addInfo = async (req, res) => {
 const addFriendRequest = async (req, res) => {
     const { userId } = req.params
     const currentUserId = req.user._id
+
+    console.log("=== ADD FRIEND REQUEST DEBUG ===");
+    console.log("Target userId:", userId);
+    console.log("Current userId:", currentUserId);
+
     try {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid user id" });
+        }
+
         const targetUser = await UserModel.findById(userId)
         if (!targetUser) {
+            console.log("Target user not found");
             return res.status(404).json({ message: "User not found" })
         }
 
         const currentUser = await UserModel.findById(currentUserId)
+        if (!currentUser) {
+            console.log("Current user not found");
+            return res.status(404).json({ message: "Current user not found" })
+        }
 
-        if (currentUser.friends.includes(userId)) {
+        console.log("Current user friends:", currentUser.friends);
+        console.log("Target user friend_requests:", targetUser.friend_requests);
+
+        // Check if already friends
+        if (currentUser.friends.some(id => id.toString() === userId)) {
+            console.log("Already friends");
             return res.status(400).json({ message: "You are already friends" });
         }
 
-        if (targetUser.friend_requests.includes(currentUserId)) {
+        // Check if request already sent
+        if (targetUser.friend_requests.some(id => id.toString() === currentUserId.toString())) {
+            console.log("Friend request already sent");
             return res.status(400).json({ message: "Friend request already sent" });
         }
 
@@ -238,10 +284,9 @@ const addFriendRequest = async (req, res) => {
 
         return res.status(200).json({ message: "Friend request sent successfully", notification });
 
-
     } catch (err) {
         console.error("Error adding friend:", err);
-        return res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ message: "Server error", error: err.message });
     }
 }
 
@@ -289,9 +334,27 @@ const acceptFriendRequest = async (req, res) => {
         await user.save();
         await targetUser.save();
 
+        // Automatically create a chatroom for the new friends
+        const ChatRoom = require('../models/chatRoomModel');
+
+        let chatRoom = await ChatRoom.findOne({
+            isGroup: false,
+            participants: { $all: [userId, requested_friend_id], $size: 2 }
+        });
+
+        if (!chatRoom) {
+            chatRoom = new ChatRoom({
+                isGroup: false,
+                participants: [userId, requested_friend_id]
+            });
+            await chatRoom.save();
+            console.log("Created chatroom for new friends:", chatRoom._id);
+        }
+
         return res.status(200).json({
             message: "Friend request accepted successfully",
-            friends: user.friends
+            friends: user.friends,
+            chatroomId: chatRoom._id
         });
 
     } catch (err) {
@@ -358,7 +421,7 @@ const deleteFriendRequest = async (req, res) => {
         await targetUser.save();
 
         return res.status(200).json({
-            message: "Friend request denied successfully",
+            message: "Friend request deleted successfully",
             friends: user.friends
         });
 
@@ -368,7 +431,75 @@ const deleteFriendRequest = async (req, res) => {
     }
 
 
+}
 
+const removeFriend = async (req, res) => {
+    const userId = req.user._id;
+    const { friendId } = req.params;
+
+    try {
+        if (!mongoose.Types.ObjectId.isValid(friendId)) {
+            return res.status(400).json({ message: "Invalid user id" });
+        }
+
+        const friend = await UserModel.findById(friendId);
+        if (!friend) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Current user not found" });
+        }
+
+        // Check if they are actually friends
+        const areFriends = user.friends.some(id => id.equals(friendId));
+        if (!areFriends) {
+            return res.status(400).json({ message: "You are not friends with this user" });
+        }
+
+        // Remove from both users' friend lists
+        user.friends.pull(friendId);
+        friend.friends.pull(userId);
+
+        await user.save();
+        await friend.save();
+
+        // Delete the private chatroom between these two users
+        const ChatRoom = require('../models/chatRoomModel');
+        const Message = require('../models/messageModel');
+
+        console.log("Searching for chatroom between:", userId, "and", friendId);
+
+        const chatRoom = await ChatRoom.findOne({
+            isGroup: false,
+            participants: { $all: [userId, friendId], $size: 2 }
+        });
+
+        console.log("Found chatroom:", chatRoom?._id);
+
+        if (chatRoom) {
+            // Delete all messages in the chatroom
+            const deletedMessages = await Message.deleteMany({ chatRoom: chatRoom._id });
+            console.log("Deleted messages count:", deletedMessages.deletedCount);
+
+            // Delete the chatroom
+            await ChatRoom.findByIdAndDelete(chatRoom._id);
+            console.log("Chatroom deleted:", chatRoom._id);
+        } else {
+            console.log("No chatroom found to delete");
+        }
+
+        return res.status(200).json({
+            message: "Friend removed successfully",
+            friends: user.friends,
+            deletedChatRoom: chatRoom?._id
+        });
+
+    } catch (err) {
+        console.error("Error removing friend:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
 }
 
 
@@ -447,6 +578,9 @@ module.exports = {
     deleteFriendRequest,
     checkUserName,
     getFriendRequests,
-    getFriends
+    getFriends,
+    removeFriend,
+    checkUserName,
+    searchUsers
 
 }

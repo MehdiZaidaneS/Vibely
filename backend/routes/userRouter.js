@@ -15,12 +15,17 @@ const {
  deleteFriendRequest,
  checkUserName,
  getFriendRequests,
- getFriends
+ getFriends,
+ removeFriend,
+ checkUserName,
+ searchUsers
 } = require("../controllers/userController.js")
 
 
 
 
+
+router.get("/search", searchUsers)
 
 router.post("/",createNewUser)
 
@@ -45,6 +50,7 @@ router.post("/add/:userId", addFriendRequest)
 router.post("/accept/:requested_friend_id", acceptFriendRequest)
 router.delete("/delete/:requested_friend_id", deleteFriendRequest)
 router.post("/friends", getFriends)
+router.delete("/remove/:friendId", removeFriend)
 
 
 

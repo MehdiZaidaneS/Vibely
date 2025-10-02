@@ -7,6 +7,7 @@ import PeoplePage from "./pages/PeoplePage"; // Import the separate PeoplePage c
 // import CreateEvent from "./pages/CreateEvent";
 import PublicChat from "./components/chat/public-chat/publicChat";
 import PrivateChat from "./components/chat/privateChat";
+import UserProfile from "./components/profile/UserProfile";
 import "./App.css";
 import React, { useState } from "react";
 
@@ -38,6 +39,7 @@ function App() {
         <Route path="/private-chat" element={isAuthenticated ? <PrivateChat /> : <Navigate to="/register" />} />
         <Route path="/private-chat/:chatroomId" element={isAuthenticated ? <PrivateChat /> : <Navigate to="/register" />} />
         <Route path="/people" element={isAuthenticated ? <PeoplePage /> : <Navigate to="/register" />} />
+        <Route path="/profile/:userId" element={isAuthenticated ? <UserProfile /> : <Navigate to="/register" />} />
 
       </Routes>
     </BrowserRouter>

@@ -109,7 +109,7 @@ userSchema.statics.signup = async function (name, email, phone, password, profil
         email,
         phone,
         password: hashedPassword,
-        profile_pic
+        profile_pic: profile_pic || ''
     })
 
     return user
