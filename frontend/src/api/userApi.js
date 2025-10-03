@@ -1,7 +1,29 @@
-
 const API_URL = `http://localhost:5000/api/users`;
 
 
+export const getAllUsers = async () => {
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(API_URL, {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json()
+        return data
+
+
+    } catch (error) {
+        console.error("Error getting users:", error.message)
+        throw error;
+    }
+}
 
 export const createUser = async (body) => {
 
@@ -40,7 +62,9 @@ export const getUserbyId = async (setUser) => {
             throw new Error(errorData.message || `Request failed with status ${response.status}`);
         }
         const user = await response.json()
-        setUser(user)
+        if (setUser && typeof setUser === 'function') {
+            setUser(user)
+        }
         return user
 
     } catch (error) {
@@ -114,9 +138,9 @@ export const declineFriendRequest = async (friend_request_id) => {
     const token = localStorage.getItem("user")
     try {
 
-        const response = await fetch(`${API_URL}/delete/${friend_request_id}`,{
+        const response = await fetch(`${API_URL}/delete/${friend_request_id}`, {
             method: "DELETE",
-            headers:{
+            headers: {
                 "Authorization": `Bearer ${token}`,
             }
         })
@@ -125,7 +149,7 @@ export const declineFriendRequest = async (friend_request_id) => {
             throw new Error(`Error: ${response.status}`);
         }
 
-        const data = await response.json(); 
+        const data = await response.json();
         return data;
 
 
@@ -137,13 +161,13 @@ export const declineFriendRequest = async (friend_request_id) => {
 }
 
 
-export const acceptFriendResquest = async(friend_request_id) =>{
+export const acceptFriendResquest = async (friend_request_id) => {
     const token = localStorage.getItem("user")
     try {
 
-        const response = await fetch(`${API_URL}/accept/${friend_request_id}`,{
+        const response = await fetch(`${API_URL}/accept/${friend_request_id}`, {
             method: "POST",
-            headers:{
+            headers: {
                 "Authorization": `Bearer ${token}`,
             }
         })
@@ -152,7 +176,7 @@ export const acceptFriendResquest = async(friend_request_id) =>{
             throw new Error(`Error: ${response.status}`);
         }
 
-        const data = await response.json(); 
+        const data = await response.json();
         return data;
 
 
@@ -164,7 +188,29 @@ export const acceptFriendResquest = async(friend_request_id) =>{
 
 }
 
-export const checkUserName =async (username) =>{
+export const getFriendRequests = async () => {
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/friend-requests`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Error geetting requests:", error);
+        throw error;
+    }
+}
+
+export const checkUserName = async (username) => {
     const token = localStorage.getItem("user")
     try {
         const response = await fetch(`${API_URL}/check-username/${username}`)
@@ -172,12 +218,99 @@ export const checkUserName =async (username) =>{
             throw new Error(`Error: ${response.status}`);
         }
 
-        const data = await response.json(); 
-        console.log(data.status)
+        const data = await response.json();
+
         return data.status;
-        
+
     } catch (error) {
         console.error("Error checking usermae:", error);
         throw error;
     }
 }
+
+export const sendFriendRequest = async (userId) => {
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/add/${userId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Error sending friend request", error);
+        throw error;
+    }
+}
+
+
+export const getFriends = async () => {
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/friends`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Error geetting requests:", error);
+        throw error;
+    }
+}
+
+
+export const getSuggestedUsers = async () => {
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`${API_URL}/matched-users`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.matches;
+
+    } catch (error) {
+        console.error("Error geetting requests:", error);
+        throw error;
+    }
+}
+
+
+export const getPrivateChatRoom = async (targetUserId) => {
+    try {
+        const currentUserId = localStorage.getItem("userId");
+        const res = await fetch(`http://localhost:5000/api/chatrooms/searchPri/${currentUserId}`);
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const chatRooms = await res.json();
+
+        const room = chatRooms.find(r => !r.isGroup && r.otherUserId === targetUserId);
+        return room ? room.id : null;
+
+    } catch (error) {
+        console.error('Failed to open private chat:', error);
+        return null;
+    }
+};

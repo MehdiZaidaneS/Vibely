@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Send, Users, Search, ChevronLeft, Home, Hash, UserPlus, Bell, UserMinus } from "lucide-react";
+import { Send, Users, Search, ChevronLeft, Home, Hash, UserPlus, Bell } from "lucide-react";
 import io from "socket.io-client";
 import styles from "./privateChat.module.css";
 import PeopleModal from "./PeopleModal";
@@ -342,65 +342,6 @@ const PrivateChat = () => {
     }
   };
 
-  const handleRemoveFriend = async () => {
-    if (!chatroomId) return;
-
-    // Get the friend ID from the chatroom participants endpoint
-    const token = localStorage.getItem("user");
-
-    try {
-      // First fetch the chatroom participants to get the friend ID
-      const participantsResponse = await fetch(`${API_URL}/api/chatrooms/participants/${chatroomId}`);
-      if (!participantsResponse.ok) {
-        alert("Unable to fetch chatroom details.");
-        return;
-      }
-
-      const participantsData = await participantsResponse.json();
-      const otherParticipant = participantsData.participants.find(p => p._id.toString() !== userId);
-
-      if (!otherParticipant) {
-        alert("Unable to identify friend.");
-        return;
-      }
-
-      const friendId = otherParticipant._id;
-      const friendName = otherParticipant.name || "this friend";
-
-      if (!window.confirm(`Are you sure you want to remove ${friendName} as a friend? This will also delete your chat history.`)) {
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/api/users/remove/${friendId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // Dispatch event to refresh conversations in sidebar
-        if (data.deletedChatRoom) {
-          window.dispatchEvent(new CustomEvent('chatDeleted', { detail: { chatroomId: data.deletedChatRoom } }));
-        }
-
-        // Refresh user data
-        await refreshUserData();
-
-        alert("Friend removed successfully");
-        navigate("/private-chat");
-      } else {
-        alert("Failed to remove friend");
-      }
-    } catch (err) {
-      console.error("Failed to remove friend:", err);
-      alert("An error occurred while removing friend");
-    }
-  };
-
   // ============================================================================
   // RENDER LOGIC
   // ============================================================================
@@ -613,15 +554,6 @@ const PrivateChat = () => {
               )}
             </div>
             <div className="flex items-center space-x-2">
-              {currentChatroom && (
-                <button
-                  onClick={handleRemoveFriend}
-                  className="p-2 hover:bg-red-100 rounded-lg transition-all duration-200"
-                  title="Remove Friend"
-                >
-                  <UserMinus className="w-5 h-5 text-red-600" />
-                </button>
-              )}
               <button
                 onClick={() => navigate("/")}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
@@ -743,6 +675,7 @@ const PrivateChat = () => {
         isOpen={isPeopleModalOpen}
         onClose={() => setIsPeopleModalOpen(false)}
         onUpdate={refreshUserData}
+        setIsFriendRequestsModalOpen={setIsFriendRequestsModalOpen}
       />
 
       {/* Friend Requests Modal */}

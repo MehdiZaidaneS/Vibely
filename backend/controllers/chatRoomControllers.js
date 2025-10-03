@@ -2,7 +2,7 @@ const Message = require('../models/messageModel');
 const ChatRoom = require('../models/chatRoomModel');
 
 exports.createChatRoom = async (req, res) => {
-  const { name, participants, isGroup, description} = req.body;
+  const { name, participants, isGroup, description } = req.body;
 
   try {
     let chatRoom;
@@ -34,7 +34,7 @@ exports.createChatRoom = async (req, res) => {
 
 exports.postMessage = async (req, res) => {
   const { roomId } = req.params;
-  const { sender, content, type} = req.body;
+  const { sender, content, type } = req.body;
 
   try {
     const chatRoom = await ChatRoom.findById(roomId);
@@ -89,7 +89,7 @@ exports.editMessage = async (req, res) => {
     }
 
     message.content = content;
-    message.edited = true; 
+    message.edited = true;
     await message.save();
 
     res.json(message);
@@ -102,50 +102,51 @@ const User = require('../models/userModel'); // Assuming your user model is here
 
 exports.getPrivateChat = async (req, res) => {
   const { userId } = req.params;
+
   try {
-    const chatrooms = await ChatRoom.find({ participants: userId, isGroup: false })
-      .populate('participants', 'name profile_pic isOnline')
+    // Find all private chatrooms where this user is a participant
+    const chatrooms = await ChatRoom.find({ 
+      participants: userId, 
+      isGroup: false 
+    })
+      .populate('participants', 'name avatar isOnline')
       .populate('lastMessage')
       .sort({ updatedAt: -1 });
 
     if (!chatrooms || chatrooms.length === 0) {
-      return res.status(200).json([]); // Return an empty array if no chatrooms are found
+      return res.status(200).json([]); // No private chats found
     }
 
-    const formattedChatrooms = chatrooms.map((room) => {
-      const otherParticipant = room.isGroup
-        ? null
-        : room.participants.find((p) => p._id.toString() !== userId);
-
-      const lastMessageContent = room.lastMessage
-        ? room.lastMessage.content
-        : 'No messages yet.';
+    // Format private chats
+    const formattedChats = chatrooms.map(room => {
+      // Find the other participant
+      const otherParticipant = room.participants.find(
+        p => p._id.toString() !== userId
+      );
 
       return {
-        id: room._id, // Use 'id' to match frontend key
-        name: room.isGroup ? room.name : (otherParticipant?.name || 'Unknown User'),
-        avatar: room.isGroup ? room.avatar || '/default-group-avatar.png' : (otherParticipant?.profile_pic || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'),
-        isOnline: room.isGroup ? true : (otherParticipant?.isOnline || false),
-        lastMessage: lastMessageContent,
-        lastMessageTime: room.lastMessage ? room.lastMessage.createdAt : room.updatedAt,
-        unreadCount: 0, // This logic needs to be implemented separately
-        isTyping: false, // This is a frontend state, not a database field
+        id: room._id,
+        otherUserId: otherParticipant?._id.toString() || null,
+        name: otherParticipant?.name || 'Unknown User',
+        avatar: otherParticipant?.avatar || '/default-avatar.png',
+        isOnline: otherParticipant?.isOnline || false,
+        lastMessage: room.lastMessage?.content || 'No messages yet.',
+        lastMessageTime: room.lastMessage?.createdAt || room.updatedAt
       };
     });
 
-    res.json(formattedChatrooms);
+    res.json(formattedChats);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to search for chatrooms.' });
+    console.error('Error fetching private chats:', error);
+    res.status(500).json({ error: 'Failed to search for private chatrooms.' });
   }
 };
 
-exports.getPublicChat = async (req, res) => {
-  const { userId } = req.params;
 
+exports.getPublicChat = async (req, res) => {
   try {
     const publicGroups = await ChatRoom.find({ isGroup: true })
       .populate('lastMessage')
-      .populate('participants', 'name email profile_pic')
       .sort({ updatedAt: -1 });
 
     if (!publicGroups || publicGroups.length === 0) {
@@ -153,17 +154,14 @@ exports.getPublicChat = async (req, res) => {
     }
 
     const formattedGroups = publicGroups.map((group) => {
-      const isMember = group.participants.some(p => p._id.toString() === userId);
-
+      // You can format the response here to match the frontend's needs
       return {
         id: group._id,
         name: group.name,
-        description: group.description,
-        members: group.participants.length,
-        isMember: isMember,
+        description: group.description, // Assuming you add this field to your model
+        members: group.participants.length, // Display member count
         lastMessage: group.lastMessage?.content || 'No messages yet.',
         lastMessageTime: group.lastMessage?.createdAt || group.updatedAt,
-        participants: group.participants,
       };
     });
 
@@ -174,23 +172,23 @@ exports.getPublicChat = async (req, res) => {
 };
 
 exports.getChatHistory = async (req, res) => {
-    const { roomId } = req.params;
-    try {
-        const messages = await Message.find({ chatRoom: roomId })
-            .populate('sender', 'name email profile_pic')
-            .sort({ createdAt: 1 });
+  const { roomId } = req.params;
+  try {
+    const messages = await Message.find({ chatRoom: roomId })
+      .populate('sender', 'name email profile_pic')
+      .sort({ createdAt: 1 });
 
-        // Only return the messages array
-        res.json(messages);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    // Only return the messages array
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 exports.getParticipants = async (req, res) => {
-  const roomID = req.params.roomId;
+  const roomID = req.params.roomID;
   try {
-    const chatRoom = await ChatRoom.findById(roomID).populate('participants', 'name email profile_pic')
+    const chatRoom = await ChatRoom.findById(roomID).populate('participants', 'name email')
     if (!chatRoom) {
       return res.status(404).json({ message: 'Chat room not found' });
     }
@@ -234,20 +232,18 @@ exports.joinGroup = async (req, res) => {
     }
 
     if (!chatRoom.isGroup) {
-      return res.status(400).json({ message: 'This is not a group chat' });
+      return res.status(400).json({ message: 'Cannot join a private chat' });
     }
 
-    // Check if user is already a participant
     if (chatRoom.participants.includes(userId)) {
-      return res.status(400).json({ message: 'You are already a member of this group' });
+      return res.status(400).json({ message: 'User already in group' });
     }
 
-    // Add user to participants
     chatRoom.participants.push(userId);
     await chatRoom.save();
 
-    const populatedRoom = await ChatRoom.findById(roomId).populate('participants', 'name email profile_pic');
-    res.status(200).json({ message: 'Joined group successfully', chatRoom: populatedRoom });
+    const populatedRoom = await ChatRoom.findById(chatRoom._id).populate('participants', 'name email');
+    res.status(200).json(populatedRoom);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -264,21 +260,16 @@ exports.leaveGroup = async (req, res) => {
     }
 
     if (!chatRoom.isGroup) {
-      return res.status(400).json({ message: 'This is not a group chat' });
+      return res.status(400).json({ message: 'Cannot leave a private chat' });
     }
 
-    // Check if user is a participant
-    if (!chatRoom.participants.includes(userId)) {
-      return res.status(400).json({ message: 'You are not a member of this group' });
-    }
-
-    // Remove user from participants
     chatRoom.participants = chatRoom.participants.filter(
-      (participantId) => participantId.toString() !== userId.toString()
+      participant => participant.toString() !== userId
     );
     await chatRoom.save();
 
-    res.status(200).json({ message: 'Left group successfully' });
+    const populatedRoom = await ChatRoom.findById(chatRoom._id).populate('participants', 'name email');
+    res.status(200).json(populatedRoom);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -55,7 +55,8 @@ const createNotification = async (req, res) => {
 
 const getMyNotifications = async (req, res) => {
 
-    const { userId } = req.params
+    const userId  = req.user._id
+    
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ message: "Wrong credentials" })
     }

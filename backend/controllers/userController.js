@@ -2,7 +2,8 @@ const UserModel = require("../models/userModel.js")
 const Event = require("../models/eventModel");
 const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken")
-const dotenv = require("dotenv")
+const dotenv = require("dotenv");
+const notificationModel = require("../models/notificationModel.js");
 dotenv.config()
 
 
@@ -13,17 +14,87 @@ const generateToken = (_id) => {
     })
 }
 
-
-
 const getAllUsers = async (req, res) => {
+    const userId = req.user._id;
 
     try {
-        const users = await UserModel.find({}).sort({ createdAt: -1 })
-        res.status(200).json(users)
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid user ID" });
+        }
+
+        // Get the current user's friends and friend_requests
+        const currentUser = await UserModel.findById(userId)
+            .select("friends friend_requests")
+            .populate("friends", "_id"); // populate friends to compare for mutual friends
+
+        if (!currentUser) {
+            return res.status(404).json({ message: "Current user not found" });
+        }
+
+        // Get all users except self and already friends
+        const users = await UserModel.find({
+            _id: { $nin: [userId, ...currentUser.friends.map(f => f._id)] }
+        })
+            .sort({ createdAt: -1 })
+            .populate("friends", "_id"); // populate friends to compute mutual friends
+
+        const usersWithStatus = users.map(user => {
+            // Check if current user has already sent a friend request to them
+            const hasSentRequest = user.friend_requests?.some(req =>
+                req.user.equals(userId)
+            );
+
+            // Check if current user has received a friend request from them
+            const hasReceivedRequest = currentUser.friend_requests?.some(req =>
+                req.user.equals(user._id)
+            );
+
+            // Calculate mutual friends count
+            const mutualFriends = user.friends.filter(f =>
+                currentUser.friends.some(cf => cf._id.equals(f._id))
+            ).length;
+
+            return {
+                _id: user._id,
+                name: user.name,
+                username: user.username,
+                profile_pic: user.profile_pic,
+                interests: user.interests,
+                createdAt: user.createdAt,
+                friendRequestPending: hasSentRequest ? "Pending" : "Add Friend",
+                friendRequestReceived: hasReceivedRequest ? "Respond" : null,
+                mutualFriends
+            };
+        });
+
+        res.status(200).json(usersWithStatus);
+
     } catch (err) {
-        res.status(500).json({ message: "Failed retrieving the users" })
+        console.error(err);
+        res.status(500).json({ message: "Failed retrieving the users" });
     }
-}
+};
+
+
+const getFriends = async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        const user = await UserModel.findById(userId)
+            .populate("friends"); 
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json(user.friends);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed retrieving friends" });
+    }
+};
+
 
 const searchUsers = async (req, res) => {
     const { query } = req.query;
@@ -41,8 +112,8 @@ const searchUsers = async (req, res) => {
                 { email: { $regex: query, $options: 'i' } }
             ]
         })
-        .select('name email profile_pic')
-        .limit(10);
+            .select('name email profile_pic')
+            .limit(10);
 
         res.status(200).json(users);
     } catch (err) {
@@ -101,15 +172,15 @@ const getRegisteredUser = async (req, res) => {
 
 }
 
-const checkUserName = async (req,res) =>{
-    const {username} = req.params
+const checkUserName = async (req, res) => {
+    const { username } = req.params
     try {
-        const findUser = await UserModel.findOne({username: username})
+        const findUser = await UserModel.findOne({ username: username })
 
-        if(findUser){
-            return res.status(200).json({status: "taken"})
-        }else{
-             return res.status(200).json({status: "available"})
+        if (findUser) {
+            return res.status(200).json({ status: "taken" })
+        } else {
+            return res.status(200).json({ status: "available" })
         }
 
     } catch (error) {
@@ -195,11 +266,23 @@ const addFriendRequest = async (req, res) => {
             return res.status(400).json({ message: "Friend request already sent" });
         }
 
-        targetUser.friend_requests.push(currentUserId);
+        const newRequest = {
+            user: currentUserId,
+            sentAt: new Date()
+        };
+
+        targetUser.friend_requests.push(newRequest);
         await targetUser.save();
 
-        console.log("Friend request sent successfully");
-        return res.status(200).json({ message: "Friend request sent successfully" });
+        //Creating notification
+        const notification = await notificationModel.create({
+            sender: currentUserId,
+            receiver: userId,
+            content: `${currentUser.username} wants to send you a friend request!`,
+            type: "Friend Request"
+        });
+
+        return res.status(200).json({ message: "Friend request sent successfully", notification });
 
     } catch (err) {
         console.error("Error adding friend:", err);
@@ -208,8 +291,8 @@ const addFriendRequest = async (req, res) => {
 }
 
 const acceptFriendRequest = async (req, res) => {
-    const userId = req.user._id; // logged in user
-    const { requested_friend_id } = req.params; // the one who sent the request
+    const userId = req.user._id;
+    const { requested_friend_id } = req.params;
 
     try {
         if (!mongoose.Types.ObjectId.isValid(requested_friend_id)) {
@@ -221,20 +304,20 @@ const acceptFriendRequest = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const user = await UserModel.findById(userId);
+        const user = await UserModel.findById(userId).populate("notifications");
         if (!user) {
             return res.status(404).json({ message: "Current user not found" });
         }
 
-        const hasRequest = user.friend_requests.some(id =>
-            id.equals(requested_friend_id)
+        const hasRequest = user.friend_requests.some(req =>
+            req.user.equals(requested_friend_id)
         );
 
         if (!hasRequest) {
             return res.status(400).json({ message: "User has not sent you a friend request" });
         }
 
-        // add each other as friends
+     
         if (!user.friends.some(id => id.equals(requested_friend_id))) {
             user.friends.push(targetUser._id);
         }
@@ -243,12 +326,28 @@ const acceptFriendRequest = async (req, res) => {
             targetUser.friends.push(user._id);
         }
 
-        user.friend_requests.pull(requested_friend_id);
+       
+        user.friend_requests = user.friend_requests.filter(
+            req => !req.user.equals(requested_friend_id)
+        );
+
+        const requestNotification = await notificationModel.findOneAndDelete({
+            receiver: userId,
+            sender: requested_friend_id,
+            type: "Friend Request" 
+        });
+
+        if (requestNotification) {
+    
+            user.notifications = user.notifications.filter(
+                n => !n.equals(requestNotification._id)
+            );
+        }
 
         await user.save();
         await targetUser.save();
 
-        // Automatically create a chatroom for the new friends
+      
         const ChatRoom = require('../models/chatRoomModel');
 
         let chatRoom = await ChatRoom.findOne({
@@ -278,8 +377,50 @@ const acceptFriendRequest = async (req, res) => {
 };
 
 
-const deleteFriendRequest = async (req,res) =>{
 
+const getFriendRequests = async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        const currentUser = await UserModel.findById(userId)
+            .select("friend_requests friends")
+            .populate("friend_requests.user friends");
+
+        if (!currentUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const usersWithStatus = currentUser.friend_requests.map(req => {
+            const user = req.user; // populated user document
+
+            const mutualFriends = user.friends.filter(f =>
+                currentUser.friends.some(cf => cf._id.equals(f._id))
+            ).length;
+
+            return {
+                _id: user._id,
+                name: user.name,
+                username: user.username,
+                profile_pic: user.profile_pic,
+                interests: user.interests,
+                createdAt: user.createdAt,
+                mutualFriends,
+                sentAt: req.sentAt
+            };
+        });
+
+        res.status(200).json(usersWithStatus);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
+
+
+const deleteFriendRequest = async (req, res) => {
     const userId = req.user._id;
     const { requested_friend_id } = req.params;
 
@@ -298,18 +439,33 @@ const deleteFriendRequest = async (req,res) =>{
             return res.status(404).json({ message: "Current user not found" });
         }
 
-        const hasRequest = user.friend_requests.some(id =>
-            id.equals(requested_friend_id)
+      
+        const hasRequest = user.friend_requests.some(req =>
+            req.user.equals(requested_friend_id)
         );
 
         if (!hasRequest) {
             return res.status(400).json({ message: "User has not sent you a friend request" });
         }
 
-        user.friend_requests.pull(requested_friend_id);
+        user.friend_requests = user.friend_requests.filter(
+            req => !req.user.equals(requested_friend_id)
+        );
+
+        const requestNotification = await notificationModel.findOneAndDelete({
+            receiver: userId,
+            sender: requested_friend_id,
+            type: "Friend Request" 
+        });
+
+        if (requestNotification) {
+    
+            user.notifications = user.notifications.filter(
+                n => !n.equals(requestNotification._id)
+            );
+        }
 
         await user.save();
-        await targetUser.save();
 
         return res.status(200).json({
             message: "Friend request deleted successfully",
@@ -317,11 +473,11 @@ const deleteFriendRequest = async (req,res) =>{
         });
 
     } catch (err) {
-        console.error("Error deleting friend:", err);
+        console.error("Error deleting friend request:", err);
         return res.status(500).json({ message: "Server error" });
     }
+};
 
-}
 
 const removeFriend = async (req, res) => {
     const userId = req.user._id;
@@ -466,6 +622,9 @@ module.exports = {
     addFriendRequest,
     acceptFriendRequest,
     deleteFriendRequest,
+    checkUserName,
+    getFriendRequests,
+    getFriends,
     removeFriend,
     checkUserName,
     searchUsers

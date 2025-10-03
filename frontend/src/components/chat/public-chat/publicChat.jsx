@@ -38,6 +38,7 @@ const PublicChat = () => {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);

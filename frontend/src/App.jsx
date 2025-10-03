@@ -3,11 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./components/auth/Register-Login/authPage";
 import WelcomePage from "./components/auth/WelcomePage/welcomePage";
 import EventPage from "./pages/EventPage";
-import PeoplePage from "./pages/PeoplePage"; // Import the separate PeoplePage component
+import PeoplePage from "./pages/People/PeoplePage"; // Import the separate PeoplePage component
 // import CreateEvent from "./pages/CreateEvent";
 import PublicChat from "./components/chat/public-chat/publicChat";
 import PrivateChat from "./components/chat/privateChat";
 import UserProfile from "./components/profile/UserProfile";
+import ProfilePage from "./pages/Profile/ProfilePage";
 import "./App.css";
 import React, { useState } from "react";
 
@@ -40,7 +41,7 @@ function App() {
         <Route path="/private-chat/:chatroomId" element={isAuthenticated ? <PrivateChat /> : <Navigate to="/register" />} />
         <Route path="/people" element={isAuthenticated ? <PeoplePage /> : <Navigate to="/register" />} />
         <Route path="/profile/:userId" element={isAuthenticated ? <UserProfile /> : <Navigate to="/register" />} />
-
+        <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/register" />} /> {/* New route for own profile */}
       </Routes>
     </BrowserRouter>
   );
