@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Users, Heart, MessageCircle, UserX } from "lucide-react";
-import Avatar from "../common/Avatar";
+import { ArrowLeft, Calendar, Users, Heart, MessageCircle, UserX } from "lucide-react";
 
 const API_URL = "http://localhost:5000";
 
@@ -161,7 +160,11 @@ const UserProfile = () => {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between -mt-16 mb-6">
               <div className="flex items-end space-x-4">
                 <div className="border-4 border-white rounded-full shadow-lg">
-                  <Avatar user={user} size="xl" />
+                  <img
+                    src={user.profile_pic}
+                    alt={user.name}
+                    className="w-32 h-32 rounded-full object-cover"
+                  />
                 </div>
                 <div className="pb-2">
                   <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
@@ -196,18 +199,6 @@ const UserProfile = () => {
 
             {/* Contact Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {user.email && (
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Mail className="w-5 h-5 text-purple-600" />
-                  <span>{user.email}</span>
-                </div>
-              )}
-              {user.phone && (
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Phone className="w-5 h-5 text-purple-600" />
-                  <span>{user.countryCode} {user.phone}</span>
-                </div>
-              )}
               {user.friends && (
                 <div className="flex items-center space-x-3 text-gray-600">
                   <Users className="w-5 h-5 text-purple-600" />

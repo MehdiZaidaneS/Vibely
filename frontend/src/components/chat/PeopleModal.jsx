@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, UserPlus, UserCheck, UserX, Search, X } from "lucide-react";
-import Avatar from "../common/Avatar";
 
 const API_URL = "http://localhost:5000";
 
@@ -153,8 +152,8 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="border-b border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -204,10 +203,10 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
                 >
                   {/* User Info */}
                   <div className="flex items-start space-x-4 mb-4">
-                    <Avatar
-                      user={user}
-                      size="lg"
-                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                    <img
+                      src={user.profile_pic}
+                      alt={user.name}
+                      className="w-16 h-16 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => {
                         onClose();
                         navigate(`/profile/${user._id}`);

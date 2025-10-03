@@ -24,5 +24,11 @@ router.post('/messages/:roomId', chatRoomControllers.postMessage);
 // Delete a chatroom
 router.delete('/:roomId', chatRoomControllers.deleteChatRoom);
 
+// Join a group
+router.post('/join/:roomId', chatRoomControllers.joinGroup);
+
+// Leave a group
+router.post('/leave/:roomId', chatRoomControllers.leaveGroup);
+
 module.exports = router;
 

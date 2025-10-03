@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { UserCheck, UserX, X, Users, Inbox } from "lucide-react";
-import Avatar from "../common/Avatar";
 
 const API_URL = "http://localhost:5000";
 
@@ -94,8 +93,8 @@ const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="border-b border-gray-200 p-6">
           <div className="flex items-center justify-between">
@@ -142,7 +141,11 @@ const FriendRequestsModal = ({ isOpen, onClose, onUpdate }) => {
                   <div className="flex items-center justify-between">
                     {/* User Info */}
                     <div className="flex items-center space-x-4 flex-1">
-                      <Avatar user={request} size="lg" />
+                      <img
+                        src={request.profile_pic}
+                        alt={request.name}
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate">
                           {request.name}

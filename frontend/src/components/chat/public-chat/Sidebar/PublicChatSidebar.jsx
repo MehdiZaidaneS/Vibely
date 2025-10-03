@@ -1,5 +1,7 @@
 import React from "react";
-import { Users, Search, Plus, Hash } from "lucide-react";
+import { Users, Search, Plus, Hash, UserPlus } from "lucide-react";
+
+const API_URL = "http://localhost:5000";
 
 const PublicChatSidebar = ({
   isSidebarOpen,
@@ -12,12 +14,17 @@ const PublicChatSidebar = ({
   setShowCreateGroup,
   currentGroup,
   styles,
+  onJoinGroup,
+  userId,
+  isMainSidebarOpen,
 }) => {
   return (
     <div
       className={`${
         isSidebarOpen ? "w-80" : "w-0"
-      } transition-all duration-300 bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden fixed left-0 top-0 h-full z-40`}
+      } transition-all duration-300 bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden fixed ${
+        isMainSidebarOpen ? "left-[260px]" : "left-0"
+      } top-0 h-full z-[1002]`}
     >
       {/* Sidebar Header */}
       <div
@@ -37,7 +44,7 @@ const PublicChatSidebar = ({
                 {currentGroup?.name || "Chat"}
               </h2>
               <p className="text-purple-100 text-sm">
-                {currentGroup?.members} members
+                Public Groups
               </p>
             </div>
           </div>
@@ -82,24 +89,19 @@ const PublicChatSidebar = ({
                 } ${styles.animateSlideInLeft}`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white font-semibold">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white font-semibold flex-shrink-0">
                   {typeof group.icon === "string" ? (
                     <span className="text-sm">{group.icon}</span>
                   ) : (
                     <Hash className="w-4 h-4" />
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      {group.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {group.members}
-                    </span>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-gray-700 truncate block">
+                    {group.name}
+                  </span>
                   <p className="text-xs text-gray-500 truncate">
-                    {group.description}
+                    {group.description || 'No description'}
                   </p>
                 </div>
               </div>

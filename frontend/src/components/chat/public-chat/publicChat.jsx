@@ -8,15 +8,16 @@ import PublicChatSidebar from "./Sidebar/PublicChatSidebar";
 import PublicChatHeader from "./Header/PublicChatHeader";
 import PublicMessagesArea from "./Messages/PublicMessagesArea";
 import PublicMessageInput from "./Input/PublicMessageInput";
-import PublicFriendsModal from "./Modals/PublicFriendsModal";
+import PeopleModal from "../PeopleModal";
 import CreateGroupModal from "./Modals/CreateGroupModal";
+import Sidebar from "../../../import/Sidebar";
 
 const API_URL = "http://localhost:5000";
-const socket = io(API_URL);
 
 const PublicChat = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
+  const socketRef = useRef(null);
 
   // ============================================================================
   // STATE MANAGEMENT
@@ -29,16 +30,14 @@ const PublicChat = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [friends, setFriends] = useState([]);
-  const [friendRequests, setFriendRequests] = useState([]);
-  const [suggestedFriends, setSuggestedFriends] = useState([]);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   // UI state for modals and dropdowns
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -72,6 +71,38 @@ const PublicChat = () => {
   // EFFECTS
   // ============================================================================
 
+  // Effect 0: Initialize Socket.IO connection
+  useEffect(() => {
+    socketRef.current = io(API_URL, {
+      transports: ['polling', 'websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('Socket connected:', socketRef.current.id);
+      setSocketConnected(true);
+    });
+
+    socketRef.current.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setSocketConnected(false);
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('Socket disconnected');
+      setSocketConnected(false);
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
+
   // Effect 1: Fetch chat groups on initial load
   useEffect(() => {
     const getChatGroups = async () => {
@@ -80,15 +111,17 @@ const PublicChat = () => {
         if (!response.ok) throw new Error("Failed to fetch public groups");
         const groups = await response.json();
         setChatGroups(groups);
+
+        // Set first group as active
         if (groups.length > 0 && !activeGroup) {
-          setActiveGroup(groups[0].id); // Set the first group as active
+          setActiveGroup(groups[0].id);
         }
       } catch (err) {
         console.error("Failed to fetch public groups:", err);
       }
     };
     getChatGroups();
-  }, [activeGroup]);
+  }, [userId]);
 
   // Effect 2: Fetch messages for the active group
   useEffect(() => {
@@ -112,21 +145,30 @@ const PublicChat = () => {
 
   // Effect 3: Handle real-time WebSocket communication
   useEffect(() => {
-    if (!activeGroup) return;
+    if (!activeGroup || !socketRef.current || !socketConnected) return;
 
-    socket.emit("joinRoom", activeGroup);
+    console.log('Joining room:', activeGroup);
+    socketRef.current.emit("joinRoom", activeGroup);
 
     const handleNewMessage = (message) => {
-      setMessages((prev) => [...prev, message]);
+      console.log('Received message:', message);
+      setMessages((prev) => {
+        // Prevent duplicate messages
+        if (prev.some(m => m._id === message._id)) {
+          return prev;
+        }
+        return [...prev, message];
+      });
     };
 
-    socket.on("receiveMessage", handleNewMessage);
+    socketRef.current.on("receiveMessage", handleNewMessage);
 
     return () => {
-      socket.off("receiveMessage", handleNewMessage);
-      socket.emit("leaveRoom", activeGroup);
+      if (socketRef.current) {
+        socketRef.current.off("receiveMessage", handleNewMessage);
+      }
     };
-  }, [activeGroup]);
+  }, [activeGroup, socketConnected]);
 
   // Effect 4: Auto-scroll to the bottom of the message list
   useEffect(() => {
@@ -161,24 +203,93 @@ const PublicChat = () => {
   // ============================================================================
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() === "" || !activeGroup) return;
+    if (newMessage.trim() === "" || !activeGroup || !socketRef.current || !socketConnected) return;
+
     const message = {
       sender: userId,
       content: newMessage.trim(),
     };
+
     try {
       const response = await fetch(`${API_URL}/api/chatrooms/messages/${activeGroup}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(message),
       });
+
       if (!response.ok) throw new Error("Failed to send message");
+
       const sentMessage = await response.json();
-      setMessages((prev) => [...prev, sentMessage]);
-      socket.emit("sendMessage", { chatroomId: activeGroup, message: sentMessage });
+      socketRef.current.emit("sendMessage", { chatroomId: activeGroup, message: sentMessage });
       setNewMessage("");
     } catch (err) {
       console.error("Failed to send message:", err);
+    }
+  };
+
+  const handleJoinGroup = async (groupId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/chatrooms/join/${groupId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.message || "Failed to join group");
+        return;
+      }
+
+      // Refresh the groups list
+      const groupsResponse = await fetch(`${API_URL}/api/chatrooms/searchPub/${userId}`);
+      if (groupsResponse.ok) {
+        const groups = await groupsResponse.json();
+        setChatGroups(groups);
+        // Set the joined group as active
+        setActiveGroup(groupId);
+      }
+    } catch (err) {
+      console.error("Failed to join group:", err);
+      alert("Error joining group. Please try again.");
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!activeGroup) return;
+
+    if (!window.confirm("Are you sure you want to leave this group?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/chatrooms/leave/${activeGroup}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.message || "Failed to leave group");
+        return;
+      }
+
+      // Refresh groups list
+      const groupsResponse = await fetch(`${API_URL}/api/chatrooms/searchPub/${userId}`);
+      if (groupsResponse.ok) {
+        const groups = await groupsResponse.json();
+        setChatGroups(groups);
+
+        // Set first joined group as active, or null
+        const memberGroup = groups.find(g => g.isMember);
+        setActiveGroup(memberGroup ? memberGroup.id : null);
+      }
+
+      alert("Left group successfully");
+    } catch (err) {
+      console.error("Failed to leave group:", err);
+      alert("Error leaving group. Please try again.");
     }
   };
 
@@ -221,49 +332,41 @@ const PublicChat = () => {
     setShowImageUpload(false);
   };
 
-  const handleAcceptFriend = (friendId) => {
-    console.log("Accepting friend request:", friendId);
-  };
-
-  const handleDeclineFriend = (friendId) => {
-    console.log("Declining friend request:", friendId);
-  };
-
-  const handleSendFriendRequest = (userId) => {
-    console.log("Sending friend request to:", userId);
-  };
-
-  const handleRemoveFriend = (friendId) => {
-    console.log("Removing friend:", friendId);
-  };
-
   const handleCreateGroup = async (groupData) => {
     try {
-      const payload =JSON.stringify({
-          name: groupData.name,
-          description: groupData.description,
-          isGroup: true,
-          participants: [userId], })
-      console.log(payload);
       const response = await fetch(`${API_URL}/api/chatrooms`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: payload
-        ,
+        body: JSON.stringify({
+          name: groupData.name,
+          description: groupData.description,
+          isGroup: true,
+          participants: [userId],
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create group");
+        const error = await response.json();
+        alert(error.message || "Failed to create group");
+        return;
       }
 
       const newGroup = await response.json();
-      setChatGroups((prev) => [...prev, newGroup]); // Update the group list
-      setActiveGroup(newGroup.id); // Set the new group as active
-      setShowCreateGroup(false); // Close the modal
+
+      // Refresh groups list
+      const groupsResponse = await fetch(`${API_URL}/api/chatrooms/searchPub/${userId}`);
+      if (groupsResponse.ok) {
+        const groups = await groupsResponse.json();
+        setChatGroups(groups);
+      }
+
+      setActiveGroup(newGroup._id);
+      setShowCreateGroup(false);
 
       console.log("Successfully created new group:", newGroup);
     } catch (error) {
       console.error("Error creating group:", error);
+      alert("Error creating group. Please try again.");
     }
   };
 
@@ -276,39 +379,14 @@ const PublicChat = () => {
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // More menu options
-  const moreOptions = [
-    {
-      icon: Bell,
-      label: "Notifications",
-      action: () => console.log("Notifications"),
-    },
-    {
-      icon: Users,
-      label: "Manage Members",
-      action: () => console.log("Manage Members"),
-    },
-    {
-      icon: Edit,
-      label: "Edit Group Info",
-      action: () => console.log("Edit Group"),
-    },
-    {
-      icon: Copy,
-      label: "Copy Group Link",
-      action: () => console.log("Copy Link"),
-    },
-    { icon: Flag, label: "Report Group", action: () => console.log("Report") },
-    {
-      icon: LogOut,
-      label: "Leave Group",
-      action: () => console.log("Leave Group"),
-      danger: true,
-    },
-  ];
-
   return (
     <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
+      {/* Main Sidebar */}
+      <Sidebar
+        isOpen={isMainSidebarOpen}
+        onToggle={() => setIsMainSidebarOpen(!isMainSidebarOpen)}
+      />
+
       {/* Public Chat Sidebar */}
       <PublicChatSidebar
         isSidebarOpen={isSidebarOpen}
@@ -321,11 +399,17 @@ const PublicChat = () => {
         setShowCreateGroup={setShowCreateGroup}
         currentGroup={currentGroup}
         styles={styles}
+        onJoinGroup={handleJoinGroup}
+        userId={userId}
+        isMainSidebarOpen={isMainSidebarOpen}
       />
 
       {/* Main Chat Area */}
       <div
-        className={`flex-1 flex flex-col ${isSidebarOpen ? "ml-80" : "ml-0"
+        className={`flex-1 flex flex-col ${
+          isMainSidebarOpen
+            ? (isSidebarOpen ? "ml-[580px]" : "ml-[260px]")
+            : (isSidebarOpen ? "ml-80" : "ml-0")
           } transition-all duration-300`}
       >
         <PublicChatHeader
@@ -335,10 +419,8 @@ const PublicChat = () => {
           onlineUsers={onlineUsers}
           navigate={navigate}
           setShowFriendsModal={setShowFriendsModal}
-          showMoreMenu={showMoreMenu}
-          setShowMoreMenu={setShowMoreMenu}
-          moreOptions={moreOptions}
           styles={styles}
+          isMainSidebarOpen={isMainSidebarOpen}
         />
 
         <PublicMessagesArea
@@ -368,18 +450,10 @@ const PublicChat = () => {
         />
       </div>
 
-      {/* Friends Modal */}
-      <PublicFriendsModal
-        showFriendsModal={showFriendsModal}
-        setShowFriendsModal={setShowFriendsModal}
-        friends={friends}
-        friendRequests={friendRequests}
-        suggestedFriends={suggestedFriends}
-        handleAcceptFriend={handleAcceptFriend}
-        handleDeclineFriend={handleDeclineFriend}
-        handleSendFriendRequest={handleSendFriendRequest}
-        handleRemoveFriend={handleRemoveFriend}
-        styles={styles}
+      {/* People Modal */}
+      <PeopleModal
+        isOpen={showFriendsModal}
+        onClose={() => setShowFriendsModal(false)}
       />
 
       {/* Create Group Modal */}

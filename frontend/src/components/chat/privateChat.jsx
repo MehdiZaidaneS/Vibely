@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Send, Users, Search, ChevronLeft, Home, Hash, UserPlus, Bell } from "lucide-react";
+import { Send, Users, Search, ChevronLeft, Home, Hash, UserPlus, Bell, UserMinus } from "lucide-react";
 import io from "socket.io-client";
 import styles from "./privateChat.module.css";
 import PeopleModal from "./PeopleModal";
 import FriendRequestsModal from "./FriendRequestsModal";
-import Avatar from "../common/Avatar";
+import Sidebar from "../../import/Sidebar";
 
 const API_URL = "http://localhost:5000";
 
@@ -30,6 +30,7 @@ const PrivateChat = () => {
   const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
   const [currentUserData, setCurrentUserData] = useState(null);
   const [friendRequestCount, setFriendRequestCount] = useState(0);
+  const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
   const userId = localStorage.getItem("userId");
@@ -281,12 +282,26 @@ const PrivateChat = () => {
     }
   };
 
-  const handleSelectConversation = (id) => {
+  const handleSelectConversation = async (id) => {
     navigate(`/private-chat/${id}`);
     const conversation = conversations.find(c => c.id === id);
     setCurrentChatroom(conversation);
     setSearchQuery("");
     setSearchResults([]);
+
+    // Fetch full chatroom details with participants
+    try {
+      const response = await fetch(`${API_URL}/api/chatrooms/participants/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentChatroom(prev => ({
+          ...prev,
+          participants: data.participants
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to fetch chatroom participants:", err);
+    }
   };
 
   const handleStartNewChat = async (selectedUser) => {
@@ -327,16 +342,83 @@ const PrivateChat = () => {
     }
   };
 
+  const handleRemoveFriend = async () => {
+    if (!chatroomId) return;
+
+    // Get the friend ID from the chatroom participants endpoint
+    const token = localStorage.getItem("user");
+
+    try {
+      // First fetch the chatroom participants to get the friend ID
+      const participantsResponse = await fetch(`${API_URL}/api/chatrooms/participants/${chatroomId}`);
+      if (!participantsResponse.ok) {
+        alert("Unable to fetch chatroom details.");
+        return;
+      }
+
+      const participantsData = await participantsResponse.json();
+      const otherParticipant = participantsData.participants.find(p => p._id.toString() !== userId);
+
+      if (!otherParticipant) {
+        alert("Unable to identify friend.");
+        return;
+      }
+
+      const friendId = otherParticipant._id;
+      const friendName = otherParticipant.name || "this friend";
+
+      if (!window.confirm(`Are you sure you want to remove ${friendName} as a friend? This will also delete your chat history.`)) {
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/users/remove/${friendId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Dispatch event to refresh conversations in sidebar
+        if (data.deletedChatRoom) {
+          window.dispatchEvent(new CustomEvent('chatDeleted', { detail: { chatroomId: data.deletedChatRoom } }));
+        }
+
+        // Refresh user data
+        await refreshUserData();
+
+        alert("Friend removed successfully");
+        navigate("/private-chat");
+      } else {
+        alert("Failed to remove friend");
+      }
+    } catch (err) {
+      console.error("Failed to remove friend:", err);
+      alert("An error occurred while removing friend");
+    }
+  };
+
   // ============================================================================
   // RENDER LOGIC
   // ============================================================================
   const otherParticipant = currentChatroom?.participants?.find(p => p._id.toString() !== userId);
   return (
     <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
+      {/* Main Sidebar */}
+      <Sidebar
+        isOpen={isMainSidebarOpen}
+        onToggle={() => setIsMainSidebarOpen(!isMainSidebarOpen)}
+      />
+
       {/* LEFT SIDEBAR */}
       <div
         className={`${isSidebarOpen ? "w-80" : "w-0"
-          } transition-all duration-300 bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden fixed left-0 top-0 h-full z-40`}
+          } transition-all duration-300 bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden fixed ${
+          isMainSidebarOpen ? "left-[260px]" : "left-0"
+        } top-0 h-full z-[1002]`}
       >
         {/* Sidebar Header */}
         <div
@@ -403,7 +485,11 @@ const PrivateChat = () => {
                       onClick={() => handleStartNewChat(user)}
                       className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-all duration-200"
                     >
-                      <Avatar user={user} size="sm" />
+                      <img
+                        src={user.profile_pic}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {user.name}
@@ -436,9 +522,10 @@ const PrivateChat = () => {
                 >
                   {/* Avatar + Online + Unread Badge */}
                   <div className="relative">
-                    <Avatar
-                      user={{ name: conversation.name, profile_pic: conversation.avatar }}
-                      size="md"
+                    <img
+                      src={conversation.avatar}
+                      alt={conversation.name}
+                      className="w-12 h-12 rounded-full object-cover"
                     />
                     {conversation.isOnline && (
                       <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
@@ -484,37 +571,57 @@ const PrivateChat = () => {
       </div>
       {/* MAIN CHAT AREA */}
       <div
-        className={`flex-1 flex flex-col ${isSidebarOpen ? "ml-80" : "ml-0"
+        className={`flex-1 flex flex-col ${
+          isMainSidebarOpen
+            ? (isSidebarOpen ? "ml-[580px]" : "ml-[260px]")
+            : (isSidebarOpen ? "ml-80" : "ml-0")
           } transition-all duration-300`}
       >
         {/* Chat Header */}
         <div
-          className={`bg-white border-b border-gray-200 p-4 shadow-sm fixed top-0 right-0 ${isSidebarOpen ? "left-80" : "left-0"
-            } transition-all duration-300 z-30 ${styles.animateFadeIn}`}
+          className={`bg-white border-b border-gray-200 p-4 shadow-sm fixed top-0 right-0 ${
+            isMainSidebarOpen
+              ? (isSidebarOpen ? "left-[580px]" : "left-[260px]")
+              : (isSidebarOpen ? "left-80" : "left-0")
+          } transition-all duration-300 z-30 ${styles.animateFadeIn}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="relative">
-                <Avatar
-                  user={{ name: currentChatroom?.name, profile_pic: currentChatroom?.avatar }}
-                  size="sm"
-                />
-                {currentChatroom?.isOnline && (
-                  <div
-                    className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
-                  ></div>
-                )}
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  {currentChatroom?.name}
-                </h1>
-                <p className="text-sm text-gray-500">
-                  {currentChatroom?.isOnline ? "Online" : "Last seen recently"}
-                </p>
-              </div>
+              {currentChatroom && (
+                <>
+                  <div className="relative">
+                    <img
+                      src={currentChatroom.avatar}
+                      alt={currentChatroom.name}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                    {currentChatroom.isOnline && (
+                      <div
+                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full ${styles.animateOnlineIndicator}`}
+                      ></div>
+                    )}
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-semibold text-gray-900">
+                      {currentChatroom.name}
+                    </h1>
+                    <p className="text-sm text-gray-500">
+                      {currentChatroom.isOnline ? "Online" : "Last seen recently"}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex items-center space-x-2">
+              {currentChatroom && (
+                <button
+                  onClick={handleRemoveFriend}
+                  className="p-2 hover:bg-red-100 rounded-lg transition-all duration-200"
+                  title="Remove Friend"
+                >
+                  <UserMinus className="w-5 h-5 text-red-600" />
+                </button>
+              )}
               <button
                 onClick={() => navigate("/")}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
@@ -554,17 +661,14 @@ const PrivateChat = () => {
                 >
                   {/* Profile Picture */}
                   <div className="relative flex-shrink-0 mb-1">
-                    <Avatar
-                      user={{
-                        name: message.sender._id?.toString() === userId
-                          ? "You"
-                          : message.sender.name || otherParticipant?.name,
-                        profile_pic: message.sender._id?.toString() === userId
-                          ? currentChatroom?.participants?.find(p => p._id.toString() === userId)?.avatar
-                          : message.sender.profile_pic || otherParticipant?.avatar
-                      }}
-                      size="sm"
-                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                    <img
+                      src={message.sender._id?.toString() === userId
+                        ? currentChatroom?.participants?.find(p => p._id.toString() === userId)?.profile_pic || currentUserData?.profile_pic
+                        : message.sender.profile_pic || otherParticipant?.profile_pic}
+                      alt={message.sender._id?.toString() === userId
+                        ? "You"
+                        : message.sender.name || otherParticipant?.name}
+                      className="w-8 h-8 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => navigate(`/profile/${message.sender._id}`)}
                     />
                   </div>
@@ -577,7 +681,7 @@ const PrivateChat = () => {
                         : "bg-white border border-gray-200 text-gray-900"
                         } rounded-lg px-4 py-3 shadow-sm`}
                     >
-                      <p className={`text-xs font-semibold mb-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-gray-700"}`}>
+                      <p className={`text-xs font-semibold mb-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-purple-600"}`}>
                         {message.sender._id?.toString() === userId
                           ? "You"
                           : message.sender.name || otherParticipant?.name}
