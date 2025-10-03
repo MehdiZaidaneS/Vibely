@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getMyNotifications, deleteNotification } from "../api/notificationsApi";
-import { declineFriendRequest, acceptFriendResquest } from "../api/userApi";
+import { getMyNotifications, deleteNotification } from "../../api/notificationsApi";
+import { declineFriendRequest, acceptFriendResquest, getFriends } from "../../api/userApi";
 
 function NotificationPopup({ onClose }) {
   const [notifications, setNotifications] = useState([]);
@@ -10,16 +10,21 @@ function NotificationPopup({ onClose }) {
   }, []);
 
   const handleAccept = async (notif) => {
-    await acceptFriendResquest(notif.sender)
-    await deleteNotification(notif._id)
-
+   
+    await acceptFriendResquest(notif.sender);
+    
   };
+
 
   const handleDecline = async (notif) => {
-    await declineFriendRequest(notif.sender)
-    await deleteNotification(notif._id)
+ 
 
+  
+    await declineFriendRequest(notif.sender);
+  
+    
   };
+
 
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -32,7 +37,6 @@ function NotificationPopup({ onClose }) {
             <li
               key={notif._id}
               className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex justify-between items-center ${notif.unread ? "bg-blue-50" : ""}`}
-              onClick={() => console.log("Notification clicked:", notif.content)}
             >
               <span className="text-sm text-gray-800">{notif.content}</span>
 

@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
+const {UserMatches} = require("../controllers/AIeventController.js")
 const requireAuth = require("../middleware/requireAuth");
+
 
 const {
  getAllUsers,
@@ -13,6 +15,8 @@ const {
  addFriendRequest,
  acceptFriendRequest,
  deleteFriendRequest,
+ getFriendRequests,
+ getFriends,
  removeFriend,
  checkUserName,
  searchUsers
@@ -21,7 +25,6 @@ const {
 
 
 
-router.get("/", getAllUsers)
 
 router.get("/search", searchUsers)
 
@@ -35,14 +38,20 @@ router.get("/:userId", getUserbyId)
 
 router.get("/check-username/:username", checkUserName)
 
-router.use(requireAuth);
 
+
+router.use(requireAuth);
+router.post("/matched-users", UserMatches)
+
+router.get("/", getAllUsers)
+router.post("/friend-requests", getFriendRequests)
 router.patch('/:userId/leave-event', leaveEventFromUserPage);
 router.get('/:userId/joined-events', getJoinedEvents);
 router.patch("/:userId", addInfo)
-router.post("/:userId", addFriendRequest)
+router.post("/add/:userId", addFriendRequest)
 router.post("/accept/:requested_friend_id", acceptFriendRequest)
 router.delete("/delete/:requested_friend_id", deleteFriendRequest)
+router.post("/friends", getFriends)
 router.delete("/remove/:friendId", removeFriend)
 
 

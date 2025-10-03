@@ -743,6 +743,7 @@ const PrivateChat = () => {
         isOpen={isPeopleModalOpen}
         onClose={() => setIsPeopleModalOpen(false)}
         onUpdate={refreshUserData}
+        setIsFriendRequestsModalOpen={setIsFriendRequestsModalOpen}
       />
 
       {/* Friend Requests Modal */}

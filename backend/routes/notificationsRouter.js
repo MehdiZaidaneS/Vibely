@@ -1,5 +1,6 @@
 const express = require("express")
 const router = express.Router()
+const requireAuth = require("../middleware/requireAuth");
 
 
 
@@ -13,13 +14,11 @@ const {
 
 
 router.get("/", getAll)
-
-
-router.get("/:userId", getMyNotifications)
-
 router.delete("/:notificationId", deleteNotification)
 router.post("/", createNotification)
 
+router.use(requireAuth);
+router.post("/getNotifications", getMyNotifications)
 
 
 

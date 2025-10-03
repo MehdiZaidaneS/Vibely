@@ -1,7 +1,7 @@
 // src/import/CreateEventModal.jsx
 import React, { useState } from "react";
 import styles from "./CreateEvent.module.css";
-import { createEvent } from "../api/eventsApi";
+import { createEvent } from "../../../api/eventsApi";
 
 function CreateEventModal({ isOpen, onClose, setEvents, setIsCreateModalOpen, setToast }) {
   const [title, setTitle] = useState("");

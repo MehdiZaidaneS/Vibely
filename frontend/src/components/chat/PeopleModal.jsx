@@ -1,47 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, UserPlus, UserCheck, UserX, Search, X } from "lucide-react";
+import {
+  getAllUsers,
+  getUserbyId,
+  sendFriendRequest,
+  getFriends,
+} from "../../api/userApi";
 
-const API_URL = "http://localhost:5000";
-
-const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
+const PeopleModal = ({
+  isOpen,
+  onClose,
+  onUpdate,
+  setIsFriendRequestsModalOpen,
+}) => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
-  const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("user");
 
   useEffect(() => {
     if (isOpen) {
       fetchCurrentUser();
       fetchAllUsers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const fetchCurrentUser = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/users/${userId}`);
-      if (response.ok) {
-        const user = await response.json();
-        setCurrentUser(user);
-      }
+      const user = await getUserbyId(); // returns the user document
+      setCurrentUser(user);
     } catch (err) {
       console.error("Failed to fetch current user:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAllUsers = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/users`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
-      const allUsers = await response.json();
-      // Filter out current user
-      const otherUsers = allUsers.filter(user => user._id !== userId);
-      setUsers(otherUsers);
+      const allUsers = await getAllUsers();
+      setUsers(allUsers);
     } catch (err) {
       console.error("Failed to fetch users:", err);
     } finally {
@@ -49,111 +52,87 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
     }
   };
 
-  const sendFriendRequest = async (targetUserId) => {
-    console.log("=== FRONTEND DEBUG ===");
-    console.log("Token:", token);
-    console.log("UserId:", userId);
-    console.log("Target User:", targetUserId);
-
-    if (!token) {
-      alert("You are not logged in. Please log in and try again.");
-      return;
-    }
-
+  const handleSendFriendRequest = async (targetUserId) => {
     try {
-      const response = await fetch(`${API_URL}/api/users/${targetUserId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      });
+      await sendFriendRequest(targetUserId);
+      // Optimistically remove or mark as requested:
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id === targetUserId ? { ...u, friendRequestPending: "Pending" } : u
+        )
+      );
 
-      console.log("Response status:", response.status);
-
-      const data = await response.json();
-      console.log("Response data:", data);
-
-      if (response.ok) {
-        // Update UI to show request sent
-        setUsers(users.map(user =>
-          user._id === targetUserId
-            ? { ...user, requestSent: true }
-            : user
-        ));
-        // Notify parent to refresh
-        if (onUpdate) onUpdate();
-        alert("Friend request sent!");
-      } else {
-        alert(data.error || data.message || "Failed to send friend request");
-      }
+      if (onUpdate) onUpdate(); // Let parent refresh
+      alert("Friend request sent!");
     } catch (err) {
       console.error("Failed to send friend request:", err);
       alert("Error sending friend request. Please try again.");
     }
   };
 
-  const removeFriend = async (friendId) => {
-    if (!window.confirm("Are you sure you want to remove this friend? This will also delete your chat history with them.")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/api/users/remove/${friendId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Remove friend response:", data);
-
-        // Refresh user data
-        await fetchCurrentUser();
-        if (onUpdate) onUpdate();
-
-        // If we're on the deleted chat page, navigate away
-        if (data.deletedChatRoom) {
-          console.log("Dispatching chatDeleted event for chatroom:", data.deletedChatRoom);
-          window.dispatchEvent(new CustomEvent('chatDeleted', { detail: { chatroomId: data.deletedChatRoom } }));
-        }
-
-        alert("Friend removed and chat deleted");
-      } else {
-        const data = await response.json();
-        alert(data.message || "Failed to remove friend");
-      }
-    } catch (err) {
-      console.error("Failed to remove friend:", err);
-      alert("Error removing friend. Please try again.");
-    }
-  };
-
+  // Helpers: prefer using server-sent flags if available
   const isFriend = (user) => {
-    return currentUser?.friends?.some(friendId => friendId === user._id);
+    if (!currentUser) return false;
+    // server may return friends as populated docs or ID strings
+    return (
+      (currentUser.friends || []).some(
+        (f) => (f._id ? f._id.toString() : f.toString()) === user._id.toString()
+      ) || false
+    );
   };
 
   const hasSentRequest = (user) => {
-    return user.friend_requests?.some(requestId => requestId === userId);
+    // server may already include friendRequestPending on the user object
+    if (user.friendRequestPending && user.friendRequestPending === "Pending")
+      return true;
+
+    // fallback: check target user's friend_requests array for a request from current user
+    if (user.friend_requests && currentUser) {
+      return user.friend_requests.some(
+        (req) =>
+          (req.user &&
+            (req.user._id ? req.user._id.toString() : req.user.toString())) ===
+          currentUser._id.toString()
+      );
+    }
+    return false;
   };
 
   const hasReceivedRequest = (user) => {
-    return currentUser?.friend_requests?.some(requestId => requestId === user._id);
+    // server might include friendRequestReceived flag
+    if (user.friendRequestReceived && user.friendRequestReceived === "Respond")
+      return true;
+
+    // fallback: check currentUser.friend_requests for a request from this user
+    if (currentUser && currentUser.friend_requests) {
+      return currentUser.friend_requests.some(
+        (req) =>
+          (req.user &&
+            (req.user._id ? req.user._id.toString() : req.user.toString())) ===
+          user._id.toString()
+      );
+    }
+    return false;
   };
 
-  const filteredUsers = users.filter(user =>
-    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="border-b border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -174,7 +153,7 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search by name, username or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -222,7 +201,9 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
                       >
                         {user.name}
                       </h3>
-                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                      <p className="text-sm text-gray-500 truncate">
+                        {user.email}
+                      </p>
                       {user.interests && user.interests.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {user.interests.slice(0, 2).map((interest, idx) => (
@@ -246,7 +227,10 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
                   {/* Action Button */}
                   {isFriend(user) ? (
                     <button
-                      onClick={() => removeFriend(user._id)}
+                      onClick={() => {
+                        // implement remove friend or navigate to chat settings
+                        alert("Remove friend not implemented here.");
+                      }}
                       className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
                     >
                       <UserX className="w-4 h-4" />
@@ -256,14 +240,14 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
                     <button
                       onClick={() => {
                         onClose();
-                        navigate('/notifications');
+                        setIsFriendRequestsModalOpen(true);
                       }}
                       className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                     >
                       <UserCheck className="w-4 h-4" />
-                      <span>Accept Request</span>
+                      <span>Respond</span>
                     </button>
-                  ) : hasSentRequest(user) || user.requestSent ? (
+                  ) : hasSentRequest(user) ? (
                     <button
                       className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg cursor-default text-sm"
                       disabled
@@ -273,7 +257,7 @@ const PeopleModal = ({ isOpen, onClose, onUpdate }) => {
                     </button>
                   ) : (
                     <button
-                      onClick={() => sendFriendRequest(user._id)}
+                      onClick={() => handleSendFriendRequest(user._id)}
                       className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
                     >
                       <UserPlus className="w-4 h-4" />
