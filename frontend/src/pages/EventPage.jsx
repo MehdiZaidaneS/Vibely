@@ -6,7 +6,7 @@ import Modal from "../import/Events/JoinEvent";
 import { getUserbyId } from "../api/userApi";
 import { joinEvent, getAllEvents, getJoinedEvents, leaveEvent, recommendEvents } from "../api/eventsApi";
 import Toast from "../import/Notification/NotificationJoin";
-import CreateEventModal from "../import/createEventPopup";
+import CreateEventModal from "../import/Events/CreateEvents/createEventPopup";
 import UserDropdown from "../import/UserDropDown/UserDropdown";
 import NotificationPopup from "../import/Notification/NotificationPopup";
 import DmPopup from "../import/DmPopup";
