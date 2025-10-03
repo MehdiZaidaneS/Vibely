@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getMyNotifications, deleteNotification } from "../api/notificationsApi";
-import { declineFriendRequest, acceptFriendResquest, getFriends } from "../api/userApi";
+import { getMyNotifications, deleteNotification } from "../../api/notificationsApi";
+import { declineFriendRequest, acceptFriendResquest, getFriends } from "../../api/userApi";
 
 function NotificationPopup({ onClose }) {
   const [notifications, setNotifications] = useState([]);

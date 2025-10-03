@@ -2,15 +2,16 @@
 import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
-import Modal from "../import/JoinEvent";
+import Modal from "../import/Events/JoinEvent";
 import { getUserbyId } from "../api/userApi";
 import { joinEvent, getAllEvents, getJoinedEvents, leaveEvent, recommendEvents } from "../api/eventsApi";
-import Toast from "../import/NotificationJoin";
+import Toast from "../import/Notification/NotificationJoin";
 import CreateEventModal from "../import/createEventPopup";
-import UserDropdown from "../import/UserDropdown";
-import NotificationPopup from "../import/NotificationPopup";
+import UserDropdown from "../import/UserDropDown/UserDropdown";
+import NotificationPopup from "../import/Notification/NotificationPopup";
 import DmPopup from "../import/DmPopup";
-import EventDetailsModal from "../import/EventDetailsModal";
+import EventDetailsModal from "../import/Events/EventDetails/EventDetailsModal";
+// import ProfileMiniPage from "../import/ProfileModal";
 import { Plus } from 'lucide-react';
 import "./EventPage.css";
 
@@ -232,7 +233,7 @@ function EventPage({isAuthenticated}) {
                       {isDmOpen && <DmPopup onClose={() => setIsDmOpen(false)} />} {/* Render popup */}
                     </span>
                   </div>
-                  <UserDropdown user={user} />
+                  <UserDropdown user={user} setUser={setUser} setToast={setToast} />
                 </>
               ) : (
                 <>
