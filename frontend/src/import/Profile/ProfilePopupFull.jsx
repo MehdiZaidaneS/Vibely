@@ -83,6 +83,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
     setIsEditingLocation(false);
   };
 
+  
   const updateStatus = (newStatus) => {
     const updatedUser = { ...user, status: newStatus };
     setUser(updatedUser);
