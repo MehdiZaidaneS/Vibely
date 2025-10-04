@@ -266,12 +266,8 @@ const addFriendRequest = async (req, res) => {
             return res.status(400).json({ message: "Friend request already sent" });
         }
 
-        const newRequest = {
-            user: currentUserId,
-            sentAt: new Date()
-        };
-
-        targetUser.friend_requests.push(newRequest);
+        // Add the current user's ID to friend_requests array
+        targetUser.friend_requests.push(currentUserId);
         await targetUser.save();
 
         //Creating notification
@@ -309,15 +305,16 @@ const acceptFriendRequest = async (req, res) => {
             return res.status(404).json({ message: "Current user not found" });
         }
 
-        const hasRequest = user.friend_requests.some(req =>
-            req.user.equals(requested_friend_id)
+        // Check if friend request exists (friend_requests now contains ObjectIds directly)
+        const hasRequest = user.friend_requests.some(requesterId =>
+            requesterId.toString() === requested_friend_id.toString()
         );
 
         if (!hasRequest) {
             return res.status(400).json({ message: "User has not sent you a friend request" });
         }
 
-     
+
         if (!user.friends.some(id => id.equals(requested_friend_id))) {
             user.friends.push(targetUser._id);
         }
@@ -326,9 +323,10 @@ const acceptFriendRequest = async (req, res) => {
             targetUser.friends.push(user._id);
         }
 
-       
+
+        // Remove the friend request (friend_requests contains ObjectIds directly)
         user.friend_requests = user.friend_requests.filter(
-            req => !req.user.equals(requested_friend_id)
+            requesterId => requesterId.toString() !== requested_friend_id.toString()
         );
 
         const requestNotification = await notificationModel.findOneAndDelete({
@@ -384,14 +382,14 @@ const getFriendRequests = async (req, res) => {
     try {
         const currentUser = await UserModel.findById(userId)
             .select("friend_requests friends")
-            .populate("friend_requests.user friends");
+            .populate("friend_requests friends");
 
         if (!currentUser) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const usersWithStatus = currentUser.friend_requests.map(req => {
-            const user = req.user; // populated user document
+        const usersWithStatus = currentUser.friend_requests.map(user => {
+            // user is now the populated user document directly (ObjectId reference)
 
             const mutualFriends = user.friends.filter(f =>
                 currentUser.friends.some(cf => cf._id.equals(f._id))
@@ -404,8 +402,7 @@ const getFriendRequests = async (req, res) => {
                 profile_pic: user.profile_pic,
                 interests: user.interests,
                 createdAt: user.createdAt,
-                mutualFriends,
-                sentAt: req.sentAt
+                mutualFriends
             };
         });
 
@@ -439,17 +436,19 @@ const deleteFriendRequest = async (req, res) => {
             return res.status(404).json({ message: "Current user not found" });
         }
 
-      
-        const hasRequest = user.friend_requests.some(req =>
-            req.user.equals(requested_friend_id)
+
+        // Check if friend request exists (friend_requests now contains ObjectIds directly)
+        const hasRequest = user.friend_requests.some(requesterId =>
+            requesterId.toString() === requested_friend_id.toString()
         );
 
         if (!hasRequest) {
             return res.status(400).json({ message: "User has not sent you a friend request" });
         }
 
+        // Remove the friend request (friend_requests contains ObjectIds directly)
         user.friend_requests = user.friend_requests.filter(
-            req => !req.user.equals(requested_friend_id)
+            requesterId => requesterId.toString() !== requested_friend_id.toString()
         );
 
         const requestNotification = await notificationModel.findOneAndDelete({
