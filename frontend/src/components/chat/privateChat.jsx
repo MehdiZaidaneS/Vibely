@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Send, Users, Search, ChevronLeft, Home, Hash, UserPlus, Bell } from "lucide-react";
+import {
+  Send,
+  Users,
+  Search,
+  ChevronLeft,
+  Home,
+  Hash,
+  UserPlus,
+  Bell,
+} from "lucide-react";
 import io from "socket.io-client";
 import styles from "./privateChat.module.css";
 import PeopleModal from "./PeopleModal";
@@ -27,7 +36,8 @@ const PrivateChat = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const [isPeopleModalOpen, setIsPeopleModalOpen] = useState(false);
-  const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
+  const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] =
+    useState(false);
   const [currentUserData, setCurrentUserData] = useState(null);
   const [friendRequestCount, setFriendRequestCount] = useState(0);
   const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
@@ -72,22 +82,22 @@ const PrivateChat = () => {
   // Effect 1: Initialize Socket.IO connection
   useEffect(() => {
     socketRef.current = io(API_URL, {
-      transports: ['polling', 'websocket'],
+      transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
-    socketRef.current.on('connect', () => {
+    socketRef.current.on("connect", () => {
       setSocketConnected(true);
     });
 
-    socketRef.current.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+    socketRef.current.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
       setSocketConnected(false);
     });
 
-    socketRef.current.on('disconnect', () => {
+    socketRef.current.on("disconnect", () => {
       setSocketConnected(false);
     });
 
@@ -103,14 +113,16 @@ const PrivateChat = () => {
   useEffect(() => {
     const getChatrooms = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/chatrooms/searchPri/${userId}`);
+        const response = await fetch(
+          `${API_URL}/api/chatrooms/searchPri/${userId}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch chatrooms");
         }
         const chatrooms = await response.json();
         setConversations(chatrooms);
         if (chatroomId) {
-          const room = chatrooms.find(c => c.id === chatroomId);
+          const room = chatrooms.find((c) => c.id === chatroomId);
           if (room) {
             setCurrentChatroom(room);
           } else {
@@ -131,8 +143,8 @@ const PrivateChat = () => {
       console.log("Current chatroom ID:", chatroomId);
 
       // Remove deleted chat from conversations
-      setConversations(prev => {
-        const filtered = prev.filter(c => c.id !== deletedChatroomId);
+      setConversations((prev) => {
+        const filtered = prev.filter((c) => c.id !== deletedChatroomId);
         console.log("Conversations before filter:", prev.length);
         console.log("Conversations after filter:", filtered.length);
         return filtered;
@@ -151,12 +163,12 @@ const PrivateChat = () => {
       getChatrooms();
     };
 
-    window.addEventListener('chatDeleted', handleChatDeleted);
-    window.addEventListener('friendAdded', handleFriendAdded);
+    window.addEventListener("chatDeleted", handleChatDeleted);
+    window.addEventListener("friendAdded", handleFriendAdded);
 
     return () => {
-      window.removeEventListener('chatDeleted', handleChatDeleted);
-      window.removeEventListener('friendAdded', handleFriendAdded);
+      window.removeEventListener("chatDeleted", handleChatDeleted);
+      window.removeEventListener("friendAdded", handleFriendAdded);
     };
   }, [userId, chatroomId, navigate]);
 
@@ -168,7 +180,9 @@ const PrivateChat = () => {
         return;
       }
       try {
-        const response = await fetch(`${API_URL}/api/chatrooms/history/${chatroomId}`);
+        const response = await fetch(
+          `${API_URL}/api/chatrooms/history/${chatroomId}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch messages");
         }
@@ -191,7 +205,7 @@ const PrivateChat = () => {
     const handleNewMessage = (message) => {
       setMessages((prev) => {
         // Prevent duplicate messages
-        if (prev.some(m => m._id === message._id)) {
+        if (prev.some((m) => m._id === message._id)) {
           return prev;
         }
         return [...prev, message];
@@ -224,14 +238,16 @@ const PrivateChat = () => {
       setIsSearching(true);
       try {
         const response = await fetch(
-          `${API_URL}/api/users/search?query=${encodeURIComponent(searchQuery)}&userId=${userId}`
+          `${API_URL}/api/users/search?query=${encodeURIComponent(
+            searchQuery
+          )}&userId=${userId}`
         );
         if (!response.ok) {
           throw new Error("Failed to search users");
         }
         const users = await response.json();
         // Filter to show only friends
-        const friendUsers = users.filter(user =>
+        const friendUsers = users.filter((user) =>
           currentUserData?.friends?.includes(user._id)
         );
         setSearchResults(friendUsers);
@@ -252,23 +268,35 @@ const PrivateChat = () => {
   // ============================================================================
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() === "" || !chatroomId || !socketRef.current || !socketConnected) return;
+    if (
+      newMessage.trim() === "" ||
+      !chatroomId ||
+      !socketRef.current ||
+      !socketConnected
+    )
+      return;
     const message = {
       sender: userId,
       content: newMessage.trim(),
     };
     try {
-      const response = await fetch(`${API_URL}/api/chatrooms/messages/${chatroomId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
-      });
+      const response = await fetch(
+        `${API_URL}/api/chatrooms/messages/${chatroomId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message),
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to send message");
       }
       const sentMessage = await response.json();
       // Emit to socket for real-time updates to all users
-      socketRef.current.emit("sendMessage", { chatroomId, message: sentMessage });
+      socketRef.current.emit("sendMessage", {
+        chatroomId,
+        message: sentMessage,
+      });
       setNewMessage("");
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -284,19 +312,21 @@ const PrivateChat = () => {
 
   const handleSelectConversation = async (id) => {
     navigate(`/private-chat/${id}`);
-    const conversation = conversations.find(c => c.id === id);
+    const conversation = conversations.find((c) => c.id === id);
     setCurrentChatroom(conversation);
     setSearchQuery("");
     setSearchResults([]);
 
     // Fetch full chatroom details with participants
     try {
-      const response = await fetch(`${API_URL}/api/chatrooms/participants/${id}`);
+      const response = await fetch(
+        `${API_URL}/api/chatrooms/participants/${id}`
+      );
       if (response.ok) {
         const data = await response.json();
-        setCurrentChatroom(prev => ({
+        setCurrentChatroom((prev) => ({
           ...prev,
-          participants: data.participants
+          participants: data.participants,
         }));
       }
     } catch (err) {
@@ -307,7 +337,9 @@ const PrivateChat = () => {
   const handleStartNewChat = async (selectedUser) => {
     // Check if user is a friend
     if (!currentUserData?.friends?.includes(selectedUser._id)) {
-      alert("You can only chat with your friends. Send them a friend request first!");
+      alert(
+        "You can only chat with your friends. Send them a friend request first!"
+      );
       return;
     }
 
@@ -327,7 +359,9 @@ const PrivateChat = () => {
       const chatroom = await response.json();
 
       // Refresh conversations list
-      const conversationsResponse = await fetch(`${API_URL}/api/chatrooms/searchPri/${userId}`);
+      const conversationsResponse = await fetch(
+        `${API_URL}/api/chatrooms/searchPri/${userId}`
+      );
       if (conversationsResponse.ok) {
         const updatedConversations = await conversationsResponse.json();
         setConversations(updatedConversations);
@@ -345,7 +379,14 @@ const PrivateChat = () => {
   // ============================================================================
   // RENDER LOGIC
   // ============================================================================
-  const otherParticipant = currentChatroom?.participants?.find(p => p._id.toString() !== userId);
+  const otherParticipant = currentChatroom?.participants?.find(
+    (p) => p._id.toString() !== userId
+  );
+  // Get other participant ID from messages if needed
+  const otherParticipantId =
+    otherParticipant?._id ||
+    messages.find((m) => m.sender._id?.toString() !== userId)?.sender._id;
+
   return (
     <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
       {/* Main Sidebar */}
@@ -356,8 +397,9 @@ const PrivateChat = () => {
 
       {/* LEFT SIDEBAR */}
       <div
-        className={`${isSidebarOpen ? "w-80" : "w-0"
-          } transition-all duration-300 bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden fixed ${
+        className={`${
+          isSidebarOpen ? "w-80" : "w-0"
+        } transition-all duration-300 bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden fixed ${
           isMainSidebarOpen ? "left-[260px]" : "left-0"
         } top-0 h-full z-[1002]`}
       >
@@ -417,7 +459,9 @@ const PrivateChat = () => {
             {searchQuery && (
               <div className="mb-4">
                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-2 px-2">
-                  {isSearching ? "Searching..." : `Friends (${searchResults.length})`}
+                  {isSearching
+                    ? "Searching..."
+                    : `Friends (${searchResults.length})`}
                 </p>
                 <div className="space-y-1">
                   {searchResults.map((user) => (
@@ -427,7 +471,10 @@ const PrivateChat = () => {
                       className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-all duration-200"
                     >
                       <img
-                        src={user.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
+                        src={
+                          user.profile_pic ||
+                          "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                        }
                         alt={user.name}
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -435,7 +482,9 @@ const PrivateChat = () => {
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {user.name}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {user.email}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -450,62 +499,73 @@ const PrivateChat = () => {
             )}
             {/* Conversations */}
             <div className="space-y-1">
-              {!searchQuery && conversations.map((conversation, index) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => handleSelectConversation(conversation.id)}
-                  className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
-                    ${chatroomId === conversation.id
-                      ? "bg-purple-100 border-l-4 border-purple-500"
-                      : "hover:bg-gray-50"}
+              {!searchQuery &&
+                conversations.map((conversation, index) => (
+                  <div
+                    key={conversation.id}
+                    onClick={() => handleSelectConversation(conversation.id)}
+                    className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200
+                    ${
+                      chatroomId === conversation.id
+                        ? "bg-purple-100 border-l-4 border-purple-500"
+                        : "hover:bg-gray-50"
+                    }
                   `}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {/* Avatar + Online + Unread Badge */}
-                  <div className="relative">
-                    <img
-                      src={conversation.avatar || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
-                      alt={conversation.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    {conversation.isOnline && (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                    )}
-                    {conversation.unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
-                        {conversation.unreadCount}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    {/* Avatar + Online + Unread Badge */}
+                    <div className="relative">
+                      <img
+                        src={
+                          conversation.avatar ||
+                          "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                        }
+                        alt={conversation.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      {conversation.isOnline && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                      )}
+                      {conversation.unreadCount > 0 && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                          {conversation.unreadCount}
+                        </div>
+                      )}
+                    </div>
+                    {/* Chat Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-900 truncate">
+                          {conversation.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {conversation.lastMessageTime
+                            ? new Date(
+                                conversation.lastMessageTime
+                              ).toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                            : ""}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                  {/* Chat Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-900 truncate">
-                        {conversation.name}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {conversation.lastMessageTime
-                          ? new Date(conversation.lastMessageTime).toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                            hour12: true,
-                          })
-                          : ""}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <p
-                        className={`text-xs truncate ${conversation.unreadCount > 0
-                          ? "text-gray-900 font-medium"
-                          : "text-gray-500"
+                      <div className="flex items-center">
+                        <p
+                          className={`text-xs truncate ${
+                            conversation.unreadCount > 0
+                              ? "text-gray-900 font-medium"
+                              : "text-gray-500"
                           }`}
-                      >
-                        {conversation.isTyping ? "Typing..." : conversation.lastMessage}
-                      </p>
+                        >
+                          {conversation.isTyping
+                            ? "Typing..."
+                            : conversation.lastMessage}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>
@@ -514,25 +574,44 @@ const PrivateChat = () => {
       <div
         className={`flex-1 flex flex-col ${
           isMainSidebarOpen
-            ? (isSidebarOpen ? "ml-[580px]" : "ml-[260px]")
-            : (isSidebarOpen ? "ml-80" : "ml-0")
-          } transition-all duration-300`}
+            ? isSidebarOpen
+              ? "ml-[580px]"
+              : "ml-[260px]"
+            : isSidebarOpen
+            ? "ml-80"
+            : "ml-0"
+        } transition-all duration-300`}
       >
         {/* Chat Header */}
         <div
           className={`bg-white border-b border-gray-200 p-4 shadow-sm fixed top-0 right-0 ${
             isMainSidebarOpen
-              ? (isSidebarOpen ? "left-[580px]" : "left-[260px]")
-              : (isSidebarOpen ? "left-80" : "left-0")
+              ? isSidebarOpen
+                ? "left-[580px]"
+                : "left-[260px]"
+              : isSidebarOpen
+              ? "left-80"
+              : "left-0"
           } transition-all duration-300 z-30 ${styles.animateFadeIn}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               {currentChatroom && (
                 <>
-                  <div className="relative">
+                  <div
+                    className="relative cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      otherParticipantId
+                        ? navigate(`/profile/${otherParticipantId}`)
+                        : null
+                    }
+                    title="Click to view profile"
+                  >
                     <img
-                      src={currentChatroom.avatar || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
+                      src={
+                        currentChatroom.avatar ||
+                        "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                      }
                       alt={currentChatroom.name}
                       className="w-8 h-8 rounded-full object-cover"
                     />
@@ -542,12 +621,22 @@ const PrivateChat = () => {
                       ></div>
                     )}
                   </div>
-                  <div>
+                  <div
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      otherParticipantId
+                        ? navigate(`/profile/${otherParticipantId}`)
+                        : null
+                    }
+                    title="Click to view profile"
+                  >
                     <h1 className="text-xl font-semibold text-gray-900">
                       {currentChatroom.name}
                     </h1>
                     <p className="text-sm text-gray-500">
-                      {currentChatroom.isOnline ? "Online" : "Last seen recently"}
+                      {currentChatroom.isOnline
+                        ? "Online"
+                        : "Last seen recently"}
                     </p>
                   </div>
                 </>
@@ -579,27 +668,39 @@ const PrivateChat = () => {
             messages.map((message, index) => (
               <div
                 key={message._id || index}
-                className={`${styles.messageContainer} ${message.sender._id?.toString() === userId
-                  ? `flex justify-end ${styles.animateSlideInRight}`
-                  : `flex justify-start ${styles.animateSlideInLeft}`
-                  }`}
+                className={`${styles.messageContainer} ${
+                  message.sender._id?.toString() === userId
+                    ? `flex justify-end ${styles.animateSlideInRight}`
+                    : `flex justify-start ${styles.animateSlideInLeft}`
+                }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div
-                  className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${message.sender._id?.toString() === userId
-                    ? "flex-row-reverse space-x-reverse"
-                    : ""
-                    }`}
+                  className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${
+                    message.sender._id?.toString() === userId
+                      ? "flex-row-reverse space-x-reverse"
+                      : ""
+                  }`}
                 >
                   {/* Profile Picture */}
                   <div className="relative flex-shrink-0 mb-1">
                     <img
-                      src={message.sender._id?.toString() === userId
-                        ? currentChatroom?.participants?.find(p => p._id.toString() === userId)?.profile_pic || currentUserData?.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                        : message.sender.profile_pic || otherParticipant?.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
-                      alt={message.sender._id?.toString() === userId
-                        ? "You"
-                        : message.sender.name || otherParticipant?.name}
+                      src={
+                        message.sender._id?.toString() === userId
+                          ? currentChatroom?.participants?.find(
+                              (p) => p._id.toString() === userId
+                            )?.profile_pic ||
+                            currentUserData?.profile_pic ||
+                            "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                          : message.sender.profile_pic ||
+                            otherParticipant?.profile_pic ||
+                            "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                      }
+                      alt={
+                        message.sender._id?.toString() === userId
+                          ? "You"
+                          : message.sender.name || otherParticipant?.name
+                      }
                       className="w-8 h-8 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => navigate(`/profile/${message.sender._id}`)}
                     />
@@ -608,22 +709,48 @@ const PrivateChat = () => {
                   {/* Message Bubble */}
                   <div className="flex flex-col">
                     <div
-                      className={`${styles.floatingElement} ${message.sender._id?.toString() === userId
-                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
-                        : "bg-white border border-gray-200 text-gray-900"
-                        } rounded-lg px-4 py-3 shadow-sm`}
+                      className={`${styles.floatingElement} ${
+                        message.sender._id?.toString() === userId
+                          ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                          : "bg-white border border-gray-200 text-gray-900"
+                      } rounded-lg px-4 py-3 shadow-sm`}
                     >
-                      <p className={`text-xs font-semibold mb-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-purple-600"}`}>
+                      <p
+                        className={`text-xs font-semibold mb-1 ${
+                          message.sender._id?.toString() === userId
+                            ? "text-purple-100"
+                            : "text-purple-600"
+                        } ${
+                          message.sender._id?.toString() !== userId
+                            ? "cursor-pointer hover:underline"
+                            : ""
+                        }`}
+                        onClick={
+                          message.sender._id?.toString() !== userId
+                            ? () => navigate(`/profile/${message.sender._id}`)
+                            : undefined
+                        }
+                        title={
+                          message.sender._id?.toString() !== userId
+                            ? "Click to view profile"
+                            : undefined
+                        }
+                      >
                         {message.sender._id?.toString() === userId
                           ? "You"
                           : message.sender.name || otherParticipant?.name}
                       </p>
                       {message.content}
                       <p
-                        className={`text-xs mt-1 ${message.sender._id?.toString() === userId ? "text-purple-100" : "text-gray-500"
-                          }`}
+                        className={`text-xs mt-1 ${
+                          message.sender._id?.toString() === userId
+                            ? "text-purple-100"
+                            : "text-gray-500"
+                        }`}
                       >
-                        {new Date(message.createdAt || Date.now()).toLocaleTimeString("en-US", {
+                        {new Date(
+                          message.createdAt || Date.now()
+                        ).toLocaleTimeString("en-US", {
                           hour: "numeric",
                           minute: "2-digit",
                           hour12: true,
@@ -637,7 +764,9 @@ const PrivateChat = () => {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center text-gray-400">
-                <p className="text-lg">Select a conversation or start a new one.</p>
+                <p className="text-lg">
+                  Select a conversation or start a new one.
+                </p>
               </div>
             </div>
           )}
