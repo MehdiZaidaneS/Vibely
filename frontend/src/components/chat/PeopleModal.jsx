@@ -10,7 +10,12 @@ import {
 
 const API_URL = "http://localhost:5000";
 
-const PeopleModal = ({ isOpen, onClose, onUpdate, setIsFriendRequestsModalOpen }) => {
+const PeopleModal = ({
+  isOpen,
+  onClose,
+  onUpdate,
+  setIsFriendRequestsModalOpen,
+}) => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -110,8 +115,7 @@ const PeopleModal = ({ isOpen, onClose, onUpdate, setIsFriendRequestsModalOpen }
     return (
       (currentUser.friends || []).some(
         (f) => (f._id ? f._id.toString() : f.toString()) === user._id.toString()
-      ) ||
-      false
+      ) || false
     );
   };
 
@@ -124,7 +128,8 @@ const PeopleModal = ({ isOpen, onClose, onUpdate, setIsFriendRequestsModalOpen }
     if (user.friend_requests && currentUser) {
       return user.friend_requests.some(
         (req) =>
-          (req.user && (req.user._id ? req.user._id.toString() : req.user.toString())) ===
+          (req.user &&
+            (req.user._id ? req.user._id.toString() : req.user.toString())) ===
           currentUser._id.toString()
       );
     }
@@ -140,7 +145,8 @@ const PeopleModal = ({ isOpen, onClose, onUpdate, setIsFriendRequestsModalOpen }
     if (currentUser && currentUser.friend_requests) {
       return currentUser.friend_requests.some(
         (req) =>
-          (req.user && (req.user._id ? req.user._id.toString() : req.user.toString())) ===
+          (req.user &&
+            (req.user._id ? req.user._id.toString() : req.user.toString())) ===
           user._id.toString()
       );
     }
@@ -162,8 +168,14 @@ const PeopleModal = ({ isOpen, onClose, onUpdate, setIsFriendRequestsModalOpen }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="border-b border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -254,7 +266,9 @@ const PeopleModal = ({ isOpen, onClose, onUpdate, setIsFriendRequestsModalOpen }
                       >
                         {user.name}
                       </h3>
-                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                      <p className="text-sm text-gray-500 truncate">
+                        {user.email}
+                      </p>
                       {user.interests && user.interests.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {user.interests.slice(0, 2).map((interest, idx) => (
