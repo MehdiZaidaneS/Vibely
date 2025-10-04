@@ -825,6 +825,20 @@
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 
+/* Full Badge */
+.event-card-full-badge {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.25);
+}
+
 /* Login Message */
 .event-card-login-message {
   color: #9ca3af;
@@ -1131,4 +1145,26 @@ button:focus, a:focus, input:focus {
   font-size: 18px;
   color: #768391;
   margin-top: 40px;
+}
+
+/* Auth Buttons (Login/Register) */
+.auth-button {
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.95);
+  color: #E45A92;
+  border: 2px solid #E45A92;
+  box-shadow: 0 2px 8px rgba(228, 90, 146, 0.15);
+}
+
+.auth-button:hover {
+  background: #E45A92;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(228, 90, 146, 0.3);
 }

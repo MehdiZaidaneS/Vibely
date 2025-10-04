@@ -313,7 +313,16 @@ function EventPage({ isAuthenticated }) {
             </div>
           ) : (
             <div className="events-grid">
-              {events.map((event, index) => {
+              {events
+                .filter(event => {
+                  // Filter out expired events (past dates)
+                  if (!event.date) return true; // Keep events without dates
+                  const eventDate = new Date(event.date);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0); // Reset time to start of day
+                  return eventDate >= today;
+                })
+                .map((event, index) => {
                 const cardBackground = getEventBackground(event);
                 const isImageUrl = !cardBackground.includes('gradient') && (
                   cardBackground.startsWith('url(') ||
@@ -394,7 +403,7 @@ function EventPage({ isAuthenticated }) {
                           )}
                           {event.participant && (
                             <span className="event-card-participants">
-                              👥 {event.participant.length} {event.participant.length === 1 ? 'participant' : 'participants'}
+                              👥 {event.participant.length}{event.capacity ? `/${event.capacity}` : ''} {event.participant.length === 1 ? 'participant' : 'participants'}
                             </span>
                           )}
                         </div>
@@ -418,6 +427,10 @@ function EventPage({ isAuthenticated }) {
                         ) : event.participant?.some(p => (p._id || p) === user?._id) ? (
                           <div className="event-card-joined-badge">
                             ✓ Joined
+                          </div>
+                        ) : event.capacity && event.participant?.length >= event.capacity ? (
+                          <div className="event-card-full-badge">
+                            Full
                           </div>
                         ) : (
                           <button

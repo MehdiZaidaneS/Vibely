@@ -13,8 +13,12 @@ function CreateEventModal({ isOpen, onClose, setEvents, setIsCreateModalOpen, se
   const [address, setAddress] = useState("");
   const [detailedLocation, setDetailedLocation] = useState("");
   const [description, setDescription] = useState("");
+  const [capacity, setCapacity] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Get today's date in YYYY-MM-DD format for min date validation
+  const today = new Date().toISOString().split('T')[0];
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -41,6 +45,46 @@ function CreateEventModal({ isOpen, onClose, setEvents, setIsCreateModalOpen, se
       return;
     }
 
+    // Validate date is not in the past
+    if (date < today) {
+      alert("Cannot create events for past dates!");
+      return;
+    }
+
+    // Validate time is not in the past for today's date
+    if (date === today && time) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMin = now.getMinutes();
+      const currentMinutes = currentHour * 60 + currentMin;
+
+      const [startHour, startMin] = time.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMin;
+
+      if (startMinutes <= currentMinutes) {
+        alert("Cannot create events with past times for today!");
+        return;
+      }
+    }
+
+    // Validate time duration (minimum 1 hour)
+    if (time && endTime) {
+      const [startHour, startMin] = time.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMin;
+      const endMinutes = endHour * 60 + endMin;
+
+      if (endMinutes <= startMinutes) {
+        alert("End time must be after start time!");
+        return;
+      }
+
+      if (endMinutes - startMinutes < 60) {
+        alert("Event duration must be at least 1 hour!");
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.append("author", localStorage.getItem("userId"));
     formData.append("title", title);
@@ -50,6 +94,7 @@ function CreateEventModal({ isOpen, onClose, setEvents, setIsCreateModalOpen, se
     if (date) formData.append("date", date);
     if (time) formData.append("time", time);
     if (endTime) formData.append("endTime", endTime);
+    if (capacity) formData.append("capacity", capacity);
 
     // Combine location fields into a single location string
     const locationParts = [city, address, detailedLocation].filter(part => part.trim());
@@ -72,6 +117,7 @@ function CreateEventModal({ isOpen, onClose, setEvents, setIsCreateModalOpen, se
     setAddress("");
     setDetailedLocation("");
     setDescription("");
+    setCapacity("");
     setImageFile(null);
     setImagePreview(null);
     onClose(); // Close modal after submit
@@ -123,6 +169,20 @@ function CreateEventModal({ isOpen, onClose, setEvents, setIsCreateModalOpen, se
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                min={today}
+                className={styles.input}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="event-capacity">Capacity*</label>
+              <input
+                id="event-capacity"
+                type="number"
+                min="2"
+                placeholder="Min 2 participants"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
                 className={styles.input}
                 required
               />

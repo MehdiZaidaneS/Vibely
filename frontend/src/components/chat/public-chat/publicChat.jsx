@@ -15,7 +15,7 @@ import Sidebar from "../../../import/Sidebar";
 
 const API_URL = "http://localhost:5000";
 
-const PublicChat = () => {
+const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
   const socketRef = useRef(null);

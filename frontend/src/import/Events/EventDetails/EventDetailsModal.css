@@ -312,6 +312,22 @@
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
 }
 
+/* Full Badge in Modal */
+.event-modal-full-badge {
+  flex: 1;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(107, 114, 128, 0.3);
+}
+
 /* Login Message in Modal */
 .event-modal-login-message {
   flex: 1;

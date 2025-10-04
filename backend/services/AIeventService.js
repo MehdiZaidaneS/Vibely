@@ -15,6 +15,10 @@ const matchEvents  = async (userId, preferences = {})=> {
       .populate('author', 'username')
       .populate('participant', 'username');
 
+    // If no events exist, return empty matches
+    if (!events || events.length === 0) {
+      return { matches: [] };
+    }
 
     const eventList = events.map(e => ({
       id: e._id,

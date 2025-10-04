@@ -160,7 +160,7 @@ const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, acti
                 <div className="event-modal-detail-content">
                   <span className="event-modal-detail-label">Participants</span>
                   <span className="event-modal-detail-value">
-                    {event.participant.length} {event.participant.length === 1 ? 'person' : 'people'} joined
+                    {event.participant.length}{event.capacity ? `/${event.capacity}` : ''} {event.participant.length === 1 ? 'person' : 'people'} joined
                   </span>
                 </div>
               </div>
@@ -193,6 +193,10 @@ const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, acti
             ) : isJoined ? (
               <div className="event-modal-joined-badge">
                 ✓ Joined
+              </div>
+            ) : event.capacity && event.participant?.length >= event.capacity ? (
+              <div className="event-modal-full-badge">
+                Event Full
               </div>
             ) : (
               <button
