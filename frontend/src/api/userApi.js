@@ -314,3 +314,50 @@ export const getPrivateChatRoom = async (targetUserId) => {
         return null;
     }
 };
+
+
+export const getUnreadPrivateChats = async () => {
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`http://localhost:5000/api/chatrooms/unread-chats`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Error geetting requests:", error);
+        throw error;
+    }
+}
+
+export const markAsRead = async (id) => {
+
+    const token = localStorage.getItem("user")
+    try {
+        const response = await fetch(`http://localhost:5000/api/chatrooms/${id}/markAsRead`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                "Authorization": `Bearer ${token}` 
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Error geetting requests:", error);
+        throw error;
+    }
+}

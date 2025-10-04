@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const requireAuth = require("../middleware/requireAuth")
 const chatRoomControllers = require('../controllers/chatRoomControllers');
 
 // Create a new chatroom
@@ -29,6 +30,11 @@ router.post('/join/:roomId', chatRoomControllers.joinGroup);
 
 // Leave a group
 router.post('/leave/:roomId', chatRoomControllers.leaveGroup);
+
+
+router.use(requireAuth)
+router.post("/unread-chats", chatRoomControllers.getUnreadPrivateChats)
+router.post("/:roomId/markAsRead", chatRoomControllers.markMessagesAsRead)
 
 module.exports = router;
 

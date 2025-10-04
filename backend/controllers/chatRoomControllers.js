@@ -104,7 +104,6 @@ exports.getPrivateChat = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    // Find all private chatrooms where this user is a participant
     const chatrooms = await ChatRoom.find({ 
       participants: userId, 
       isGroup: false 
@@ -114,15 +113,19 @@ exports.getPrivateChat = async (req, res) => {
       .sort({ updatedAt: -1 });
 
     if (!chatrooms || chatrooms.length === 0) {
-      return res.status(200).json([]); // No private chats found
+      return res.status(200).json([]); 
     }
 
-    // Format private chats
-    const formattedChats = chatrooms.map(room => {
-      // Find the other participant
+    const formattedChats = await Promise.all(chatrooms.map(async room => {
       const otherParticipant = room.participants.find(
         p => p._id.toString() !== userId
       );
+
+      const unreadCount = await Message.countDocuments({
+        chatRoom: room._id,
+        sender: { $ne: userId },
+        readBy: { $ne: userId },
+      });
 
       return {
         id: room._id,
@@ -131,16 +134,19 @@ exports.getPrivateChat = async (req, res) => {
         avatar: otherParticipant?.avatar || '/default-avatar.png',
         isOnline: otherParticipant?.isOnline || false,
         lastMessage: room.lastMessage?.content || 'No messages yet.',
-        lastMessageTime: room.lastMessage?.createdAt || room.updatedAt
+        lastMessageTime: room.lastMessage?.createdAt || room.updatedAt,
+        unreadCount,
       };
-    });
+    }));
 
     res.json(formattedChats);
   } catch (error) {
     console.error('Error fetching private chats:', error);
-    res.status(500).json({ error: 'Failed to search for private chatrooms.' });
+    res.status(500).json({ error: 'Failed to fetch private chatrooms.' });
   }
 };
+
+
 
 
 exports.getPublicChat = async (req, res) => {
@@ -276,3 +282,70 @@ exports.leaveGroup = async (req, res) => {
 };
 
 
+exports.getUnreadPrivateChats = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const privateChats = await ChatRoom.find({
+      participants: userId,
+      isGroup: false,
+    })
+      .populate('participants', 'name avatar isOnline')
+      .populate('lastMessage', 'content createdAt')
+      .sort({ updatedAt: -1 });
+
+    const chatsWithUnread = [];
+
+    for (const chat of privateChats) {
+      const unreadMessagesCount = await Message.countDocuments({
+        chatRoom: chat._id,
+        sender: { $ne: userId },
+        readBy: { $ne: userId },
+      });
+
+      if (unreadMessagesCount > 0) {
+        const otherParticipant = chat.participants.find(
+          (p) => p._id.toString() !== userId
+        );
+
+        chatsWithUnread.push({
+          id: chat._id,
+          otherUserId: otherParticipant?._id?.toString() || null,
+          name: otherParticipant?.name || 'Unknown User',
+          avatar: otherParticipant?.avatar || '/default-avatar.png',
+          isOnline: otherParticipant?.isOnline || false,
+          unreadCount: unreadMessagesCount,
+          lastMessage: chat.lastMessage?.content || 'No messages yet.',
+          time: chat.lastMessage?.createdAt || null,
+        });
+      }
+    }
+
+    res.json(chatsWithUnread);
+  } catch (error) {
+    console.error('Error fetching unread private chats:', error);
+    res.status(500).json({ error: 'Failed to fetch unread private chats.' });
+  }
+};
+
+
+exports.markMessagesAsRead = async (req, res) => {
+  const { roomId } = req.params;
+  const userId = req.user._id;
+
+  try {
+    await Message.updateMany(
+      {
+        chatRoom: roomId,
+        sender: { $ne: userId },
+        readBy: { $ne: userId },
+      },
+      { $push: { readBy: userId } }
+    );
+
+    res.status(200).json({ message: 'Messages marked as read' });
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    res.status(500).json({ error: 'Failed to mark messages as read.' });
+  }
+};
