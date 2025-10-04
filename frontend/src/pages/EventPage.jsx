@@ -97,9 +97,13 @@ function EventPage({ isAuthenticated }) {
     getAllEvents(setEvents, setActiveMenu)
 
     if (isAuthenticated) {
-      getUserbyId(setUser)
+      getUserbyId().then(userData => {
+        setUser(userData);
+      }).catch(err => {
+        console.error("Error fetching user:", err);
+      });
     }
-  }, []);
+  }, [isAuthenticated]);
 
 
   // Sidebar handlers

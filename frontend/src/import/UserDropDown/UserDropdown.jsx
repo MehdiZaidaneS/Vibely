@@ -35,11 +35,11 @@ function UserDropdown({ user, setUser }) {
       <div className={styles.dropdown}>
         <button className={styles.trigger} onClick={toggleDropdown} aria-label="User menu">
           <img
-            src={user?.profile_pic}
+            src={user?.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
             alt="User profile"
             className={styles.avatar}
           />
-          <span className={styles.name}>{user?.username}</span>
+          <span className={styles.name}>{user?.username || user?.name || "User"}</span>
           <img
             src="../assets/images/img_dropdownoptionsiconuserlogin.svg"
             alt="Dropdown"
