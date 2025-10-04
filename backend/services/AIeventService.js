@@ -4,7 +4,7 @@ const model = require("../config/gemini");
 const Event = require("../models/eventModel");
 const User = require("../models/userModel");
 
-const matchEvents  = async (userId, preferences = {})=> {
+const matchEvents = async (userId, preferences = {}) => {
   try {
     // Get user info
     const user = await User.findById(userId);
@@ -106,26 +106,27 @@ const matchEvents  = async (userId, preferences = {})=> {
 
 const matchUsers = async (userId) => {
   try {
-    
+
     const currentUser = await User.findById(userId)
       .populate("friends")
-      .populate("friend_requests.user"); 
+      .populate("friend_requests.user");
     if (!currentUser) throw new Error("User not found");
 
- 
+
     const users = await User.find({
       _id: { $nin: [userId, ...(currentUser.friends?.map(f => f._id) || [])] }
     }).populate("friends").populate("friend_requests.user");
 
- 
+
     const usersWithStatus = users.map(otherUser => {
       const hasSentRequest = otherUser.friend_requests?.some(req =>
-        req.user._id.equals(userId)
+        req.user?._id?.equals(userId)
       );
 
       const hasReceivedRequest = currentUser.friend_requests?.some(req =>
-        req.user._id.equals(otherUser._id)
+        req.user?._id?.equals(otherUser._id)
       );
+
 
       const mutualFriends = otherUser.friends.filter(f =>
         currentUser.friends.some(cf => cf._id.equals(f._id))
@@ -184,7 +185,7 @@ ${JSON.stringify(userList, null, 2)}
 }
 `;
 
-   
+
     const result = await model(prompt);
 
     if (process.env.DEBUG_GEMINI === "true") {

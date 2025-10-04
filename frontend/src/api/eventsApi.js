@@ -235,7 +235,7 @@ export const recommendEvents = async (setActiveMenu, setEvents) => {
 };
 
 
-export const getEventCreatedbyUser = async (setCreatedEvents) => {
+export const getEventCreatedbyUser = async () => {
   const token = localStorage.getItem("user");
 
   try {
@@ -257,9 +257,11 @@ export const getEventCreatedbyUser = async (setCreatedEvents) => {
       id: ev._id, // unify with MongoDB’s _id
     }));
 
-    setCreatedEvents(normalized);
+    return normalized;
 
   } catch (error) {
     console.error("Error fetching created events:", error);
+    return [];
   }
 };
+

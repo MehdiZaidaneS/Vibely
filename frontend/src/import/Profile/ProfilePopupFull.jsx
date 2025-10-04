@@ -24,19 +24,34 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [editPhone, setEditPhone] = useState(user.phone);
 
-  useEffect(() => {
-    getUserbyId((fetchedUser) => {
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const fetchedUser = await getUserbyId();
       const fullUser = { ...user, ...fetchedUser };
       setUser(fullUser);
       setEditUsername(fullUser.username || "");
       setEditDisplayName(fullUser.name || "");
       setEditBio(fullUser.bio || "");
       setEditLocation(fullUser.location || "");
-      setEditEmail(fullUser.email || "")
-      setEditPhone(fullUser.phone || "")
-    });
-    getEventCreatedbyUser(setCreatedEvents)
-  }, []);
+      setEditEmail(fullUser.email || "");
+      setEditPhone(fullUser.phone || "");
+    } catch (err) {
+      console.error("Failed to load user:", err);
+    }
+
+    try {
+      const events = await getEventCreatedbyUser();
+      setCreatedEvents(events || []); 
+    } catch (err) {
+      console.error("Error fetching created events:", err);
+      setCreatedEvents([]);
+    }
+  };
+
+  fetchData();
+}, []);
+
 
 
 
@@ -141,7 +156,9 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
     onClose();
   };
 
-  const currentStatus = statusOptions.find(s => s.value === user.status);
+  const currentStatus =
+  statusOptions.find((s) => s.value === user.status) ||
+  { color: 'bg-gray-400' };
 
   if (!isOpen) return null;
 
@@ -434,7 +451,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
                 <div className="flex items-center justify-between mb-2">
                   <Users className="w-5 h-5 text-pink-600" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{user.friends.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{user.friends?.length}</p>
                 <p className="text-xs text-gray-600">Friends</p>
               </div>
             </div>

@@ -27,19 +27,34 @@ const ProfilePage = () => {
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [editPhone, setEditPhone] = useState(user.phone);
 
-   useEffect(() => {
-    getUserbyId((fetchedUser) => {
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const fetchedUser = await getUserbyId();
       const fullUser = { ...user, ...fetchedUser };
       setUser(fullUser);
       setEditUsername(fullUser.username || "");
       setEditDisplayName(fullUser.name || "");
       setEditBio(fullUser.bio || "");
       setEditLocation(fullUser.location || "");
-      setEditEmail(fullUser.email || "")
-      setEditPhone(fullUser.phone || "")
-    });
-    getEventCreatedbyUser(setCreatedEvents)
-  }, []);
+      setEditEmail(fullUser.email || "");
+      setEditPhone(fullUser.phone || "");
+    } catch (err) {
+      console.error("Failed to load user:", err);
+    }
+
+    try {
+      const events = await getEventCreatedbyUser();
+      setCreatedEvents(events || []); 
+    } catch (err) {
+      console.error("Error fetching created events:", err);
+      setCreatedEvents([]);
+    }
+  };
+
+  fetchData();
+}, []);
+
   
   // File input refs
   const profilePicInputRef = useRef(null);

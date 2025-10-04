@@ -38,16 +38,19 @@ const getAllUsers = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate("friends", "_id"); // populate friends to compute mutual friends
 
+
+
+
         const usersWithStatus = users.map(user => {
             // Check if current user has already sent a friend request to them
             const hasSentRequest = user.friend_requests?.some(req =>
-                req.user.equals(userId)
+                req.user && req.user.equals(userId)
             );
 
-            // Check if current user has received a friend request from them
             const hasReceivedRequest = currentUser.friend_requests?.some(req =>
-                req.user.equals(user._id)
+                req.user && req.user.equals(user._id)
             );
+
 
             // Calculate mutual friends count
             const mutualFriends = user.friends.filter(f =>
@@ -81,7 +84,7 @@ const getFriends = async (req, res) => {
 
     try {
         const user = await UserModel.findById(userId)
-            .populate("friends"); 
+            .populate("friends");
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -332,11 +335,11 @@ const acceptFriendRequest = async (req, res) => {
         const requestNotification = await notificationModel.findOneAndDelete({
             receiver: userId,
             sender: requested_friend_id,
-            type: "Friend Request" 
+            type: "Friend Request"
         });
 
         if (requestNotification) {
-    
+
             user.notifications = user.notifications.filter(
                 n => !n.equals(requestNotification._id)
             );
@@ -345,7 +348,7 @@ const acceptFriendRequest = async (req, res) => {
         await user.save();
         await targetUser.save();
 
-      
+
         const ChatRoom = require('../models/chatRoomModel');
 
         let chatRoom = await ChatRoom.findOne({
@@ -454,11 +457,11 @@ const deleteFriendRequest = async (req, res) => {
         const requestNotification = await notificationModel.findOneAndDelete({
             receiver: userId,
             sender: requested_friend_id,
-            type: "Friend Request" 
+            type: "Friend Request"
         });
 
         if (requestNotification) {
-    
+
             user.notifications = user.notifications.filter(
                 n => !n.equals(requestNotification._id)
             );

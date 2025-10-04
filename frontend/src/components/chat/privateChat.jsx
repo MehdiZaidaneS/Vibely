@@ -6,6 +6,7 @@ import styles from "./privateChat.module.css";
 import PeopleModal from "./PeopleModal";
 import FriendRequestsModal from "./FriendRequestsModal";
 import Sidebar from "../../import/Sidebar";
+import { markAsRead } from "../../api/userApi";
 
 const API_URL = "http://localhost:5000";
 
@@ -302,6 +303,9 @@ const PrivateChat = () => {
     } catch (err) {
       console.error("Failed to fetch chatroom participants:", err);
     }
+     
+    markAsRead(id)
+
   };
 
   const handleStartNewChat = async (selectedUser) => {

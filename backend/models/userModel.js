@@ -16,6 +16,18 @@ const userSchema = new Schema(
       unique: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
+    bio:{
+      type: String,
+      required: false
+    },
+    status:{
+      type: String,
+      required: false
+    },
+    banner:{
+      type: String,
+      required: false
+    },
     phone: {
       type: String,
       required: true,

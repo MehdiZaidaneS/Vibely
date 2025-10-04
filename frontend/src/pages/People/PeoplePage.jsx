@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Search, UserPlus, MessageSquare, BellOff, MoreVertical, X, Check, UserCheck, UserX, Globe, MapPin, Gamepad, Music, Code, Heart, Star, Users } from 'lucide-react';
 import styles from './PeoplePage.module.css';
 import Sidebar from '../../import/Sidebar'; // Using the general Sidebar.jsx for navigation
-import { getAllUsers, getFriends, declineFriendRequest, getFriendRequests, sendFriendRequest, acceptFriendResquest, getSuggestedUsers, getPrivateChatRoom } from '../../api/userApi';
+import { getAllUsers, getFriends, declineFriendRequest, getFriendRequests, sendFriendRequest, acceptFriendResquest, getSuggestedUsers, getPrivateChatRoom, markAsRead } from '../../api/userApi';
 
 
 const PeoplePage = () => {
@@ -95,6 +95,7 @@ const PeoplePage = () => {
       return; // stop here
     }
     navigate(`/private-chat/${room}`);
+     markAsRead(room)
 
   };
 
