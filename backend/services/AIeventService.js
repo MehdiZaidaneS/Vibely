@@ -131,7 +131,6 @@ const matchUsers = async (userId) => {
         _id: otherUser._id,
         name: otherUser.name,
         username: otherUser.username,
-        profile_pic: otherUser.profile_pic,
         interests: otherUser.interests,
         createdAt: otherUser.createdAt,
         friendRequestPending: hasSentRequest ? "Pending" : "Add Friend",
@@ -144,14 +143,8 @@ const matchUsers = async (userId) => {
     const userList = usersWithStatus.map(u => ({
       id: u._id,
       name: u.name,
-      username: u.username,
       interests: u.interests || [],
-      profile_pic: u.profile_pic || null,
       joinedEvents: u.joinedEvents || [],
-      createdAt: u.createdAt,
-      friendRequestPending: u.friendRequestPending,
-      friendRequestReceived: u.friendRequestReceived,
-      mutualFriends: u.mutualFriends
     }));
 
     const prompt = `
@@ -182,14 +175,6 @@ ${JSON.stringify(userList, null, 2)}
       "_id": "string",
       "matchScore": "number (0-100)",
       "reason": "Atractive reason why matches",
-      "name": "name",
-      "username": "username",
-      "interests": "array",
-      "profile_pic": "url",
-      "createdAt": "date",
-      "friendRequestPending": "string",
-      "friendRequestReceived": "string or null",
-      "mutualFriends": "number"
     }
   ]
 }

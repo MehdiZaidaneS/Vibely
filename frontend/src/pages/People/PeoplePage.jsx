@@ -24,12 +24,26 @@ const PeoplePage = () => {
     setActiveUsers(users);
   };
 
-  const fetchSuggestedUsers = async () => {
-    const suggested = await getSuggestedUsers()
-    setSuggestedUsers(suggested)
-    setActiveTab("suggestions")
-  }
+ const fetchSuggestedUsers = async () => {
 
+  const suggested = await getSuggestedUsers(); // array of { _id, matchScore, reason }
+
+  const suggestedMap = new Map();
+  suggested.forEach(match => {
+    suggestedMap.set(match._id, { matchScore: match.matchScore, reason: match.reason });
+  });
+
+  const suggestedUserList = activeUsers
+    .filter(user => suggestedMap.has(user._id))
+    .map(user => ({
+      ...user, 
+      matchScore: suggestedMap.get(user._id).matchScore,
+      reason: suggestedMap.get(user._id).reason
+    }));
+
+  setSuggestedUsers(suggestedUserList);
+  setActiveTab("suggestions");
+};
   useEffect(() => {
 
     const fetchRequests = async () => {
