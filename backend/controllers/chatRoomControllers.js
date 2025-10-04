@@ -128,7 +128,7 @@ exports.getPrivateChat = async (req, res) => {
         id: room._id,
         otherUserId: otherParticipant?._id.toString() || null,
         name: otherParticipant?.name || 'Unknown User',
-        avatar: otherParticipant?.avatar || '/default-avatar.png',
+        avatar: otherParticipant?.profile_pic || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
         isOnline: otherParticipant?.isOnline || false,
         lastMessage: room.lastMessage?.content || 'No messages yet.',
         lastMessageTime: room.lastMessage?.createdAt || room.updatedAt

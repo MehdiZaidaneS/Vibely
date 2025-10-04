@@ -175,7 +175,7 @@ const UserProfile = () => {
               </div>
 
               {/* Action Buttons */}
-              {!isOwnProfile && (
+              {!isOwnProfile && isFriend && (
                 <div className="mt-4 md:mt-0 pb-2 flex flex-col space-y-2">
                   <button
                     onClick={handleSendMessage}
@@ -184,15 +184,13 @@ const UserProfile = () => {
                     <MessageCircle className="w-4 h-4" />
                     <span>Message</span>
                   </button>
-                  {isFriend && (
-                    <button
-                      onClick={handleRemoveFriend}
-                      className="flex items-center justify-center space-x-2 px-6 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                    >
-                      <UserX className="w-4 h-4" />
-                      <span>Remove Friend</span>
-                    </button>
-                  )}
+                  <button
+                    onClick={handleRemoveFriend}
+                    className="flex items-center justify-center space-x-2 px-6 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                  >
+                    <UserX className="w-4 h-4" />
+                    <span>Remove Friend</span>
+                  </button>
                 </div>
               )}
             </div>

@@ -10,6 +10,7 @@ import PublicMessagesArea from "./Messages/PublicMessagesArea";
 import PublicMessageInput from "./Input/PublicMessageInput";
 import PeopleModal from "../PeopleModal";
 import CreateGroupModal from "./Modals/CreateGroupModal";
+import FriendRequestsModal from "../FriendRequestsModal";
 import Sidebar from "../../../import/Sidebar";
 
 const API_URL = "http://localhost:5000";
@@ -39,6 +40,9 @@ const PublicChat = () => {
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
+  const [friendRequestCount, setFriendRequestCount] = useState(0);
+  const [currentUserData, setCurrentUserData] = useState(null);
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -72,7 +76,37 @@ const PublicChat = () => {
   // EFFECTS
   // ============================================================================
 
-  // Effect 0: Initialize Socket.IO connection
+  // Effect 0: Fetch current user data for friend requests
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/users/${userId}`);
+        if (response.ok) {
+          const user = await response.json();
+          setCurrentUserData(user);
+          setFriendRequestCount(user.friend_requests?.length || 0);
+        }
+      } catch (err) {
+        console.error("Failed to fetch current user:", err);
+      }
+    };
+    fetchCurrentUser();
+  }, [userId]);
+
+  const refreshUserData = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/users/${userId}`);
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUserData(user);
+        setFriendRequestCount(user.friend_requests?.length || 0);
+      }
+    } catch (err) {
+      console.error("Failed to refresh user data:", err);
+    }
+  };
+
+  // Effect 1: Initialize Socket.IO connection
   useEffect(() => {
     socketRef.current = io(API_URL, {
       transports: ['polling', 'websocket'],
@@ -422,6 +456,8 @@ const PublicChat = () => {
           setShowFriendsModal={setShowFriendsModal}
           styles={styles}
           isMainSidebarOpen={isMainSidebarOpen}
+          friendRequestCount={friendRequestCount}
+          setIsFriendRequestsModalOpen={setIsFriendRequestsModalOpen}
         />
 
         <PublicMessagesArea
@@ -455,6 +491,15 @@ const PublicChat = () => {
       <PeopleModal
         isOpen={showFriendsModal}
         onClose={() => setShowFriendsModal(false)}
+        onUpdate={refreshUserData}
+        setIsFriendRequestsModalOpen={setIsFriendRequestsModalOpen}
+      />
+
+      {/* Friend Requests Modal */}
+      <FriendRequestsModal
+        isOpen={isFriendRequestsModalOpen}
+        onClose={() => setIsFriendRequestsModalOpen(false)}
+        onUpdate={refreshUserData}
       />
 
       {/* Create Group Modal */}

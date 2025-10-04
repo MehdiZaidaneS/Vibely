@@ -371,7 +371,7 @@ const PrivateChat = () => {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Messages</h2>
+                <h2 className="text-lg font-semibold">Private Messages</h2>
                 <p className="text-purple-100 text-sm">
                   {conversations.length} conversations
                 </p>
@@ -427,7 +427,7 @@ const PrivateChat = () => {
                       className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-all duration-200"
                     >
                       <img
-                        src={user.profile_pic}
+                        src={user.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
                         alt={user.name}
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -464,7 +464,7 @@ const PrivateChat = () => {
                   {/* Avatar + Online + Unread Badge */}
                   <div className="relative">
                     <img
-                      src={conversation.avatar}
+                      src={conversation.avatar || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
                       alt={conversation.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
@@ -532,7 +532,7 @@ const PrivateChat = () => {
                 <>
                   <div className="relative">
                     <img
-                      src={currentChatroom.avatar}
+                      src={currentChatroom.avatar || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
                       alt={currentChatroom.name}
                       className="w-8 h-8 rounded-full object-cover"
                     />
@@ -595,8 +595,8 @@ const PrivateChat = () => {
                   <div className="relative flex-shrink-0 mb-1">
                     <img
                       src={message.sender._id?.toString() === userId
-                        ? currentChatroom?.participants?.find(p => p._id.toString() === userId)?.profile_pic || currentUserData?.profile_pic
-                        : message.sender.profile_pic || otherParticipant?.profile_pic}
+                        ? currentChatroom?.participants?.find(p => p._id.toString() === userId)?.profile_pic || currentUserData?.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                        : message.sender.profile_pic || otherParticipant?.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
                       alt={message.sender._id?.toString() === userId
                         ? "You"
                         : message.sender.name || otherParticipant?.name}
