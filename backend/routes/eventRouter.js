@@ -11,7 +11,8 @@ const {
   getEventById,
   joinEvent,
   leaveEvent,
-  searchEvent
+  searchEvent,
+  getEventCreatedbyUser
 } = require("../controllers/eventController.js")
 
 // Configure multer for image uploads
@@ -52,7 +53,7 @@ router.get("/:eventId", getEventById);
 
 router.use(requireAuth);
 router.post("/recommend-event", EventMatches)
-
+router.post("/created-events", getEventCreatedbyUser)
 
 
 router.post("/:eventId/join", joinEvent);

@@ -1,38 +1,45 @@
 // src/import/ProfilePopupFull.jsx
-import React, { useState, useRef } from 'react';
-import {  Camera,  Edit3,  Check,  X,  MapPin,  Calendar, Users,Activity,Globe,Github,Linkedin,Mail,Maximize2
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Camera, Edit3, Check, X, MapPin, Calendar, Users, Activity, Globe, Github, Linkedin, Mail, Maximize2
 } from 'lucide-react';
+import { getUserbyId, addInfo } from '../../api/userApi';
+import { getEventCreatedbyUser } from '../../api/eventsApi';
 import PortalModal from './PortalModal';
 //this file has mostly all the features as the orignal ProfilePage
 const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setParentUser, onExpand }) => {
-  const [user, setUser] = useState(initialUser || {
-    id: '123',
-    username: 'johndoe',
-    displayName: 'John Doe',
-    bio: 'Passionate event organizer and community builder.',
-    profile_pic: null,
-    location: 'San Francisco, CA',
-    status: 'available',
-    joinedDate: '2024-01-15',
-    eventsJoined: 42,
-    eventsCreated: 8,
-    friendsCount: 156,
-    socialLinks: {
-      website: 'https://johndoe.com',
-      twitter: 'johndoe',
-      github: 'johndoe',
-      linkedin: 'johndoe'
-    }
-  });
+
+  const [user, setUser] = useState({})
 
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
+  const [createdEvents, setCreatedEvents] = useState([])
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editUsername, setEditUsername] = useState(user.username);
-  const [editDisplayName, setEditDisplayName] = useState(user.displayName);
+  const [editDisplayName, setEditDisplayName] = useState(user.name);
   const [editBio, setEditBio] = useState(user.bio);
   const [editLocation, setEditLocation] = useState(user.location);
-  
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [editEmail, setEditEmail] = useState(user.email);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [editPhone, setEditPhone] = useState(user.phone);
+
+  useEffect(() => {
+    getUserbyId((fetchedUser) => {
+      const fullUser = { ...user, ...fetchedUser };
+      setUser(fullUser);
+      setEditUsername(fullUser.username || "");
+      setEditDisplayName(fullUser.name || "");
+      setEditBio(fullUser.bio || "");
+      setEditLocation(fullUser.location || "");
+      setEditEmail(fullUser.email || "")
+      setEditPhone(fullUser.phone || "")
+    });
+    getEventCreatedbyUser(setCreatedEvents)
+  }, []);
+
+
+
   const profilePicInputRef = useRef(null);
 
   const statusOptions = [
@@ -49,45 +56,77 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
     return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
   };
 
-  const handleProfilePicChange = (e) => {
+  const handleProfilePicChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const updatedUser = { ...user, profile_pic: reader.result };
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
+      const updatedUser = { ...user, profile_pic: base64Image };
+
+      try {
         setUser(updatedUser);
         if (setParentUser) setParentUser(updatedUser);
-      };
-      reader.readAsDataURL(file);
-    }
+        const updatedFromDB = await addInfo({ profile_pic: base64Image });
+        if (setParentUser) setParentUser(updatedFromDB);
+      } catch (err) {
+        console.error(" Error updating profile picture:", err);
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
-  const saveUsername = () => {
-    const updatedUser = { ...user, username: editUsername, displayName: editDisplayName };
+
+  const saveUsername = async () => {
+    const updatedUser = { ...user, username: editUsername, name: editDisplayName };
     setUser(updatedUser);
     if (setParentUser) setParentUser(updatedUser);
+    await addInfo({ name: editDisplayName, username: editUsername });
     setIsEditingUsername(false);
   };
 
-  const saveBio = () => {
+  const saveBio = async () => {
     const updatedUser = { ...user, bio: editBio };
     setUser(updatedUser);
     if (setParentUser) setParentUser(updatedUser);
+    await addInfo({ bio: editBio });
     setIsEditingBio(false);
   };
 
-  const saveLocation = () => {
+  const saveLocation = async () => {
     const updatedUser = { ...user, location: editLocation };
     setUser(updatedUser);
     if (setParentUser) setParentUser(updatedUser);
+    await addInfo({ location: editLocation });
     setIsEditingLocation(false);
   };
 
-  
-  const updateStatus = (newStatus) => {
+  const saveEmail = async () => {
+    const updatedUser = { ...user, email: editEmail };
+    setUser(updatedUser);
+    if (setParentUser) setParentUser(updatedUser);
+    await addInfo({ email: editEmail });
+    setIsEditingEmail(false);
+  };
+
+  const savePhone = async () => {
+    const updatedUser = { ...user, phone: editPhone };
+    setUser(updatedUser);
+    if (setParentUser) setParentUser(updatedUser);
+    await addInfo({ phone: editPhone });
+    setIsEditingPhone(false);
+  };
+
+
+
+
+  const updateStatus = async (newStatus) => {
     const updatedUser = { ...user, status: newStatus };
     setUser(updatedUser);
     if (setParentUser) setParentUser(updatedUser);
+    await addInfo({status: newStatus})
   };
 
   const formatDate = (dateString) => {
@@ -141,7 +180,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
                     <img src={user.profile_pic} alt="Profile" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                      <span className="text-white text-2xl font-bold">{getInitials(user.displayName)}</span>
+                      <span className="text-white text-2xl font-bold">{getInitials(user.name)}</span>
                     </div>
                   )}
                 </div>
@@ -185,7 +224,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
                       <button
                         onClick={() => {
                           setEditUsername(user.username);
-                          setEditDisplayName(user.displayName);
+                          setEditDisplayName(user.name);
                           setIsEditingUsername(false);
                         }}
                         className="text-red-600 hover:text-red-700"
@@ -197,7 +236,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
                 ) : (
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h1 className="text-xl font-bold text-gray-900">{user.displayName}</h1>
+                      <h1 className="text-xl font-bold text-gray-900">{user.name}</h1>
                       <button
                         onClick={() => setIsEditingUsername(true)}
                         className="text-gray-500 hover:text-indigo-600 transition-colors"
@@ -260,6 +299,78 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
               )}
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-gray-600">
+              {/* Email */}
+              <div className="flex items-center space-x-2">
+                <Mail className="w-4 h-4 text-gray-400" />
+                {isEditingEmail ? (
+                  <div className="flex items-center space-x-1 flex-1">
+                    <input
+                      type="email"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="flex-1 border-b border-gray-300 focus:outline-none focus:border-indigo-500 text-sm"
+                      placeholder="Add email"
+                    />
+                    <button onClick={saveEmail} className="text-green-600 hover:text-green-700">
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => { setEditEmail(user.email); setIsEditingEmail(false); }}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-sm">{user.email || 'Add email'}</span>
+                    <button
+                      onClick={() => setIsEditingEmail(true)}
+                      className="text-gray-400 hover:text-indigo-600 transition-colors"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Phone number */}
+              <div className="flex items-center space-x-2">
+                <Users className="w-5 h-5 text-gray-400" />
+                {isEditingPhone ? (
+                  <div className="flex items-center space-x-1 flex-1">
+                    <input
+                      type="tel"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="flex-1 border-b border-gray-300 focus:outline-none focus:border-indigo-500 text-sm"
+                      placeholder="Add phone number"
+                    />
+                    <button onClick={savePhone} className="text-green-600 hover:text-green-700">
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => { setEditPhone(user.phone); setIsEditingPhone(false); }}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-sm">{user.phone || 'Add phone number'}</span>
+                    <button
+                      onClick={() => setIsEditingPhone(true)}
+                      className="text-gray-400 hover:text-indigo-600 transition-colors"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
             {/* Info Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               <div className="flex items-center space-x-2 text-gray-600">
@@ -292,35 +403,14 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
 
               <div className="flex items-center space-x-2 text-gray-600">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-sm">Joined {formatDate(user.joinedDate)}</span>
+                <span className="text-sm">Joined {formatDate(user.createdAt)}</span>
               </div>
-
-              {user.socialLinks?.website && (
-                <div className="flex items-center space-x-2 text-gray-600">
-                  <Globe className="w-4 h-4 text-gray-400" />
-                  <a href={user.socialLinks.website} className="text-sm text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                    Website
-                  </a>
-                </div>
-              )}
             </div>
 
-            {/* Social Links */}
-            <div className="flex space-x-3 mb-6">
-              {user.socialLinks?.github && (
-                <a href={`https://github.com/${user.socialLinks.github}`} className="text-gray-400 hover:text-gray-700 transition-colors" target="_blank" rel="noopener noreferrer">
-                  <Github className="w-5 h-5" />
-                </a>
-              )}
-              {user.socialLinks?.linkedin && (
-                <a href={`https://linkedin.com/in/${user.socialLinks.linkedin}`} className="text-gray-400 hover:text-blue-600 transition-colors" target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="w-5 h-5" />
-                </a>
-              )}
-              <button className="text-gray-400 hover:text-indigo-600 transition-colors">
-                <Mail className="w-5 h-5" />
-              </button>
-            </div>
+            
+
+
+
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-4">
@@ -328,7 +418,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
                 <div className="flex items-center justify-between mb-2">
                   <Activity className="w-5 h-5 text-indigo-600" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{user.eventsJoined}</p>
+                <p className="text-2xl font-bold text-gray-900">{user.joinedEvents?.length}</p>
                 <p className="text-xs text-gray-600">Events Joined</p>
               </div>
 
@@ -336,7 +426,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
                 <div className="flex items-center justify-between mb-2">
                   <Calendar className="w-5 h-5 text-purple-600" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{user.eventsCreated}</p>
+                <p className="text-2xl font-bold text-gray-900">{createdEvents.length}</p>
                 <p className="text-xs text-gray-600">Events Created</p>
               </div>
 
@@ -344,7 +434,7 @@ const ProfilePopupFull = ({ isOpen, onClose, user: initialUser, setUser: setPare
                 <div className="flex items-center justify-between mb-2">
                   <Users className="w-5 h-5 text-pink-600" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{user.friendsCount}</p>
+                <p className="text-2xl font-bold text-gray-900">{user.friends.length}</p>
                 <p className="text-xs text-gray-600">Friends</p>
               </div>
             </div>

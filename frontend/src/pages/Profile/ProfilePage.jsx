@@ -3,39 +3,43 @@ import React, { useState, useEffect, useRef } from 'react';
 import {  Camera,  Edit3,  Check,  X,  MapPin,  Calendar, Link2, Users, Activity, Settings, Share2, Globe, Github, Linkedin,Mail
 } from 'lucide-react';
 import Sidebar from '../../import/Sidebar'; 
+import { getUserbyId, addInfo } from "../../api/userApi";
+import { getEventCreatedbyUser } from '../../api/eventsApi';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar
-  const [user, setUser] = useState({
-    id: '123',
-    username: 'johndoe',
-    displayName: 'John Doe',
-    bio: 'Passionate event organizer and community builder. Love connecting people through meaningful experiences.',
-    profile_pic: null,
-    banner: null,
-    location: 'San Francisco, CA',
-    status: 'available',
-    joinedDate: '2024-01-15',
-    eventsJoined: 42,
-    eventsCreated: 8,
-    friendsCount: 156,
-    socialLinks: {
-      website: 'https://johndoe.com',
-      twitter: 'johndoe',
-      github: 'johndoe',
-      linkedin: 'johndoe'
-    }
-  });
+  const [user, setUser] = useState({});
 
+  
+ 
   // Edit states
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
+  const [createdEvents, setCreatedEvents] = useState([])
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editUsername, setEditUsername] = useState(user.username);
-  const [editDisplayName, setEditDisplayName] = useState(user.displayName);
+  const [editDisplayName, setEditDisplayName] = useState(user.name);
   const [editBio, setEditBio] = useState(user.bio);
   const [editLocation, setEditLocation] = useState(user.location);
-  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [editEmail, setEditEmail] = useState(user.email);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [editPhone, setEditPhone] = useState(user.phone);
+
+   useEffect(() => {
+    getUserbyId((fetchedUser) => {
+      const fullUser = { ...user, ...fetchedUser };
+      setUser(fullUser);
+      setEditUsername(fullUser.username || "");
+      setEditDisplayName(fullUser.name || "");
+      setEditBio(fullUser.bio || "");
+      setEditLocation(fullUser.location || "");
+      setEditEmail(fullUser.email || "")
+      setEditPhone(fullUser.phone || "")
+    });
+    getEventCreatedbyUser(setCreatedEvents)
+  }, []);
   
   // File input refs
   const profilePicInputRef = useRef(null);
@@ -79,46 +83,67 @@ const ProfilePage = () => {
   // Handle profile picture change
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUser(prev => ({ ...prev, profile_pic: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
+      const updatedUser = { ...user, profile_pic: base64Image };
+
+      try {
+        setUser(updatedUser);
+        const updatedFromDB = await addInfo({ profile_pic: base64Image })
+      } catch (err) {
+        console.error(" Error updating profile picture:", err);
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
   // Handle banner change
   const handleBannerChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUser(prev => ({ ...prev, banner: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
+      const updatedUser = { ...user, banner: base64Image };
+
+      try {
+        setUser(updatedUser);
+        const updatedFromDB = await addInfo({ banner: base64Image });
+      } catch (err) {
+        console.error(" Error updating profile picture:", err);
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
   // Save username
-  const saveUsername = () => {
+  const saveUsername = async () => {
     setUser(prev => ({ 
       ...prev, 
       username: editUsername,
-      displayName: editDisplayName 
+      name: editDisplayName 
     }));
+    await addInfo({ name: editDisplayName, username: editUsername });
     setIsEditingUsername(false);
   };
 
   // Save bio
-  const saveBio = () => {
+  const saveBio = async () => {
     setUser(prev => ({ ...prev, bio: editBio }));
+    await addInfo({ bio: editBio });
     setIsEditingBio(false);
   };
 
   // Save location
-  const saveLocation = () => {
+  const saveLocation = async () => {
     setUser(prev => ({ ...prev, location: editLocation }));
+    await addInfo({ location: editLocation });
     setIsEditingLocation(false);
   };
 
@@ -129,11 +154,13 @@ const ProfilePage = () => {
   };
 
   // Update status
-  const updateStatus = (newStatus) => {
+  const updateStatus = async (newStatus) => {
     setUser(prev => ({ ...prev, status: newStatus }));
+    await addInfo({status: newStatus})
+
   };
 
-  const currentStatus = statusOptions.find(s => s.value === user.status);
+  const currentStatus = statusOptions.find(s => s.value === user.status) || statusOptions[0];
 
   // Handle Escape key for sidebar
   useEffect(() => {
@@ -218,7 +245,7 @@ const ProfilePage = () => {
                           ) : (
                             <div className="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                               <span className="text-white text-3xl font-bold">
-                                {getInitials(user.displayName)}
+                                {getInitials(user.name)}
                               </span>
                             </div>
                           )}
@@ -268,7 +295,7 @@ const ProfilePage = () => {
                               <button
                                 onClick={() => {
                                   setEditUsername(user.username);
-                                  setEditDisplayName(user.displayName);
+                                  setEditDisplayName(user.name);
                                   setIsEditingUsername(false);
                                 }}
                                 className="text-red-600 hover:text-red-700"
@@ -281,7 +308,7 @@ const ProfilePage = () => {
                           <div>
                             <div className="flex items-center space-x-2">
                               <h1 className="text-2xl font-bold text-gray-900 truncate">
-                                {user.displayName}
+                                {user.name}
                               </h1>
                               <button
                                 onClick={() => setIsEditingUsername(true)}
@@ -295,7 +322,7 @@ const ProfilePage = () => {
                         )}
 
                         <div className="mt-3 flex items-center space-x-2">
-                          <div className={`w-3 h-3 rounded-full ${currentStatus.color}`} />
+                         <div className={`w-3 h-3 rounded-full ${currentStatus.color}`} />
                           <select
                             value={user.status}
                             onChange={(e) => updateStatus(e.target.value)}
@@ -308,16 +335,6 @@ const ProfilePage = () => {
                             ))}
                           </select>
                         </div>
-                      </div>
-
-                      <div className="flex space-x-2">
-                        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2">
-                          <Share2 className="w-4 h-4" />
-                          <span>Share</span>
-                        </button>
-                        <button className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                          <Settings className="w-5 h-5" />
-                        </button>
                       </div>
                     </div>
 
@@ -402,25 +419,10 @@ const ProfilePage = () => {
 
                       <div className="flex items-center space-x-2 text-gray-600">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">Joined {formatDate(user.joinedDate)}</span>
+                        <span className="text-sm">Joined {formatDate(user.createdAt)}</span>
                       </div>
                     </div>
 
-                    <div className="mt-4 flex space-x-3">
-                      {user.socialLinks.github && (
-                        <a href={`https://github.com/${user.socialLinks.github}`} className="text-gray-400 hover:text-gray-700 transition-colors">
-                          <Github className="w-5 h-5" />
-                        </a>
-                      )}
-                      {user.socialLinks.linkedin && (
-                        <a href={`https://linkedin.com/in/${user.socialLinks.linkedin}`} className="text-gray-400 hover:text-blue-600 transition-colors">
-                          <Linkedin className="w-5 h-5" />
-                        </a>
-                      )}
-                      <button className="text-gray-400 hover:text-indigo-600 transition-colors">
-                        <Mail className="w-5 h-5" />
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -429,16 +431,10 @@ const ProfilePage = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Events Joined</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{user.eventsJoined}</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-1">{user.joinedEvents?.length}</p>
                       </div>
                       <div className="p-3 bg-indigo-100 rounded-lg">
                         <Activity className="w-6 h-6 text-indigo-600" />
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <div className="flex items-center text-sm text-green-600">
-                        <span className="font-medium">+12%</span>
-                        <span className="text-gray-500 ml-2">from last month</span>
                       </div>
                     </div>
                   </div>
@@ -447,34 +443,23 @@ const ProfilePage = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Events Created</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{user.eventsCreated}</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-1">{createdEvents.length}</p>
                       </div>
                       <div className="p-3 bg-purple-100 rounded-lg">
                         <Calendar className="w-6 h-6 text-purple-600" />
                       </div>
                     </div>
-                    <div className="mt-4">
-                      <div className="flex items-center text-sm text-green-600">
-                        <span className="font-medium">+2</span>
-                        <span className="text-gray-500 ml-2">this month</span>
-                      </div>
-                    </div>
+                    
                   </div>
 
                   <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Friends</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{user.friendsCount}</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-1">{user.friends?.length}</p>
                       </div>
                       <div className="p-3 bg-pink-100 rounded-lg">
                         <Users className="w-6 h-6 text-pink-600" />
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <div className="flex items-center text-sm text-green-600">
-                        <span className="font-medium">+8</span>
-                        <span className="text-gray-500 ml-2">new connections</span>
                       </div>
                     </div>
                   </div>

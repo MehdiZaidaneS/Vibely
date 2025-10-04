@@ -21,9 +21,9 @@ const getEventBackground = (event) => {
   if (event.background) {
     // If it's an image URL (contains common image extensions or starts with http/https)
     if (event.background.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) ||
-        event.background.startsWith('http://') ||
-        event.background.startsWith('https://') ||
-        event.background.startsWith('url(')) {
+      event.background.startsWith('http://') ||
+      event.background.startsWith('https://') ||
+      event.background.startsWith('url(')) {
       return event.background;
     }
     // Otherwise it's already a gradient, return as-is
@@ -77,7 +77,7 @@ const extractCity = (locationString) => {
   return locationString.split(',')[0].trim();
 };
 
-function EventPage({isAuthenticated}) {
+function EventPage({ isAuthenticated }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,7 +91,7 @@ function EventPage({isAuthenticated}) {
   const [isDmOpen, setIsDmOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [detailsEvent, setDetailsEvent] = useState(null);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false); 
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
 
   useEffect(() => {
     getAllEvents(setEvents, setActiveMenu)
@@ -134,7 +134,7 @@ function EventPage({isAuthenticated}) {
   const confirmJoinLeave = async () => {
     if (activeMenu === "Joined Events") {
       await leaveEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast)
-      await getJoinedEvents(setEvents, setActiveMenu)
+      await getJoinedEvents(setEvents)
     } else {
       await joinEvent(selectedEvent, setIsCreateModalOpen, setSelectedEvent, setToast, setEvents)
     }
@@ -211,22 +211,22 @@ function EventPage({isAuthenticated}) {
                   </span>
                   <div className="icon-container">
                     <span className="tooltip-wrapper relative"> {/* Added relative for popup positioning */}
-                      <img 
-                        src="../assets/images/img_notification.svg" 
-                        alt="Notifications" 
-                        className="notification-icon cursor-pointer" 
+                      <img
+                        src="../assets/images/img_notification.svg"
+                        alt="Notifications"
+                        className="notification-icon cursor-pointer"
                         onClick={() => setIsNotificationOpen(!isNotificationOpen)} // Toggle popup
                       />
                       <span className="tooltip">Notifications</span>
                       {isNotificationOpen && <NotificationPopup onClose={() => setIsNotificationOpen(false)} />} {/* Render popup */}
                     </span>
                     <span className="tooltip-wrapper relative"> {/* Added relative for popup positioning */}
-                      <img 
-                        src="../assets/images/img_DM_icon.svg" 
-                        alt="Direct Messages" 
-                        className="dm-icon cursor-pointer" 
-                        width="18" 
-                        height="18" 
+                      <img
+                        src="../assets/images/img_DM_icon.svg"
+                        alt="Direct Messages"
+                        className="dm-icon cursor-pointer"
+                        width="18"
+                        height="18"
                         onClick={() => setIsDmOpen(!isDmOpen)} // Toggle popup
                       />
                       <span className="tooltip">Direct Messages</span>
@@ -268,10 +268,14 @@ function EventPage({isAuthenticated}) {
                   </a>
                   <a
                     className={`header-menu-item ${activeMenu === "Joined Events" ? "active" : ""}`}
-                    onClick={() => getJoinedEvents(setEvents, setActiveMenu)}
+                    onClick={() => {
+                      getJoinedEvents(setEvents);
+                      setActiveMenu("Joined Events");
+                    }}
                   >
                     Joined
                   </a>
+
                 </>
               )}
             </nav>
@@ -296,144 +300,144 @@ function EventPage({isAuthenticated}) {
                 {activeMenu === "Joined Events"
                   ? "You haven't joined any events yet"
                   : activeMenu === "Recommended"
-                  ? "No recommended events available"
-                  : "No events available"}
+                    ? "No recommended events available"
+                    : "No events available"}
               </h3>
               <p className="empty-state-description">
                 {activeMenu === "Joined Events"
                   ? "Browse events and join the ones that interest you!"
                   : activeMenu === "Recommended"
-                  ? "Complete your profile to get personalized recommendations"
-                  : "Check back later for new events"}
+                    ? "Complete your profile to get personalized recommendations"
+                    : "Check back later for new events"}
               </p>
             </div>
           ) : (
             <div className="events-grid">
               {events.map((event, index) => {
-              const cardBackground = getEventBackground(event);
-              const isImageUrl = !cardBackground.includes('gradient') && (
-                cardBackground.startsWith('url(') ||
-                cardBackground.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) ||
-                cardBackground.startsWith('http://') ||
-                cardBackground.startsWith('https://')
-              );
+                const cardBackground = getEventBackground(event);
+                const isImageUrl = !cardBackground.includes('gradient') && (
+                  cardBackground.startsWith('url(') ||
+                  cardBackground.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) ||
+                  cardBackground.startsWith('http://') ||
+                  cardBackground.startsWith('https://')
+                );
 
-              return (
-                <article
-                  key={event._id}
-                  className="event-card-modern animate-card"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                  onClick={() => handleCardClick(event)}
-                >
-                  {/* Event Image with Gradient Overlay */}
-                  <div className="event-card-image-wrapper">
-                    <div
-                      className="event-card-background"
-                      style={
-                        isImageUrl
-                          ? {
+                return (
+                  <article
+                    key={event._id}
+                    className="event-card-modern animate-card"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                    onClick={() => handleCardClick(event)}
+                  >
+                    {/* Event Image with Gradient Overlay */}
+                    <div className="event-card-image-wrapper">
+                      <div
+                        className="event-card-background"
+                        style={
+                          isImageUrl
+                            ? {
                               backgroundImage: cardBackground.startsWith('url(') ? cardBackground : `url('${cardBackground}')`,
                               backgroundSize: 'cover',
                               backgroundPosition: 'center'
                             }
-                          : {
+                            : {
                               background: cardBackground
                             }
-                      }
-                    >
-                      <div className="event-card-overlay"></div>
-                    </div>
-
-                  {/* Host Avatar */}
-                  {event.author?.profile_pic && (
-                    <img
-                      src={event.author.profile_pic}
-                      alt="Event host"
-                      className="event-card-host-avatar"
-                    />
-                  )}
-
-                  {/* Match Score Badge for Recommended */}
-                  {activeMenu === "Recommended" && event.matchScore && (
-                    <div className="event-card-match-badge">
-                      {event.matchScore}/100
-                    </div>
-                  )}
-                </div>
-
-                {/* Event Content */}
-                <div className="event-card-content">
-                  <div className="event-card-header">
-                    <h2 className="event-card-title">{event.title}</h2>
-                    <p className="event-card-description">{event.description}</p>
-                    {event.author?.username && (
-                      <p className="event-card-creator">
-                        Created by <span className="event-card-creator-name">{event.author.username}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="event-card-footer">
-                    <div className="event-card-meta">
-                      {event.date && (
-                        <span className="event-card-date">{formatDate(event.date)}</span>
-                      )}
-                      {event.time && (
-                        <span className="event-card-time">
-                          🕒 {event.time}{event.endTime ? ` - ${event.endTime}` : ''}
-                        </span>
-                      )}
-                      {event.location && (
-                        <span className="event-card-location">
-                          📍 {extractCity(event.location)}
-                        </span>
-                      )}
-                      {event.participant && (
-                        <span className="event-card-participants">
-                          👥 {event.participant.length} {event.participant.length === 1 ? 'participant' : 'participants'}
-                        </span>
-                      )}
-                    </div>
-
-                    {!isAuthenticated ? (
-                      <div className="event-card-login-message">
-                        Log in to join event
-                      </div>
-                    ) : activeMenu === "Joined Events" ? (
-                      <button
-                        className="event-card-join-btn leave"
-                        aria-label={`Leave ${event.title.toLowerCase()}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleJoinLeaveClick(event);
-                        }}
+                        }
                       >
-                        <span style={{ fontSize: '16px' }}>✖️</span>
-                        <span>Leave</span>
-                      </button>
-                    ) : event.participant?.some(p => (p._id || p) === user?._id) ? (
-                      <div className="event-card-joined-badge">
-                        ✓ Joined
+                        <div className="event-card-overlay"></div>
                       </div>
-                    ) : (
-                      <button
-                        className="event-card-join-btn"
-                        aria-label={`Join ${event.title.toLowerCase()}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleJoinLeaveClick(event);
-                        }}
-                      >
-                        <span style={{ fontSize: '16px' }}>➕</span>
-                        <span>Join</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </article>
-              );
-            })}
-          </div>
+
+                      {/* Host Avatar */}
+                      {event.author?.profile_pic && (
+                        <img
+                          src={event.author.profile_pic}
+                          alt="Event host"
+                          className="event-card-host-avatar"
+                        />
+                      )}
+
+                      {/* Match Score Badge for Recommended */}
+                      {activeMenu === "Recommended" && event.matchScore && (
+                        <div className="event-card-match-badge">
+                          {event.matchScore}/100
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Event Content */}
+                    <div className="event-card-content">
+                      <div className="event-card-header">
+                        <h2 className="event-card-title">{event.title}</h2>
+                        <p className="event-card-description">{event.description}</p>
+                        {event.author?.username && (
+                          <p className="event-card-creator">
+                            Created by <span className="event-card-creator-name">{event.author.username}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="event-card-footer">
+                        <div className="event-card-meta">
+                          {event.date && (
+                            <span className="event-card-date">{formatDate(event.date)}</span>
+                          )}
+                          {event.time && (
+                            <span className="event-card-time">
+                              🕒 {event.time}{event.endTime ? ` - ${event.endTime}` : ''}
+                            </span>
+                          )}
+                          {event.location && (
+                            <span className="event-card-location">
+                              📍 {extractCity(event.location)}
+                            </span>
+                          )}
+                          {event.participant && (
+                            <span className="event-card-participants">
+                              👥 {event.participant.length} {event.participant.length === 1 ? 'participant' : 'participants'}
+                            </span>
+                          )}
+                        </div>
+
+                        {!isAuthenticated ? (
+                          <div className="event-card-login-message">
+                            Log in to join event
+                          </div>
+                        ) : activeMenu === "Joined Events" ? (
+                          <button
+                            className="event-card-join-btn leave"
+                            aria-label={`Leave ${event.title.toLowerCase()}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinLeaveClick(event);
+                            }}
+                          >
+                            <span style={{ fontSize: '16px' }}>✖️</span>
+                            <span>Leave</span>
+                          </button>
+                        ) : event.participant?.some(p => (p._id || p) === user?._id) ? (
+                          <div className="event-card-joined-badge">
+                            ✓ Joined
+                          </div>
+                        ) : (
+                          <button
+                            className="event-card-join-btn"
+                            aria-label={`Join ${event.title.toLowerCase()}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinLeaveClick(event);
+                            }}
+                          >
+                            <span style={{ fontSize: '16px' }}>➕</span>
+                            <span>Join</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           )}
         </main>
       </div>

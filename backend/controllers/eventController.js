@@ -114,3 +114,23 @@ exports.searchEvent = async (req, res) => {
   if (!event) return res.status(404).json({ error: "Event not found" });
   res.json(event);
 };
+
+
+exports.getEventCreatedbyUser = async (req, res) => {
+  try {
+   
+    const userId = req.user._id;
+
+
+    const events = await Event.find({ author: userId })
+      .populate('author', 'username email profile_pic')
+      .populate('participant', 'username email');
+
+
+    res.status(200).json(events || []);
+  } catch (error) {
+    console.error('Error fetching user-created events:', error);
+    res.status(500).json({ message: 'Error fetching user-created events', error: error.message });
+  }
+};
+

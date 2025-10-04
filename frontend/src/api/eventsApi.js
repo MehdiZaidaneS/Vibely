@@ -107,8 +107,7 @@ export const getAllEvents = async (setEvents, setActiveMenu) => {
     }
 }
 
-export const getJoinedEvents = async (setEvents, setActiveMenu) => {
-    setActiveMenu("Joined Events")
+export const getJoinedEvents = async (setEvents) => {
     const token = localStorage.getItem("user")
     const userId = localStorage.getItem("userId")
     try {
@@ -125,7 +124,7 @@ export const getJoinedEvents = async (setEvents, setActiveMenu) => {
             id: ev._id, // use MongoDB _id for all events from backend
         }));
 
-        setEvents(normalized);
+        setEvents(normalized)
 
     } catch (err) {
         console.error("Error fetching events:", err);
@@ -232,5 +231,35 @@ export const recommendEvents = async (setActiveMenu, setEvents) => {
   } catch (error) {
     console.error("Error fetching recommended events:", error);
     setEvents([]);
+  }
+};
+
+
+export const getEventCreatedbyUser = async (setCreatedEvents) => {
+  const token = localStorage.getItem("user");
+
+  try {
+    const response = await fetch("http://localhost:5000/api/events/created-events", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch created events");
+    }
+
+    const data = await response.json();
+
+    const normalized = data.map(ev => ({
+      ...ev,
+      id: ev._id, // unify with MongoDB’s _id
+    }));
+
+    setCreatedEvents(normalized);
+
+  } catch (error) {
+    console.error("Error fetching created events:", error);
   }
 };

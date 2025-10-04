@@ -28,10 +28,23 @@ const userSchema = new Schema(
             required: true
 
         },
+        status:{
+            type: String,
+            required: false,
+            default: "available"
+        },
         username: {
             type: String,
             required: false
 
+        },
+        bio:{
+            type: String,
+            required: false 
+        },
+        location:{
+            type: String,
+            required: false
         },
         countryCode: {
             type: String,
@@ -46,6 +59,10 @@ const userSchema = new Schema(
             type: String,
             required: false,
             default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+        },
+        banner:{
+            type: String,
+            required: false
         },
         joinedEvents:
             [{
@@ -74,7 +91,7 @@ const userSchema = new Schema(
                 user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
                 sentAt: { type: Date, default: Date.now }
             }
-        ]
+        ],
 
     }, { timestamps: true }
 );

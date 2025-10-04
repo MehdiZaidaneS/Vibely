@@ -52,9 +52,6 @@ function UserDropdown({ user, setUser }) {
               <a onClick={handleProfileClick} style={{ cursor: "pointer" }}>Profile</a>
             </li>
             <li className={styles.menuItem}>
-              <a href="#">Settings</a>
-            </li>
-            <li className={styles.menuItem}>
               <a onClick={handleLogout} style={{ cursor: "pointer" }}>Logout</a>
             </li>
           </ul>
