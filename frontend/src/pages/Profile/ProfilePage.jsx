@@ -496,82 +496,45 @@ const ProfilePage = () => {
                 <div className="mt-8 mb-8">
                   <div className="bg-white rounded-xl shadow-lg p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
-                    <div className="space-y-4">
-                      <div className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                        <div className="p-2 bg-indigo-100 rounded-lg">
-                          {
-                            activities[0]?.type === "Accepted Friend" ? (
-                              <Users className="w-4 h-4 text-pink-600" />
-                            ) : activities[0]?.type === "Created Event" ? (
-                              <Calendar className="w-4 h-4 text-purple-600" />
-                            ) : (
-                              <Activity className="w-4 h-4 text-indigo-600" />
-                            )
-                          }
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-900">{activities[0]?.content}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {activities[0]?.createdAt
-                              ? formatDistanceToNow(new Date(activities[0].createdAt), { addSuffix: true })
-                              : ''}
-                          </p>
-                        </div>
-                      </div>
 
-                      <div className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                          {
-                            activities[1]?.type === "Accepted Friend" ? (
-                              <Users className="w-4 h-4 text-pink-600" />
-                            ) : activities[1]?.type === "Created Event" ? (
-                              <Calendar className="w-4 h-4 text-purple-600" />
-                            ) : (
-                              <Activity className="w-4 h-4 text-indigo-600" />
-                            )
-                          }
-
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-900">{activities[1]?.content}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {activities[1]?.createdAt
-                              ? formatDistanceToNow(new Date(activities[0].createdAt), { addSuffix: true })
-                              : ''}
-                          </p>
-                        </div>
+                    {activities.length === 0 ? (
+                      <p className="text-gray-500 text-sm">No recent activity.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {activities.map((activity, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            <div className="p-2 rounded-lg" style={{ backgroundColor: activity.type === "Accepted Friend" ? "#FBCFE8" : activity.type === "Created Event" ? "#E9D5FF" : "#DBEAFE" }}>
+                              {activity.type === "Accepted Friend" ? (
+                                <Users className="w-4 h-4 text-pink-600" />
+                              ) : activity.type === "Created Event" ? (
+                                <Calendar className="w-4 h-4 text-purple-600" />
+                              ) : (
+                                <Activity className="w-4 h-4 text-indigo-600" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-900">{activity.content}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {activity.createdAt
+                                  ? formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })
+                                  : ''}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-
-                      <div className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                        <div className="p-2 bg-pink-100 rounded-lg">
-                          {
-                            activities[2]?.type === "Accepted Friend" ? (
-                              <Users className="w-4 h-4 text-pink-600" />
-                            ) : activities[2]?.type === "Created Event" ? (
-                              <Calendar className="w-4 h-4 text-purple-600" />
-                            ) : (
-                              <Activity className="w-4 h-4 text-indigo-600" />
-                            )
-                          }
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-900">{activities[2]?.content}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {activities[2]?.createdAt
-                              ? formatDistanceToNow(new Date(activities[0].createdAt), { addSuffix: true })
-                              : ''}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+        </main >
+      </div >
+    </div >
   );
 };
 
