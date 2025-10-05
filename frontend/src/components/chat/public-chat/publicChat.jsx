@@ -437,6 +437,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
         onJoinGroup={handleJoinGroup}
         userId={userId}
         isMainSidebarOpen={isMainSidebarOpen}
+        isAuthenticated={isAuthenticated}
       />
 
       {/* Main Chat Area */}
@@ -458,6 +459,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
           isMainSidebarOpen={isMainSidebarOpen}
           friendRequestCount={friendRequestCount}
           setIsFriendRequestsModalOpen={setIsFriendRequestsModalOpen}
+          isAuthenticated={isAuthenticated}
         />
 
         <PublicMessagesArea
@@ -466,6 +468,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
           messagesEndRef={messagesEndRef}
           styles={styles}
           userId={userId}
+          isAuthenticated={isAuthenticated}
         />
 
         <PublicMessageInput
@@ -484,6 +487,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
           emojiCategories={emojiCategories}
           handleEmojiSelect={handleEmojiSelect}
           styles={styles}
+          isAuthenticated={isAuthenticated}
         />
       </div>
 

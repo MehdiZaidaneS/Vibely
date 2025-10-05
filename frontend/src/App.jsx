@@ -36,7 +36,7 @@ function App() {
         
 
         {/* <Route path="create-event" element={<CreateEvent />} /> */}
-        <Route path="/public-chat" element={isAuthenticated ? <PublicChat isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/register" />} />
+        <Route path="/public-chat" element={<PublicChat isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/private-chat" element={isAuthenticated ? <PrivateChat /> : <Navigate to="/register" />} />
         <Route path="/private-chat/:chatroomId" element={isAuthenticated ? <PrivateChat /> : <Navigate to="/register" />} />
         <Route path="/people" element={isAuthenticated ? <PeoplePage /> : <Navigate to="/register" />} />

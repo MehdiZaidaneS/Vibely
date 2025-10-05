@@ -1,12 +1,14 @@
 // src/import/Sidebar.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Sidebar({ isOpen, onClose, onToggle }) {
+  const navigate = useNavigate();
+
   return (
     <>
       <aside className={`sidebar ${isOpen ? "open" : "closed"}`} aria-hidden={!isOpen}>
-        <div className="sidebar-logo">
+        <div className="sidebar-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           {["V", "i", "b", "e", "l", "y"].map((letter, index) => (
             <span
               key={index}
