@@ -8,10 +8,12 @@ import { getUserbyId, addInfo, getActivities } from "../../api/userApi";
 import { getEventCreatedbyUser } from '../../api/eventsApi';
 import './ProfilePage.css';
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from 'react-router-dom';
 
 const ProfilePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar
   const [user, setUser] = useState({});
+  const navigate = useNavigate()
 
 
 
@@ -223,6 +225,16 @@ const ProfilePage = () => {
               ☰
             </button>
             <h1 className="page-title">Profile</h1>
+
+            <button
+              onClick={() => navigate("/")}
+              className="p-2 border border-pink-500 text-pink-500 rounded-lg bg-transparent 
+             hover:bg-pink-500/10 transition-colors duration-200"
+            >
+              Back
+            </button>
+
+
           </div>
         </header>
 
