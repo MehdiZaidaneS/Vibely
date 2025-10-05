@@ -1170,3 +1170,70 @@ button:focus, a:focus, input:focus {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(228, 90, 146, 0.3);
 }
+
+/* Wrapper for search and filters */
+.search-filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Search bar styling */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  opacity: 0.6;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #7c3aed;
+}
+
+/* Filters below search bar */
+.filters-below {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-select,
+.filter-date {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.filter-select:hover,
+.filter-date:hover {
+  border-color: #7c3aed;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .filters-below {
+    flex-direction: column;
+  }
+}
