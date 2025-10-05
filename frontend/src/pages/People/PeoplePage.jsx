@@ -1,3 +1,4 @@
+//./pages/People/PeoplePage
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from "date-fns";
@@ -162,10 +163,12 @@ const acceptRequest = async (requestId) => {
     </div>
   );
 
-  return (
+return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-purple-950 via-indigo-950 to-violet-950' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-indigo-100'}`}>
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-
+      
+      {/* Spacer div that takes up sidebar width when open */}
+      <div className={`transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
       {/* Dark Mode Toggle - Floating */}
       <button
         onClick={() => setDarkMode(!darkMode)}
@@ -189,7 +192,7 @@ const acceptRequest = async (requestId) => {
                 </span>
               </h2>
             </div>
-
+            
             <div className="p-4 max-h-[calc(100vh-12rem)] overflow-y-auto space-y-3 custom-scrollbar">
               {friends.map((friend, index) => (
                 <div 
@@ -675,7 +678,7 @@ const acceptRequest = async (requestId) => {
           </div>
         </main>
       </div>
-
+    </div>          
       {/* User Detail Modal */}
       {selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
