@@ -333,3 +333,24 @@ export const markAsRead = async (id) => {
         throw error;
     }
 }
+
+export const getActivities = async () => {
+  const token = localStorage.getItem("user");
+  try {
+    const response = await fetch(`${API_URL}/activities`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error geetting requests:", error);
+    throw error;
+  }
+};

@@ -1,4 +1,6 @@
+const activityModel = require('../models/activityModel');
 const Event = require('../models/eventModel');
+const notificationModel = require('../models/notificationModel');
 const User = require('../models/userModel');
 
 exports.createEvent = async (req, res) => {
@@ -23,6 +25,15 @@ exports.createEvent = async (req, res) => {
 
     const newEvent = new Event(eventData);
     const savedEvent = await newEvent.save();
+
+    //Creating activitiy
+
+    const activity = await activityModel.create({
+      user: req.body.author,
+      type: "Created Event",
+      content: `You created, ${req.body.title} event!`
+    })
+
     res.status(201).json(savedEvent);
   } catch (error) {
     console.error('Error creating event:', error);
@@ -75,6 +86,22 @@ exports.joinEvent = async (req, res) => {
 
     await event.save();
     await user.save();
+
+    //Creating notification
+    const notification = await notificationModel.create({
+      receiver: userID,
+      content: `Joined successfully, ${event.title} event!`,
+      type: "Message"
+    });
+
+    //Creating activitiy
+
+    const activity = await activityModel.create({
+      user: userID,
+      type: "Joined Event",
+      content: `Joined successfully, ${event.title}!`
+    })
+
     res.status(200).json({ message: 'Joined event successfully', event });
   } catch (error) {
     res.status(500).json({ message: 'Error joining event', error });
@@ -118,7 +145,7 @@ exports.searchEvent = async (req, res) => {
 
 exports.getEventCreatedbyUser = async (req, res) => {
   try {
-   
+
     const userId = req.user._id;
 
 

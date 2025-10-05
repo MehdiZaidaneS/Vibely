@@ -4,6 +4,7 @@ const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv");
 const notificationModel = require("../models/notificationModel.js");
+const activityModel = require("../models/activityModel.js");
 dotenv.config()
 
 
@@ -144,8 +145,24 @@ const createNewUser = async (req, res) => {
         const newUser = await UserModel.signup(name, email, phone, password, profile_pic)
 
         const token = generateToken(newUser._id)
-        res.status(201).json({ user: newUser, token })
 
+        //Creating notification
+        const notification = await notificationModel.create({
+            receiver: newUser._id,
+            content: `Welcome to Vibely, ${newUser.name}!`,
+            type: "Message"
+        });
+
+         //Creating activitiy
+
+         const activity = await activityModel.create({
+            user: newUser._id,
+            type: "Basic",
+            content: "You joined Vibely for the first time!"
+         })
+        
+
+        res.status(201).json({ user: newUser, token })
     } catch (error) {
         res.status(400).json({ message: error.message })
     }
@@ -365,6 +382,19 @@ const acceptFriendRequest = async (req, res) => {
             await chatRoom.save();
             console.log("Created chatroom for new friends:", chatRoom._id);
         }
+
+        const activity1 = await activityModel.create({
+              user: userId,
+              type: "Accepted Friend",
+              content: `You connected with, ${targetUser.username}!`
+            })
+
+        const activity2 = await activityModel.create({
+              user: requested_friend_id,
+              type: "Accepted Friend",
+              content: `You connected with, ${user.username}!`
+            })
+    
 
         return res.status(200).json({
             message: "Friend request accepted successfully",
@@ -609,6 +639,28 @@ const leaveEventFromUserPage = async (req, res) => {
     }
 };
 
+const getActivities = async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Fetch last 3 activities sorted by creation date descending
+        const activities = await activityModel
+            .find({ user: userId })
+            .sort({ createdAt: -1 })  // newest first
+            .limit(3);
+
+        res.status(200).json(activities);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching joined events', error });
+    }
+};
+
+
 
 module.exports = {
     getAllUsers,
@@ -626,6 +678,7 @@ module.exports = {
     getFriends,
     removeFriend,
     checkUserName,
-    searchUsers
+    searchUsers,
+    getActivities
 
 }

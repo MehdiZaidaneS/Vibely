@@ -1,18 +1,20 @@
 // src/pages/ProfilePage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import {  Camera,  Edit3,  Check,  X,  MapPin,  Calendar, Link2, Users, Activity, Settings, Share2, Globe, Github, Linkedin,Mail
+import {
+  Camera, Edit3, Check, X, MapPin, Calendar, Link2, Users, Activity, Settings, Share2, Globe, Github, Linkedin, Mail
 } from 'lucide-react';
-import Sidebar from '../../import/Sidebar'; 
-import { getUserbyId, addInfo } from "../../api/userApi";
+import Sidebar from '../../import/Sidebar';
+import { getUserbyId, addInfo, getActivities } from "../../api/userApi";
 import { getEventCreatedbyUser } from '../../api/eventsApi';
 import './ProfilePage.css';
+import { formatDistanceToNow } from "date-fns";
 
 const ProfilePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar
   const [user, setUser] = useState({});
 
-  
- 
+
+
   // Edit states
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -26,36 +28,47 @@ const ProfilePage = () => {
   const [editEmail, setEditEmail] = useState(user.email);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [editPhone, setEditPhone] = useState(user.phone);
+  const [activities, setActivities] = useState([])
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const fetchedUser = await getUserbyId();
-      const fullUser = { ...user, ...fetchedUser };
-      setUser(fullUser);
-      setEditUsername(fullUser.username || "");
-      setEditDisplayName(fullUser.name || "");
-      setEditBio(fullUser.bio || "");
-      setEditLocation(fullUser.location || "");
-      setEditEmail(fullUser.email || "");
-      setEditPhone(fullUser.phone || "");
-    } catch (err) {
-      console.error("Failed to load user:", err);
-    }
+    const fetchData = async () => {
+      try {
+        const fetchedUser = await getUserbyId();
+        const fullUser = { ...user, ...fetchedUser };
+        setUser(fullUser);
+        setEditUsername(fullUser.username || "");
+        setEditDisplayName(fullUser.name || "");
+        setEditBio(fullUser.bio || "");
+        setEditLocation(fullUser.location || "");
+        setEditEmail(fullUser.email || "");
+        setEditPhone(fullUser.phone || "");
+      } catch (err) {
+        console.error("Failed to load user:", err);
+      }
 
-    try {
-      const events = await getEventCreatedbyUser();
-      setCreatedEvents(events || []); 
-    } catch (err) {
-      console.error("Error fetching created events:", err);
-      setCreatedEvents([]);
-    }
-  };
+      try {
+        const events = await getEventCreatedbyUser();
+        setCreatedEvents(events || []);
+      } catch (err) {
+        console.error("Error fetching created events:", err);
+        setCreatedEvents([]);
+      }
 
-  fetchData();
-}, []);
+      try {
 
-  
+        const activityList = await getActivities()
+        setActivities(activityList || [])
+
+      } catch (err) {
+        console.error("Error fetching created events:", err);
+        setCreatedEvents([]);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
   // File input refs
   const profilePicInputRef = useRef(null);
   const bannerInputRef = useRef(null);
@@ -139,10 +152,10 @@ const ProfilePage = () => {
 
   // Save username
   const saveUsername = async () => {
-    setUser(prev => ({ 
-      ...prev, 
+    setUser(prev => ({
+      ...prev,
       username: editUsername,
-      name: editDisplayName 
+      name: editDisplayName
     }));
     await addInfo({ name: editDisplayName, username: editUsername });
     setIsEditingUsername(false);
@@ -171,7 +184,7 @@ const ProfilePage = () => {
   // Update status
   const updateStatus = async (newStatus) => {
     setUser(prev => ({ ...prev, status: newStatus }));
-    await addInfo({status: newStatus})
+    await addInfo({ status: newStatus })
 
   };
 
@@ -218,7 +231,7 @@ const ProfilePage = () => {
           <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
             {/* Header with Banner */}
             <div className="relative">
-              <div 
+              <div
                 className="h-64 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden"
                 style={{
                   backgroundImage: user.banner ? `url(${user.banner})` : undefined,
@@ -229,7 +242,7 @@ const ProfilePage = () => {
                 {!user.banner && (
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-purple-600/20" />
                 )}
-                
+
                 <button
                   onClick={() => bannerInputRef.current?.click()}
                   className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-700 p-2 rounded-lg hover:bg-white transition-colors shadow-lg"
@@ -252,9 +265,9 @@ const ProfilePage = () => {
                       <div className="relative">
                         <div className="h-32 w-32 rounded-full bg-white ring-4 ring-white overflow-hidden shadow-xl">
                           {user.profile_pic ? (
-                            <img 
-                              src={user.profile_pic} 
-                              alt="Profile" 
+                            <img
+                              src={user.profile_pic}
+                              alt="Profile"
                               className="h-full w-full object-cover"
                             />
                           ) : (
@@ -337,7 +350,7 @@ const ProfilePage = () => {
                         )}
 
                         <div className="mt-3 flex items-center space-x-2">
-                         <div className={`w-3 h-3 rounded-full ${currentStatus.color}`} />
+                          <div className={`w-3 h-3 rounded-full ${currentStatus.color}`} />
                           <select
                             value={user.status}
                             onChange={(e) => updateStatus(e.target.value)}
@@ -409,7 +422,7 @@ const ProfilePage = () => {
                             <button onClick={saveLocation} className="text-green-600">
                               <Check className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => {
                                 setEditLocation(user.location);
                                 setIsEditingLocation(false);
@@ -464,7 +477,7 @@ const ProfilePage = () => {
                         <Calendar className="w-6 h-6 text-purple-600" />
                       </div>
                     </div>
-                    
+
                   </div>
 
                   <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
@@ -486,31 +499,68 @@ const ProfilePage = () => {
                     <div className="space-y-4">
                       <div className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                         <div className="p-2 bg-indigo-100 rounded-lg">
-                          <Activity className="w-4 h-4 text-indigo-600" />
+                          {
+                            activities[0]?.type === "Accepted Friend" ? (
+                              <Users className="w-4 h-4 text-pink-600" />
+                            ) : activities[0]?.type === "Created Event" ? (
+                              <Calendar className="w-4 h-4 text-purple-600" />
+                            ) : (
+                              <Activity className="w-4 h-4 text-indigo-600" />
+                            )
+                          }
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-gray-900">Joined <span className="font-semibold">Summer Music Festival</span></p>
-                          <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
+                          <p className="text-sm text-gray-900">{activities[0]?.content}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {activities[0]?.createdAt
+                              ? formatDistanceToNow(new Date(activities[0].createdAt), { addSuffix: true })
+                              : ''}
+                          </p>
                         </div>
                       </div>
 
                       <div className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                         <div className="p-2 bg-purple-100 rounded-lg">
-                          <Calendar className="w-4 h-4 text-purple-600" />
+                          {
+                            activities[1]?.type === "Accepted Friend" ? (
+                              <Users className="w-4 h-4 text-pink-600" />
+                            ) : activities[1]?.type === "Created Event" ? (
+                              <Calendar className="w-4 h-4 text-purple-600" />
+                            ) : (
+                              <Activity className="w-4 h-4 text-indigo-600" />
+                            )
+                          }
+
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-gray-900">Created event <span className="font-semibold">Tech Meetup 2025</span></p>
-                          <p className="text-xs text-gray-500 mt-1">1 day ago</p>
+                          <p className="text-sm text-gray-900">{activities[1]?.content}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {activities[1]?.createdAt
+                              ? formatDistanceToNow(new Date(activities[0].createdAt), { addSuffix: true })
+                              : ''}
+                          </p>
                         </div>
                       </div>
 
                       <div className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                         <div className="p-2 bg-pink-100 rounded-lg">
-                          <Users className="w-4 h-4 text-pink-600" />
+                          {
+                            activities[2]?.type === "Accepted Friend" ? (
+                              <Users className="w-4 h-4 text-pink-600" />
+                            ) : activities[2]?.type === "Created Event" ? (
+                              <Calendar className="w-4 h-4 text-purple-600" />
+                            ) : (
+                              <Activity className="w-4 h-4 text-indigo-600" />
+                            )
+                          }
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-gray-900">Connected with <span className="font-semibold">5 new friends</span></p>
-                          <p className="text-xs text-gray-500 mt-1">3 days ago</p>
+                          <p className="text-sm text-gray-900">{activities[2]?.content}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {activities[2]?.createdAt
+                              ? formatDistanceToNow(new Date(activities[0].createdAt), { addSuffix: true })
+                              : ''}
+                          </p>
                         </div>
                       </div>
                     </div>

@@ -19,7 +19,8 @@ const {
  getFriends,
  removeFriend,
  checkUserName,
- searchUsers
+ searchUsers,
+ getActivities
 } = require("../controllers/userController.js")
 
 
@@ -42,7 +43,6 @@ router.get("/check-username/:username", checkUserName)
 
 router.use(requireAuth);
 router.post("/matched-users", UserMatches)
-
 router.get("/", getAllUsers)
 router.post("/friend-requests", getFriendRequests)
 router.patch('/:userId/leave-event', leaveEventFromUserPage);
@@ -53,6 +53,7 @@ router.post("/accept/:requested_friend_id", acceptFriendRequest)
 router.delete("/delete/:requested_friend_id", deleteFriendRequest)
 router.post("/friends", getFriends)
 router.delete("/remove/:friendId", removeFriend)
+router.post("/activities", getActivities)
 
 
 
