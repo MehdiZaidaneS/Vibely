@@ -17,8 +17,9 @@ const PeoplePage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(null);
 
-const [activeUsers, setActiveUsers] = useState([]);
+  const [activeUsers, setActiveUsers] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
 
@@ -117,6 +118,21 @@ const acceptRequest = async (requestId) => {
     }
   };
 
+  const removeFriendHandler = async (friendId) => {
+    const token = localStorage.getItem("user");
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/remove/${friendId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        setFriends(prev => prev.filter(f => f._id !== friendId));
+      }
+    } catch (error) {
+      console.error("Error removing friend:", error);
+    }
+  };
+
   const inviteToEvent = async (userId, eventId) => {
     console.log('Inviting user to event:', userId, eventId);
     navigate('/');
@@ -181,7 +197,7 @@ const acceptRequest = async (requestId) => {
                   className={`group ${darkMode ? 'bg-gray-800 border-gray-700 hover:border-purple-500' : 'bg-gradient-to-br from-purple-50 to-white border-purple-200 hover:border-purple-400'} p-4 rounded-xl border hover:shadow-xl transition-all duration-300 animate-slide-up cursor-pointer hover:-translate-y-1`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3" onClick={() => navigate(`/profile/${friend._id}`)} style={{ cursor: 'pointer' }}>
                     <div className="relative flex-shrink-0">
                       <img src={friend.profile_pic} alt={friend.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-purple-300 group-hover:ring-purple-500 transition-all group-hover:scale-110" />
                     </div>
@@ -194,13 +210,36 @@ const acceptRequest = async (requestId) => {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-3">
-                    <button onClick={() => sendMessage(friend._id)} className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium hover:shadow-lg transform hover:scale-105">
+                    <button onClick={(e) => { e.stopPropagation(); sendMessage(friend._id); }} className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium hover:shadow-lg transform hover:scale-105">
                       <MessageSquare className="w-4 h-4" />
                       Message
                     </button>
-                    <button className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-purple-100 hover:bg-purple-200 text-purple-600'} p-2 rounded-lg transition-all duration-200 hover:scale-110`}>
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMoreMenu(showMoreMenu === friend._id ? null : friend._id);
+                        }}
+                        className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-purple-100 hover:bg-purple-200 text-purple-600'} p-2 rounded-lg transition-all duration-200 hover:scale-110`}
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      {showMoreMenu === friend._id && (
+                        <div className={`absolute right-0 top-8 w-48 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-xl border z-50`}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFriendHandler(friend._id);
+                              setShowMoreMenu(null);
+                            }}
+                            className={`w-full px-4 py-2 text-left text-red-600 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50'} rounded-lg transition-colors flex items-center gap-2`}
+                          >
+                            <UserX className="w-4 h-4" />
+                            Remove Friend
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -370,19 +409,16 @@ const acceptRequest = async (requestId) => {
                         >
                           <div className="p-6">
                             <div className="flex items-start gap-4 mb-4">
-                              <div className="relative flex-shrink-0">
+                              <div className="relative flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${user._id}`)}>
                                 <img src={user.profile_pic} alt={user.name} className="w-16 h-16 rounded-full object-cover ring-4 ring-purple-200 group-hover:ring-purple-400 transition-all group-hover:scale-110" />
                                 {user.isOnline && (
                                   <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-4 border-white animate-pulse-ring"></span>
                                 )}
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/profile/${user._id}`)}>
                                 <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-slate-900'} truncate`}>{user.name}</h3>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'} truncate`}>@{user.username}</p>
                               </div>
-                              <button className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-slate-400 hover:text-slate-600'} transition-colors hover:scale-110`}>
-                                <MoreVertical className="w-5 h-5" />
-                              </button>
                             </div>
 
                             {user.bio && (
@@ -476,10 +512,10 @@ const acceptRequest = async (requestId) => {
                     >
                       <div className="p-6">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="relative flex-shrink-0">
+                          <div className="relative flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${request._id}`)}>
                             <img src={request.profile_pic} alt={request.name} className="w-16 h-16 rounded-full object-cover ring-4 ring-blue-200 transition-all group-hover:scale-110" />
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/profile/${request._id}`)}>
                             <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-slate-900'} truncate`}>{request.name}</h3>
                             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'} truncate`}>@{request.username}</p>
                           </div>
@@ -526,13 +562,13 @@ const acceptRequest = async (requestId) => {
                     >
                       <div className="p-6">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="relative flex-shrink-0">
+                          <div className="relative flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${sugg._id}`)}>
                             <img src={sugg.profile_pic} alt={sugg.name} className="w-16 h-16 rounded-full object-cover ring-4 ring-purple-200 transition-all group-hover:scale-110" />
                             <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full p-1 animate-bounce-subtle">
                               <Sparkles className="w-4 h-4" />
                             </div>
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/profile/${sugg._id}`)}>
                             <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-slate-900'} truncate`}>{sugg.name}</h3>
                             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'} truncate`}>@{sugg.username}</p>
                           </div>
