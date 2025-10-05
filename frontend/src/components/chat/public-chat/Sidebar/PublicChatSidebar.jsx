@@ -17,6 +17,7 @@ const PublicChatSidebar = ({
   onJoinGroup,
   userId,
   isMainSidebarOpen,
+  isAuthenticated,
 }) => {
   return (
     <div
@@ -48,13 +49,15 @@ const PublicChatSidebar = ({
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setShowCreateGroup(true)}
-            className="p-2 hover:bg-white/20 rounded-lg transition-all duration-200"
-            title="Create New Group"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+          {isAuthenticated && (
+            <button
+              onClick={() => setShowCreateGroup(true)}
+              className="p-2 hover:bg-white/20 rounded-lg transition-all duration-200"
+              title="Create New Group"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="relative">
@@ -110,7 +113,7 @@ const PublicChatSidebar = ({
         </div>
 
         {/* Online Users List */}
-        <div className="p-4 border-t border-gray-200">
+        {/* <div className="p-4 border-t border-gray-200">
           <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
             Online ({onlineUsers.filter((u) => u.isOnline).length})
           </h3>
@@ -141,7 +144,7 @@ const PublicChatSidebar = ({
                 </div>
               ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,8 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./authPage.module.css";
 import { socialMedia } from "./constants";
 
 const BrandPresentation = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="w-1/2 relative overflow-hidden flex flex-col">
       {/* Background Image Container */}
@@ -46,7 +49,7 @@ const BrandPresentation = () => {
       {/* Main Vibely Logo Section */}
       <div className="absolute inset-0 z-10 flex items-start justify-center px-10 pt-50">
         <div className={`text-center ${styles.animateFadeIn}`}>
-          <div className="group cursor-pointer">
+          <div className="group cursor-pointer" onClick={() => navigate("/")}>
             {/* Large animated Vibely text */}
             <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 transition-all duration-700 group-hover:scale-105 group-hover:text-purple-200">
               {["V", "i", "b", "e", "l", "y"].map((letter, index) => (

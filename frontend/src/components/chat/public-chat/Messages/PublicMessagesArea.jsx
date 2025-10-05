@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const PublicMessagesArea = ({ messages, isTyping, messagesEndRef, styles, userId }) => {
+const PublicMessagesArea = ({ messages, isTyping, messagesEndRef, styles, userId, isAuthenticated }) => {
   const navigate = useNavigate();
   return (
     <div
@@ -28,8 +28,8 @@ const PublicMessagesArea = ({ messages, isTyping, messagesEndRef, styles, userId
                 <img
                   src={message.sender?.profile_pic || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
                   alt={message.sender?.name || 'Unknown User'}
-                  className="w-8 h-8 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => navigate(`/profile/${message.sender._id}`)}
+                  className={`w-8 h-8 rounded-full object-cover ${isAuthenticated ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity`}
+                  onClick={() => isAuthenticated && navigate(`/profile/${message.sender._id}`)}
                 />
               </div>
 

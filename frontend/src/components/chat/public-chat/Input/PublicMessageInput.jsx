@@ -17,19 +17,25 @@ const PublicMessageInput = ({
   emojiCategories,
   handleEmojiSelect,
   styles,
+  isAuthenticated,
 }) => {
   return (
     <div
       className={`bg-white border-t border-gray-200 p-4 ${styles.animateSlideUp}`}
     >
-      <div className="flex items-end space-x-4">
-        <div className="relative dropdown-container">
-          <button
-            onClick={() => setShowImageUpload(!showImageUpload)}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
+      {!isAuthenticated ? (
+        <div className="text-center py-3 text-gray-500 bg-gray-50 rounded-lg">
+          Please <a href="/login" className="text-purple-600 hover:underline font-medium">login</a> to send messages
+        </div>
+      ) : (
+        <div className="flex items-end space-x-4">
+          <div className="relative dropdown-container">
+            <button
+              onClick={() => setShowImageUpload(!showImageUpload)}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
           {showImageUpload && (
             <div
               className={`absolute bottom-12 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 ${styles.animateFadeIn}`}
@@ -108,14 +114,15 @@ const PublicMessageInput = ({
           </div>
         </div>
 
-        <button
-          onClick={handleSendMessage}
-          disabled={newMessage.trim() === ""}
-          className={`${styles.sendButton} p-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl`}
-        >
-          <Send className="w-5 h-5" />
-        </button>
-      </div>
+          <button
+            onClick={handleSendMessage}
+            disabled={newMessage.trim() === ""}
+            className={`${styles.sendButton} p-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl`}
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
