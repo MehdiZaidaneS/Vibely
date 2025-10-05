@@ -277,6 +277,8 @@
   border-radius: 0 0 24px 24px;
   box-shadow: 0 4px 20px rgba(228, 90, 146, 0.15);
   margin-bottom: 24px;
+  position: relative;
+  z-index: 100;
 }
 
 .header-top {

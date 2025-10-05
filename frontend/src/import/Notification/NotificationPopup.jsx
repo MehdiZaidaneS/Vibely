@@ -33,7 +33,7 @@ function NotificationPopup({ onClose }) {
 
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-[1100]">
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
       </div>

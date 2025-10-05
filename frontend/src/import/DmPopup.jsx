@@ -23,7 +23,7 @@ function DmPopup({ onClose }) {
   }, []);
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50
+    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-[1100]
                     transform transition-all duration-200 ease-out scale-100 opacity-100">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex justify-between items-center">
