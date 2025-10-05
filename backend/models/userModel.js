@@ -16,15 +16,15 @@ const userSchema = new Schema(
       unique: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
-    bio:{
+    bio: {
       type: String,
       required: false
     },
-    status:{
+    status: {
       type: String,
       required: false
     },
-    banner:{
+    banner: {
       type: String,
       required: false
     },
@@ -77,9 +77,9 @@ const userSchema = new Schema(
     ],
     friend_requests: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        sentAt: Date
+      }
     ],
   },
   { timestamps: true }

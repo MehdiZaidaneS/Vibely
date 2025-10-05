@@ -11,14 +11,16 @@ const PeoplePage = () => {
   const [activeTab, setActiveTab] = useState('discovery');
   const [selectedUser, setSelectedUser] = useState(null);
   const [friendsCategory, setFriendsCategory] = useState('all');
-  const [activeUsers, setActiveUsers] = useState([]);
+  
   const [friends, setFriends] = useState([]);
-  const [friendRequests, setFriendRequests] = useState([]);
-  const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+
+const [activeUsers, setActiveUsers] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
 
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
@@ -62,6 +64,7 @@ const PeoplePage = () => {
     fetchUsers();
     fetchRequests();
     fetchFriends();
+
   }, []);
 
   const navigate = useNavigate();
@@ -490,7 +493,7 @@ const acceptRequest = async (requestId) => {
                             </div>
                           )}
                           <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
-                            <span>Sent {request.sentAt ? format(new Date(request.sentAt), "PPP p") : 'Recently'}</span>
+                            <span>Sent {format(new Date(request.sentAt), "PPP p")}</span>
                           </div>
                         </div>
 
