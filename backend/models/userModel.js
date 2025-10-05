@@ -18,23 +18,23 @@ const userSchema = new Schema(
     },
     bio: {
       type: String,
-      required: false
+      required: false,
     },
     status: {
       type: String,
-      required: false
+      required: false,
     },
     banner: {
       type: String,
-      required: false
+      required: false,
     },
     phone: {
       type: String,
       required: true,
     },
-    location:{
+    location: {
       type: String,
-      required: true
+      required: false,
     },
     password: {
       type: String,
@@ -81,9 +81,9 @@ const userSchema = new Schema(
     ],
     friend_requests: [
       {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        sentAt: Date
-      }
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        sentAt: Date,
+      },
     ],
   },
   { timestamps: true }
