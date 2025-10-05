@@ -1,4 +1,4 @@
-// src/pages/ProfilePage.jsx
+// src/pages/ProfilePage.jsx 
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Camera, Edit3, Check, X, MapPin, Calendar, Link2, Users, Activity, Settings, Share2, Globe, Github, Linkedin, Mail
