@@ -172,7 +172,9 @@ ${JSON.stringify(userList, null, 2)}
 - ALWAYS return maximum 5 matches, even if no perfect match.
 - Keep each field concise (1–3 sentences max).
 - ALL the reasons cannot be identical
+- When you speak about users use you to refer to him
 - Return ONLY JSON in this schema:
+- Return in order of higher matched score.
 
 {
   "matches": [

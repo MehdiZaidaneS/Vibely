@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  deleteNotification,
   getMyNotifications,
   //deleteNotification,
 } from "../../api/notificationsApi";

@@ -32,25 +32,28 @@ const PeoplePage = () => {
   };
 
   const fetchSuggestedUsers = async () => {
-    setIsLoadingSuggestions(true);
-    const suggested = await getSuggestedUsers();
-    const suggestedMap = new Map();
-    suggested.forEach(match => {
-      suggestedMap.set(match._id, { matchScore: match.matchScore, reason: match.reason });
-    });
+  setIsLoadingSuggestions(true);
+  const suggested = await getSuggestedUsers();
 
-    const suggestedUserList = activeUsers
-      .filter(user => suggestedMap.has(user._id))
-      .map(user => ({
-        ...user, 
-        matchScore: suggestedMap.get(user._id).matchScore,
-        reason: suggestedMap.get(user._id).reason
-      }));
+  const suggestedMap = new Map();
+  suggested.forEach(match => {
+    suggestedMap.set(match._id, { matchScore: match.matchScore, reason: match.reason });
+  });
 
-    setSuggestedUsers(suggestedUserList);
-    setActiveTab("suggestions");
-    setIsLoadingSuggestions(false);
-  };
+  const suggestedUserList = activeUsers
+    .filter(user => suggestedMap.has(user._id))
+    .map(user => ({
+      ...user, 
+      matchScore: suggestedMap.get(user._id).matchScore,
+      reason: suggestedMap.get(user._id).reason
+    }))
+    .sort((a, b) => b.matchScore - a.matchScore); 
+
+  setSuggestedUsers(suggestedUserList);
+  setActiveTab("suggestions");
+  setIsLoadingSuggestions(false);
+};
+
 
   useEffect(() => {
     const fetchRequests = async () => {

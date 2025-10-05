@@ -24,27 +24,27 @@ export const getMyNotifications = async (setNotifications) => {
 }
 
 
-// export const deleteNotification = async (notificationId) => {
-//   try {
-//     const response = await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
-//       method: "DELETE",
-//     });
+export const deleteNotification = async (notificationId) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+      method: "DELETE",
+    });
 
-//     if (!response.ok) {
-//       throw new Error("Failed to delete notification");
-//     }
+    if (!response.ok) {
+      throw new Error("Failed to delete notification");
+    }
 
-//     // Some APIs return 204 No Content for DELETE
-//     let data = null;
-//     if (response.status !== 204) {
-//       data = await response.json().catch(() => null); // safe parse
-//     }
-//     return data;
+    // Some APIs return 204 No Content for DELETE
+    let data = null;
+    if (response.status !== 204) {
+      data = await response.json().catch(() => null); // safe parse
+    }
+    return data;
 
-//   } catch (err) {
-//     console.error("Error deleting notifications:", err);
-//   }
-// };
+  } catch (err) {
+    console.error("Error deleting notifications:", err);
+  }
+};
 
 // export const createNotification = async (body)=>{
 
