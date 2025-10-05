@@ -219,7 +219,7 @@ function EventPage({ isAuthenticated }) {
                         src="../assets/images/img_notification.svg"
                         alt="Notifications"
                         className="notification-icon cursor-pointer"
-                        onClick={() => setIsNotificationOpen(!isNotificationOpen)} // Toggle popup
+                        onClick={() => {setIsNotificationOpen(!isNotificationOpen); setIsDmOpen(false);}} // Toggle popup
                       />
                       <span className="tooltip">Notifications</span>
                       {isNotificationOpen && <NotificationPopup onClose={() => setIsNotificationOpen(false)} />} {/* Render popup */}
@@ -231,7 +231,7 @@ function EventPage({ isAuthenticated }) {
                         className="dm-icon cursor-pointer"
                         width="18"
                         height="18"
-                        onClick={() => setIsDmOpen(!isDmOpen)} // Toggle popup
+                        onClick={() =>{ setIsDmOpen(!isDmOpen); setIsNotificationOpen(false)}} // Toggle popup
                       />
                       <span className="tooltip">Direct Messages</span>
                       {isDmOpen && <DmPopup onClose={() => setIsDmOpen(false)} />} {/* Render popup */}
