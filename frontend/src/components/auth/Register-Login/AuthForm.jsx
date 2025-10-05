@@ -13,8 +13,12 @@ const AuthForm = ({
   showForm,
   error,
   isLoading,
+  rememberMe,
+  termsAccepted,
   onInputChange,
   onTogglePassword,
+  onRememberMeChange,
+  onTermsChange,
   onSubmit,
   onToggleMode,
 }) => {
@@ -29,15 +33,6 @@ const AuthForm = ({
                                   repeating-linear-gradient(90deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px)`,
           }}
         ></div>
-      </div>
-
-      {/* Language selector */}
-      <div className="absolute top-6 right-6">
-        <select className="text-xs text-gray-500 bg-transparent border-none focus:outline-none cursor-pointer">
-          <option value="en">English</option>
-          <option value="fi">Suomi</option>
-          <option value="sv">Svenska</option>
-        </select>
       </div>
 
       {/* Form container */}
@@ -169,10 +164,12 @@ const AuthForm = ({
                 className={`flex items-center justify-between text-sm ${styles.animateSlideUp}`}
                 style={{ animationDelay: "0.3s" }}
               >
-                <label className="flex items-center">
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 focus:ring-2"
+                    checked={rememberMe}
+                    onChange={onRememberMeChange}
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 focus:ring-2 cursor-pointer"
                   />
                   <span className="ml-2 text-gray-600">Remember me</span>
                 </label>
@@ -188,10 +185,12 @@ const AuthForm = ({
                 className={styles.animateSlideUp}
                 style={{ animationDelay: "0.5s" }}
               >
-                <label className="flex items-start text-sm">
+                <label className="flex items-start text-sm cursor-pointer">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 focus:ring-2 mt-0.5"
+                    checked={termsAccepted}
+                    onChange={onTermsChange}
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 focus:ring-2 mt-0.5 cursor-pointer"
                   />
                   <span className="ml-2 text-gray-600">
                     I agree to the{" "}
@@ -249,14 +248,6 @@ const AuthForm = ({
             className={`mt-6 text-center ${styles.animateFadeIn}`}
             style={{ animationDelay: "0.7s" }}
           >
-            {isLogin && (
-              <div className="mb-4">
-                <button className="text-sm text-gray-600 hover:text-gray-800 transition-all duration-300 hover:scale-105">
-                  Login to a different account
-                </button>
-              </div>
-            )}
-
             <p className="text-sm text-gray-600">
               {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button
