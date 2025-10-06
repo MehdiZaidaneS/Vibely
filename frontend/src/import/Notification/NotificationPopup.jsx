@@ -23,6 +23,10 @@ function NotificationPopup({ onClose }) {
       await acceptFriendResquest(notif.sender);
       //await deleteNotification(notif._id);
       await getMyNotifications(setNotifications);
+      setNotifications(prev =>
+        prev.filter(n => n._id !== notif._id)
+        
+      )
     } catch (error) {
       console.error("Error accepting friend request:", error);
     }
@@ -33,10 +37,27 @@ function NotificationPopup({ onClose }) {
       await declineFriendRequest(notif.sender);
      // await deleteNotification(notif._id);
       await getMyNotifications(setNotifications);
+      setNotifications(prev =>
+        prev.filter(n => n._id !== notif._id)
+        
+      )
     } catch (error) {
       console.error("Error declining friend request:", error);
     }
   };
+
+
+  const handleDelete = async  (notif) =>{
+    try {
+      await deleteNotification(notif._id)
+      setNotifications(prev =>
+        prev.filter(n => n._id !== notif._id)
+        
+      )
+    } catch (error) {
+      console.error("Error delete notificiation")
+    }
+  }
 
   return (
     <div
@@ -78,7 +99,7 @@ function NotificationPopup({ onClose }) {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      deleteNotification(notif._id);
+                      handleDelete(notif);
                     }}
                     className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-md transition"
                   >
