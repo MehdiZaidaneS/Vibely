@@ -7,6 +7,7 @@ import {
   UserPlus,
   Bell,
   X,
+  Menu,
 } from "lucide-react";
 
 const PublicChatHeader = ({
@@ -18,6 +19,7 @@ const PublicChatHeader = ({
   setShowFriendsModal,
   styles,
   isMainSidebarOpen,
+  setIsMainSidebarOpen,
   friendRequestCount = 0,
   setIsFriendRequestsModalOpen,
   isAuthenticated,
@@ -25,8 +27,12 @@ const PublicChatHeader = ({
   const [showGroupInfo, setShowGroupInfo] = useState(false);
 
   const leftOffset = isMainSidebarOpen
-    ? (isSidebarOpen ? "left-[580px]" : "left-[260px]")
-    : (isSidebarOpen ? "left-80" : "left-0");
+    ? isSidebarOpen
+      ? "left-[472px]"
+      : "left-[260px]"
+    : isSidebarOpen
+    ? "left-56"
+    : "left-0";
 
   return (
     <>
@@ -35,6 +41,21 @@ const PublicChatHeader = ({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => {
+                if (isSidebarOpen) {
+                  setIsSidebarOpen(false);
+                } else {
+                  setIsMainSidebarOpen(!isMainSidebarOpen);
+                }
+              }}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 lg:hidden"
+              title={
+                isSidebarOpen ? "Close Chat Sidebar" : "Toggle Main Sidebar"
+              }
+            >
+              <Menu className="w-5 h-5 text-gray-600" />
+            </button>
             {!isSidebarOpen && (
               <button
                 onClick={() => setIsSidebarOpen(true)}
@@ -58,63 +79,71 @@ const PublicChatHeader = ({
                 <h1 className="text-xl font-semibold text-gray-900">
                   {currentGroup?.name || "Chat"}
                 </h1>
-                <p className="text-sm text-gray-500">
-                  {onlineUsers.filter((u) => u.isOnline).length} online
-                </p>
               </div>
             </div>
           </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => navigate && navigate("/")}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
-            title="Main Page"
-          >
-            <Home className="w-5 h-5 text-gray-600" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => navigate && navigate("/")}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
+              title="Main Page"
+            >
+              <Home className="w-5 h-5 text-gray-600" />
+            </button>
 
-          {isAuthenticated && (
-            <>
-              <button
-                onClick={() => navigate && navigate("/private-chat")}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                title="Private Chat"
-              >
-                <MessageCircle className="w-5 h-5 text-gray-600" />
-              </button>
+            {isAuthenticated && (
+              <>
+                <button
+                  onClick={() => navigate && navigate("/private-chat")}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                  title="Private Chat"
+                >
+                  <MessageCircle className="w-5 h-5 text-gray-600" />
+                </button>
 
-              <button
-                onClick={() => setIsFriendRequestsModalOpen && setIsFriendRequestsModalOpen(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 relative"
-                title="Friend Requests"
-              >
-                <Bell className="w-5 h-5 text-gray-600" />
-                {friendRequestCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
-                    {friendRequestCount}
-                  </span>
-                )}
-              </button>
+                <button
+                  onClick={() =>
+                    setIsFriendRequestsModalOpen &&
+                    setIsFriendRequestsModalOpen(true)
+                  }
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 relative"
+                  title="Friend Requests"
+                >
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {friendRequestCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
+                      {friendRequestCount}
+                    </span>
+                  )}
+                </button>
 
-              <button
-                onClick={() => setShowFriendsModal(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                title="Friends & People"
-              >
-                <UserPlus className="w-5 h-5 text-gray-600" />
-              </button>
-            </>
-          )}
+                <button
+                  onClick={() => setShowFriendsModal(true)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                  title="Friends & People"
+                >
+                  <UserPlus className="w-5 h-5 text-gray-600" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Group Info Modal */}
       {showGroupInfo && currentGroup && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowGroupInfo(false)}>
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setShowGroupInfo(false)}
+        >
+          <div
+            className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Group Info</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Group Info
+              </h2>
               <button
                 onClick={() => setShowGroupInfo(false)}
                 className="p-1 hover:bg-gray-100 rounded-lg transition-all"
@@ -140,9 +169,11 @@ const PublicChatHeader = ({
             </div>
 
             <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Description</h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                Description
+              </h4>
               <p className="text-sm text-gray-600">
-                {currentGroup.description || 'No description available'}
+                {currentGroup.description || "No description available"}
               </p>
             </div>
           </div>

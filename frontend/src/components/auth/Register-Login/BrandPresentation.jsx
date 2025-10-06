@@ -7,7 +7,7 @@ const BrandPresentation = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="w-1/2 relative overflow-hidden flex flex-col">
+    <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col">
       {/* Background Image Container */}
       <div className="absolute inset-0 z-0">
         <img

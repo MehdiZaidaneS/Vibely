@@ -23,7 +23,7 @@ const AuthForm = ({
   onToggleMode,
 }) => {
   return (
-    <div className="w-1/2 bg-gradient-to-br from-purple-400 via-white to-indigo-400 flex items-center justify-center p-8 relative overflow-hidden">
+    <div className="w-full lg:w-1/2 bg-gradient-to-br from-purple-400 via-white to-indigo-400 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
       {/* Background grid pattern */}
       <div className="absolute inset-0 overflow-hidden">
         <div
@@ -41,7 +41,7 @@ const AuthForm = ({
           showForm ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
         }`}
       >
-        <div className="bg-gray-50 rounded-2xl shadow-lg p-8 border border-gray-200">
+        <div className="bg-gray-50 rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 border border-gray-200">
           {/* Welcome message */}
           <div className={`text-center mb-6 ${styles.animateFadeIn}`}>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">

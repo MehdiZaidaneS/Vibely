@@ -28,7 +28,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const [searchQuery, setSearchQuery] = useState("");
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [socketConnected, setSocketConnected] = useState(false);
@@ -40,7 +40,8 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] = useState(false);
+  const [isFriendRequestsModalOpen, setIsFriendRequestsModalOpen] =
+    useState(false);
   const [friendRequestCount, setFriendRequestCount] = useState(0);
   const [currentUserData, setCurrentUserData] = useState(null);
 
@@ -59,16 +60,85 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   // Emoji picker data
   const emojiCategories = {
     Smileys: [
-      "😀", "😃", "😄", "😁", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚",
+      "😀",
+      "😃",
+      "😄",
+      "😁",
+      "😅",
+      "😂",
+      "🤣",
+      "😊",
+      "😇",
+      "🙂",
+      "🙃",
+      "😉",
+      "😌",
+      "😍",
+      "🥰",
+      "😘",
+      "😗",
+      "😙",
+      "😚",
     ],
     Gestures: [
-      "👍", "👎", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👋", "🤚",
+      "👍",
+      "👎",
+      "👌",
+      "🤌",
+      "🤏",
+      "✌️",
+      "🤞",
+      "🤟",
+      "🤘",
+      "🤙",
+      "👈",
+      "👉",
+      "👆",
+      "🖕",
+      "👇",
+      "☝️",
+      "👋",
+      "🤚",
     ],
     Objects: [
-      "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝",
+      "❤️",
+      "🧡",
+      "💛",
+      "💚",
+      "💙",
+      "💜",
+      "🖤",
+      "🤍",
+      "🤎",
+      "💔",
+      "❣️",
+      "💕",
+      "💞",
+      "💓",
+      "💗",
+      "💖",
+      "💘",
+      "💝",
     ],
     Activities: [
-      "⚽", "🏀", "🏈", "⚾", "🥎", "🎾", "🏐", "🏉", "🥏", "🎱", "🪀", "🏓", "🏸", "🏒", "🏑", "🥍", "🏏", "🪃",
+      "⚽",
+      "🏀",
+      "🏈",
+      "⚾",
+      "🥎",
+      "🎾",
+      "🏐",
+      "🏉",
+      "🥏",
+      "🎱",
+      "🪀",
+      "🏓",
+      "🏸",
+      "🏒",
+      "🏑",
+      "🥍",
+      "🏏",
+      "🪃",
     ],
   };
 
@@ -109,24 +179,24 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   // Effect 1: Initialize Socket.IO connection
   useEffect(() => {
     socketRef.current = io(API_URL, {
-      transports: ['polling', 'websocket'],
+      transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
-    socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current.id);
+    socketRef.current.on("connect", () => {
+      console.log("Socket connected:", socketRef.current.id);
       setSocketConnected(true);
     });
 
-    socketRef.current.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+    socketRef.current.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
       setSocketConnected(false);
     });
 
-    socketRef.current.on('disconnect', () => {
-      console.log('Socket disconnected');
+    socketRef.current.on("disconnect", () => {
+      console.log("Socket disconnected");
       setSocketConnected(false);
     });
 
@@ -142,7 +212,9 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   useEffect(() => {
     const getChatGroups = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/chatrooms/searchPub/${userId}`);
+        const response = await fetch(
+          `${API_URL}/api/chatrooms/searchPub/${userId}`
+        );
         if (!response.ok) throw new Error("Failed to fetch public groups");
         const groups = await response.json();
         setChatGroups(groups);
@@ -166,7 +238,9 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
         return;
       }
       try {
-        const response = await fetch(`${API_URL}/api/chatrooms/history/${activeGroup}`);
+        const response = await fetch(
+          `${API_URL}/api/chatrooms/history/${activeGroup}`
+        );
         if (!response.ok) throw new Error("Failed to fetch messages");
         const msgs = await response.json();
         setMessages(msgs);
@@ -182,14 +256,14 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   useEffect(() => {
     if (!activeGroup || !socketRef.current || !socketConnected) return;
 
-    console.log('Joining room:', activeGroup);
+    console.log("Joining room:", activeGroup);
     socketRef.current.emit("joinRoom", activeGroup);
 
     const handleNewMessage = (message) => {
-      console.log('Received message:', message);
+      console.log("Received message:", message);
       setMessages((prev) => {
         // Prevent duplicate messages
-        if (prev.some(m => m._id === message._id)) {
+        if (prev.some((m) => m._id === message._id)) {
           return prev;
         }
         return [...prev, message];
@@ -238,7 +312,13 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   // ============================================================================
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() === "" || !activeGroup || !socketRef.current || !socketConnected) return;
+    if (
+      newMessage.trim() === "" ||
+      !activeGroup ||
+      !socketRef.current ||
+      !socketConnected
+    )
+      return;
 
     const message = {
       sender: userId,
@@ -246,16 +326,22 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
     };
 
     try {
-      const response = await fetch(`${API_URL}/api/chatrooms/messages/${activeGroup}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
-      });
+      const response = await fetch(
+        `${API_URL}/api/chatrooms/messages/${activeGroup}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to send message");
 
       const sentMessage = await response.json();
-      socketRef.current.emit("sendMessage", { chatroomId: activeGroup, message: sentMessage });
+      socketRef.current.emit("sendMessage", {
+        chatroomId: activeGroup,
+        message: sentMessage,
+      });
       setNewMessage("");
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -277,7 +363,9 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
       }
 
       // Refresh the groups list
-      const groupsResponse = await fetch(`${API_URL}/api/chatrooms/searchPub/${userId}`);
+      const groupsResponse = await fetch(
+        `${API_URL}/api/chatrooms/searchPub/${userId}`
+      );
       if (groupsResponse.ok) {
         const groups = await groupsResponse.json();
         setChatGroups(groups);
@@ -298,11 +386,14 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/chatrooms/leave/${activeGroup}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/chatrooms/leave/${activeGroup}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -311,13 +402,15 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
       }
 
       // Refresh groups list
-      const groupsResponse = await fetch(`${API_URL}/api/chatrooms/searchPub/${userId}`);
+      const groupsResponse = await fetch(
+        `${API_URL}/api/chatrooms/searchPub/${userId}`
+      );
       if (groupsResponse.ok) {
         const groups = await groupsResponse.json();
         setChatGroups(groups);
 
         // Set first joined group as active, or null
-        const memberGroup = groups.find(g => g.isMember);
+        const memberGroup = groups.find((g) => g.isMember);
         setActiveGroup(memberGroup ? memberGroup.id : null);
       }
 
@@ -386,7 +479,9 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
       const newGroup = await response.json();
 
       // Refresh groups list
-      const groupsResponse = await fetch(`${API_URL}/api/chatrooms/searchPub/${userId}`);
+      const groupsResponse = await fetch(
+        `${API_URL}/api/chatrooms/searchPub/${userId}`
+      );
       if (groupsResponse.ok) {
         const groups = await groupsResponse.json();
         setChatGroups(groups);
@@ -413,15 +508,32 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
 
   return (
     <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
+      {/* Main Vibely Sidebar Overlay for mobile */}
+      {isMainSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-[999] lg:hidden"
+          onClick={() => setIsMainSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Sidebar */}
       <Sidebar
         isOpen={isMainSidebarOpen}
         onToggle={() => setIsMainSidebarOpen(!isMainSidebarOpen)}
       />
 
+      {/* Chat Sidebar Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-[1001] lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Public Chat Sidebar */}
       <PublicChatSidebar
         isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
         chatGroups={chatGroups}
         activeGroup={activeGroup}
         setActiveGroup={setActiveGroup}
@@ -441,9 +553,13 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
       <div
         className={`flex-1 flex flex-col ${
           isMainSidebarOpen
-            ? (isSidebarOpen ? "ml-[580px]" : "ml-[260px]")
-            : (isSidebarOpen ? "ml-80" : "ml-0")
-          } transition-all duration-300`}
+            ? isSidebarOpen
+              ? "ml-[472px]"
+              : "ml-[260px]"
+            : isSidebarOpen
+            ? "ml-56"
+            : "ml-0"
+        } transition-all duration-300`}
       >
         <PublicChatHeader
           currentGroup={currentGroup}
@@ -454,6 +570,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
           setShowFriendsModal={setShowFriendsModal}
           styles={styles}
           isMainSidebarOpen={isMainSidebarOpen}
+          setIsMainSidebarOpen={setIsMainSidebarOpen}
           friendRequestCount={friendRequestCount}
           setIsFriendRequestsModalOpen={setIsFriendRequestsModalOpen}
           isAuthenticated={isAuthenticated}

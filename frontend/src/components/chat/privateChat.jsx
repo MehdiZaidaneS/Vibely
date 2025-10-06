@@ -9,6 +9,9 @@ import {
   Hash,
   UserPlus,
   Bell,
+  X,
+  Smile,
+  Menu,
 } from "lucide-react";
 import io from "socket.io-client";
 import styles from "./privateChat.module.css";
@@ -30,7 +33,7 @@ const PrivateChat = () => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const [currentChatroom, setCurrentChatroom] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -42,9 +45,27 @@ const PrivateChat = () => {
   const [currentUserData, setCurrentUserData] = useState(null);
   const [friendRequestCount, setFriendRequestCount] = useState(0);
   const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const messageInputRef = useRef(null);
   const userId = localStorage.getItem("userId");
+
+  // Emoji picker data
+  const emojiCategories = {
+    Smileys: [
+      "😀", "😃", "😄", "😁", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚",
+    ],
+    Gestures: [
+      "👍", "👎", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👋", "🤚",
+    ],
+    Objects: [
+      "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝",
+    ],
+    Activities: [
+      "⚽", "🏀", "🏈", "⚾", "🥎", "🎾", "🏐", "🏉", "🥏", "🎱", "🪀", "🏓", "🏸", "🏒", "🏑", "🥍", "🏏", "🪃",
+    ],
+  };
 
   // ============================================================================
   // EFFECTS
@@ -108,6 +129,18 @@ const PrivateChat = () => {
         socketRef.current = null;
       }
     };
+  }, []);
+
+  // Effect: Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".dropdown-container")) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Effect 1: Fetch chatrooms and set current chatroom
@@ -311,6 +344,12 @@ const PrivateChat = () => {
     }
   };
 
+  const handleEmojiSelect = (emoji) => {
+    setNewMessage((prev) => prev + emoji);
+    setShowEmojiPicker(false);
+    messageInputRef.current?.focus();
+  };
+
   const handleSelectConversation = async (id) => {
     navigate(`/private-chat/${id}`);
     const conversation = conversations.find((c) => c.id === id);
@@ -393,32 +432,48 @@ const PrivateChat = () => {
 
   return (
     <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
+      {/* Main Vibely Sidebar Overlay for mobile */}
+      {isMainSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-[999] lg:hidden"
+          onClick={() => setIsMainSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Sidebar */}
       <Sidebar
         isOpen={isMainSidebarOpen}
         onToggle={() => setIsMainSidebarOpen(!isMainSidebarOpen)}
       />
 
+      {/* Chat Sidebar Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-[1001] lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* LEFT SIDEBAR */}
       <div
         className={`${
-          isSidebarOpen ? "w-80" : "w-0"
+          isSidebarOpen ? "w-56" : "w-0"
         } transition-all duration-300 bg-white border-r border-gray-200 shadow-lg flex flex-col overflow-hidden fixed ${
           isMainSidebarOpen ? "left-[260px]" : "left-0"
         } top-0 h-full z-[1002]`}
       >
         {/* Sidebar Header */}
         <div
-          className={`p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white ${styles.animateFadeIn}`}
+          className={`p-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white ${styles.animateFadeIn}`}
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <Users className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Private Messages</h2>
-                <p className="text-purple-100 text-sm">
+                <h2 className="text-sm font-semibold">Private Messages</h2>
+                <p className="text-purple-100 text-xs">
                   {conversations.length} conversations
                 </p>
               </div>
@@ -426,33 +481,40 @@ const PrivateChat = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsFriendRequestsModalOpen(true)}
-                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all relative"
+                className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition-all relative"
                 title="Friend Requests"
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-3.5 h-3.5" />
                 {friendRequestCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-semibold">
                     {friendRequestCount}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => setIsPeopleModalOpen(true)}
-                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+                className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
                 title="Find People"
               >
-                <UserPlus className="w-5 h-5" />
+                <UserPlus className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition-all lg:hidden"
+                title="Close Sidebar"
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-200" />
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-purple-200" />
             <input
               type="text"
               placeholder="Search users to chat..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+              className="w-full pl-8 pr-3 py-1.5 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent text-sm"
             />
           </div>
         </div>
@@ -579,10 +641,10 @@ const PrivateChat = () => {
         className={`flex-1 flex flex-col ${
           isMainSidebarOpen
             ? isSidebarOpen
-              ? "ml-[580px]"
+              ? "ml-[472px]"
               : "ml-[260px]"
             : isSidebarOpen
-            ? "ml-80"
+            ? "ml-56"
             : "ml-0"
         } transition-all duration-300`}
       >
@@ -591,15 +653,39 @@ const PrivateChat = () => {
           className={`bg-white border-b border-gray-200 p-4 shadow-sm fixed top-0 right-0 ${
             isMainSidebarOpen
               ? isSidebarOpen
-                ? "left-[580px]"
+                ? "left-[472px]"
                 : "left-[260px]"
               : isSidebarOpen
-              ? "left-80"
+              ? "left-56"
               : "left-0"
           } transition-all duration-300 z-30 ${styles.animateFadeIn}`}
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => {
+                  if (isSidebarOpen) {
+                    setIsSidebarOpen(false);
+                  } else {
+                    setIsMainSidebarOpen(!isMainSidebarOpen);
+                  }
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 lg:hidden"
+                title={
+                  isSidebarOpen ? "Close Chat Sidebar" : "Toggle Main Sidebar"
+                }
+              >
+                <Menu className="w-5 h-5 text-gray-600" />
+              </button>
+              {!isSidebarOpen && (
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 lg:hidden"
+                  title="Open Conversations"
+                >
+                  <Users className="w-5 h-5 text-gray-600" />
+                </button>
+              )}
               {currentChatroom && (
                 <>
                   <div
@@ -783,14 +869,60 @@ const PrivateChat = () => {
           <div className="flex items-end space-x-4">
             <div className="flex-1 relative">
               <textarea
+                ref={messageInputRef}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={`Message ${currentChatroom?.name || ""}...`}
                 rows="1"
-                className={`${styles.messageInput} w-full resize-none border border-gray-300 rounded-lg px-4 py-3 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                className={`${styles.messageInput} w-full resize-none border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                 style={{ minHeight: "48px", maxHeight: "120px" }}
               />
+
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 dropdown-container">
+                <button
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  type="button"
+                >
+                  <Smile className="w-5 h-5" />
+                </button>
+
+                {showEmojiPicker && (
+                  <div
+                    className={`absolute bottom-12 right-0 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 ${styles.animateFadeIn}`}
+                  >
+                      <div className="p-4">
+                        <h3 className="text-sm font-medium text-gray-700 mb-3">
+                          Choose an emoji
+                        </h3>
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                          {Object.entries(emojiCategories).map(
+                            ([category, emojis]) => (
+                              <div key={category}>
+                                <h4 className="text-xs font-medium text-gray-500 mb-2">
+                                  {category}
+                                </h4>
+                                <div className="grid grid-cols-6 sm:grid-cols-8 gap-1">
+                                  {emojis.map((emoji, index) => (
+                                    <button
+                                      key={index}
+                                      onClick={() => handleEmojiSelect(emoji)}
+                                      type="button"
+                                      className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 rounded transition-colors duration-200"
+                                    >
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                )}
+              </div>
             </div>
             <button
               onClick={handleSendMessage}

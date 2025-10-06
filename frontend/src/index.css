@@ -27,6 +27,26 @@ body {
   min-height: 100vh;
 }
 
+/* Welcome page background grid pattern - responsive */
+.bg-grid-pattern {
+  background-image: repeating-linear-gradient(0deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 20px),
+                    repeating-linear-gradient(90deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 20px);
+}
+
+@media (min-width: 640px) {
+  .bg-grid-pattern {
+    background-image: repeating-linear-gradient(0deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 30px),
+                      repeating-linear-gradient(90deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 30px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .bg-grid-pattern {
+    background-image: repeating-linear-gradient(0deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px),
+                      repeating-linear-gradient(90deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px);
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -97,6 +117,21 @@ body {
   display: block;
 }
 
+/* Public Chat Responsive Styles */
+@media (max-width: 1024px) {
+  /* Hide chat sidebar by default on mobile/tablet */
+  .flex-1.flex.flex-col {
+    margin-left: 0 !important;
+  }
+
+  /* Make chat sidebar overlay on mobile instead of pushing content */
+  div[class*="w-80"][class*="bg-white"][class*="border-r"] {
+    position: fixed !important;
+    left: 0 !important;
+    z-index: 1002 !important;
+  }
+}
+
 @media (max-width: 1023px) {
   .sidebar-overlay.active {
     display: block;
@@ -128,8 +163,8 @@ body {
     padding-right: 0.75rem;
   }
 
-  /* Single column grid for user cards */
-  .grid {
+  /* Single column grid for user cards in PeoplePage only */
+  main .grid {
     grid-template-columns: 1fr !important;
   }
 }

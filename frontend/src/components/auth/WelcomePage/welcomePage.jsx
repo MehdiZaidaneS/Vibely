@@ -76,15 +76,11 @@ const WelcomePage = () => {
       <BrandPresentation />
 
       {/* Right side - Welcome Form */}
-      <div className="w-1/2 bg-gradient-to-br from-purple-400 via-white to-indigo-400 flex items-center justify-center p-8 relative overflow-hidden">
+      <div className="w-full lg:w-1/2 bg-gradient-to-br from-purple-400 via-white to-indigo-400 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
         {/* Background grid pattern */}
         <div className="absolute inset-0 overflow-hidden">
           <div
-            className="absolute inset-0 opacity-[0.02]"
-            style={{
-              backgroundImage: `repeating-linear-gradient(0deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px),
-                                    repeating-linear-gradient(90deg, #9333ea 0, #9333ea 1px, transparent 1px, transparent 40px)`,
-            }}
+            className="absolute inset-0 opacity-[0.02] bg-grid-pattern"
           ></div>
         </div>
 
@@ -96,7 +92,7 @@ const WelcomePage = () => {
               : "opacity-0 translate-x-8"
           }`}
         >
-          <div className="bg-gray-50 rounded-2xl shadow-lg p-8 border border-gray-200">
+          <div className="bg-gray-50 rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 border border-gray-200">
             {currentStep === "username" && (
               <UsernameStep
                 username={username}

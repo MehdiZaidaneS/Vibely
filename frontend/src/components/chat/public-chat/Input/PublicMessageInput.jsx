@@ -93,7 +93,7 @@ const PublicMessageInput = ({
                           <h4 className="text-xs font-medium text-gray-500 mb-2">
                             {category}
                           </h4>
-                          <div className="grid grid-cols-8 gap-1">
+                          <div className="grid grid-cols-6 sm:grid-cols-8 gap-1">
                             {emojis.map((emoji, index) => (
                               <button
                                 key={index}
