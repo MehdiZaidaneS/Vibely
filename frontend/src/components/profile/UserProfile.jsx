@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Calendar, Activity, Users, Heart, MessageCircle, UserX } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Activity,
+  Users,
+  Heart,
+  MessageCircle,
+  UserX,
+} from "lucide-react";
 
 const API_URL = "http://localhost:5000";
 
@@ -48,7 +56,9 @@ const UserProfile = () => {
     }
   };
 
-  const isFriend = currentUser?.friends?.some(friendId => friendId === userId);
+  const isFriend = currentUser?.friends?.some(
+    (friendId) => friendId === userId
+  );
 
   const handleSendMessage = async () => {
     try {
@@ -72,7 +82,11 @@ const UserProfile = () => {
   };
 
   const handleRemoveFriend = async () => {
-    if (!window.confirm(`Are you sure you want to remove ${user.name} as a friend? This will also delete your chat history with them.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to remove ${user.name} as a friend? This will also delete your chat history with them.`
+      )
+    ) {
       return;
     }
 
@@ -81,7 +95,7 @@ const UserProfile = () => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -90,7 +104,11 @@ const UserProfile = () => {
 
         // Dispatch event to refresh conversations in sidebar
         if (data.deletedChatRoom) {
-          window.dispatchEvent(new CustomEvent('chatDeleted', { detail: { chatroomId: data.deletedChatRoom } }));
+          window.dispatchEvent(
+            new CustomEvent("chatDeleted", {
+              detail: { chatroomId: data.deletedChatRoom },
+            })
+          );
         }
 
         // Refresh current user data
@@ -120,7 +138,9 @@ const UserProfile = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">User not found</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            User not found
+          </h2>
           <button
             onClick={() => navigate(-1)}
             className="text-purple-600 hover:text-purple-700"
@@ -167,7 +187,9 @@ const UserProfile = () => {
                   />
                 </div>
                 <div className="pb-2">
-                  <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {user.name}
+                  </h1>
                   {user.username && (
                     <p className="text-gray-500">@{user.username}</p>
                   )}
@@ -176,7 +198,7 @@ const UserProfile = () => {
 
               {/* Action Buttons */}
               {!isOwnProfile && isFriend && (
-                <div className="mt-4 md:mt-0 pb-2 flex flex-col space-y-2">
+                <div className="mt-4 md:mt-20 pb-2 flex flex-col space-y-2">
                   <button
                     onClick={handleSendMessage}
                     className="flex items-center justify-center space-x-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -200,7 +222,9 @@ const UserProfile = () => {
               {/* Bio Section */}
               {user.bio && (
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">About</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    About
+                  </h2>
                   <p className="text-gray-700 leading-relaxed">{user.bio}</p>
                 </div>
               )}
@@ -216,7 +240,9 @@ const UserProfile = () => {
                 {user.createdAt && (
                   <div className="flex items-center space-x-3 text-gray-600">
                     <Calendar className="w-5 h-5 text-purple-600" />
-                    <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      Joined {new Date(user.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
               </div>
@@ -260,7 +286,6 @@ const UserProfile = () => {
                 )}
               </div>
             )}
-
           </div>
         </div>
       </div>
