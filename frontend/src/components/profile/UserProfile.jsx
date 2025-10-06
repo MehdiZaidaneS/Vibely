@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Calendar, Users, Heart, MessageCircle, UserX } from "lucide-react";
+import { ArrowLeft, Calendar, Activity, Users, Heart, MessageCircle, UserX } from "lucide-react";
 
 const API_URL = "http://localhost:5000";
 
@@ -195,51 +195,72 @@ const UserProfile = () => {
               )}
             </div>
 
-            {/* Contact Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {user.friends && (
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Users className="w-5 h-5 text-purple-600" />
-                  <span>{user.friends.length} Friends</span>
+            {/* Bio + Friends/Joined Side by Side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              {/* Bio Section */}
+              {user.bio && (
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">About</h2>
+                  <p className="text-gray-700 leading-relaxed">{user.bio}</p>
                 </div>
               )}
-              {user.createdAt && (
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Calendar className="w-5 h-5 text-purple-600" />
-                  <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
-                </div>
-              )}
+
+              {/* Friends + Joined stacked vertically */}
+              <div className="flex flex-col space-y-4">
+                {/* {user.friends && (
+                  <div className="flex items-center space-x-3 text-gray-600">
+                    <Users className="w-5 h-5 text-purple-600" />
+                    <span>{user.friends.length} Friends</span>
+                  </div>
+                )} */}
+                {user.createdAt && (
+                  <div className="flex items-center space-x-3 text-gray-600">
+                    <Calendar className="w-5 h-5 text-purple-600" />
+                    <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Interests */}
-            {user.interests && user.interests.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-3 flex items-center">
-                  <Heart className="w-5 h-5 mr-2 text-purple-600" />
-                  Interests
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {user.interests.map((interest, idx) => (
-                    <span
-                      key={idx}
-                      className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium"
-                    >
-                      {interest}
-                    </span>
-                  ))}
-                </div>
+            {/* Interests + Events Side by Side */}
+            {(user.interests?.length > 0 || user.joinedEvents?.length > 0) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                {/* Interests Section */}
+                {user.interests?.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-3 flex items-center">
+                      <Heart className="w-5 h-5 mr-2 text-purple-600" />
+                      Interests
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {user.interests.map((interest, idx) => (
+                        <span
+                          key={idx}
+                          className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium"
+                        >
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Joined Events Section */}
+                {user.joinedEvents?.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-3 flex items-center">
+                      <Activity className="w-5 h-5 mr-2 text-purple-600" />
+                      Events ({user.joinedEvents.length})
+                    </h2>
+                    <p className="text-gray-500">
+                      Participant of {user.joinedEvents.length} event
+                      {user.joinedEvents.length > 1 ? "s" : ""}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Joined Events */}
-            {user.joinedEvents && user.joinedEvents.length > 0 && (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  Events ({user.joinedEvents.length})
-                </h2>
-                <p className="text-gray-500">Member of {user.joinedEvents.length} events</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
