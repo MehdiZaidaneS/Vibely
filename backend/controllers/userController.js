@@ -59,6 +59,8 @@ const getAllUsers = async (req, res) => {
                 name: user.name,
                 username: user.username,
                 profile_pic: user.profile_pic,
+                location: user.location,
+                bio: user.bio,
                 interests: user.interests,
                 createdAt: user.createdAt,
                 friendRequestPending: hasSentRequest ? "Pending" : "Add Friend",
