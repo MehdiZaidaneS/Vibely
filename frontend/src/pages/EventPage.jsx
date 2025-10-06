@@ -207,14 +207,17 @@ function EventPage({ isAuthenticated }) {
       {/* Sidebar component */}
       <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} onToggle={toggleSidebar} />
 
+      {/* Hamburger button - outside content-wrapper for fixed positioning */}
+      {!isSidebarOpen && (
+        <button className="hamburger" id="hamburger" onClick={openSidebar}>
+          ☰
+        </button>
+      )}
+
       <div className="content-wrapper">
         {/* Header */}
         <header className="header">
           <div className="header-top">
-            <button className="hamburger" id="hamburger" onClick={openSidebar}>
-              ☰
-            </button>
-
             <div className="search-filter-wrapper">
               {/* Search Bar */}
               <div className="search-container">

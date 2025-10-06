@@ -478,9 +478,53 @@
   .contentWrapper {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
     position: static;
+  }
+
+  .pageContainer {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 0.75rem;
+  }
+
+  .discoveryCard {
+    padding: 1rem;
+  }
+
+  .searchContainer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .userGrid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageContainer {
+    padding: 0.5rem;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
   }
 }

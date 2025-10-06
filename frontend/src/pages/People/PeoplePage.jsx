@@ -75,6 +75,22 @@ const PeoplePage = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const openSidebar = () => {
+    setIsSidebarOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+    document.body.style.overflow = "auto";
+  };
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => {
+      const next = !prev;
+      document.body.style.overflow = next ? "hidden" : "auto";
+      return next;
+    });
+  };
+
   const addFriend = async (userId, setState) => {
     try {
       await sendFriendRequest(userId);
@@ -168,10 +184,24 @@ const PeoplePage = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-purple-950 via-indigo-950 to-violet-950' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-indigo-100'}`}>
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+      {/* Sidebar overlay - same as EventPage */}
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? "active" : ""}`}
+        onClick={closeSidebar}
+      />
+
+      {/* Sidebar component */}
+      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} onToggle={toggleSidebar} />
 
       {/* Spacer div that takes up sidebar width when open */}
       <div className={`transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
+        {/* Hamburger button - hide when sidebar is open */}
+        {!isSidebarOpen && (
+          <button className="hamburger" id="hamburger" onClick={openSidebar}>
+            ☰
+          </button>
+        )}
+
         {/* Dark Mode Toggle - Floating */}
         <button
           onClick={() => setDarkMode(!darkMode)}
