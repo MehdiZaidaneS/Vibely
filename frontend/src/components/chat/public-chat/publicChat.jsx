@@ -347,18 +347,15 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         const imageMessage = {
-          id: messages.length + 1,
-          user: currentUser.name,
-          avatar: currentUser.avatar,
-          message: "",
+          _id: Date.now().toString(),
+          sender: {
+            _id: userId,
+            name: currentUserData?.name || currentUser.name,
+            profile_pic: currentUserData?.profile_pic || currentUser.avatar,
+          },
+          content: "",
           image: event.target.result,
-          timestamp: new Date().toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          isOnline: true,
-          isCurrentUser: true,
+          createdAt: new Date().toISOString(),
         };
         setMessages([...messages, imageMessage]);
       };
