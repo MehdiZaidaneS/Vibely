@@ -56,11 +56,23 @@ const WelcomePage = () => {
     }, 2000);
   };
 
-  const handleSkip = () => {
-    console.log("User skipped interest selection");
-    alert(
-      `Welcome to Vibely, ${username}! You can set your interests later in settings.`
-    );
+  const handleSkip = async () => {
+    setIsLoading(true);
+    const body = { username, interests: [] };
+
+    try {
+      await addInfo(body);
+    } catch (error) {
+      console.log(error.message);
+    }
+
+    setTimeout(() => {
+      setIsLoading(false);
+      navigate("/");
+      alert(
+        `Welcome to Vibely, ${username}! You can set your interests later in settings.`
+      );
+    }, 1000);
   };
 
   const handleBackToUsername = () => {
