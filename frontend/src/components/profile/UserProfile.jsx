@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Calendar, Users, Heart, MessageCircle, UserX } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Users,
+  Heart,
+  MessageCircle,
+  UserX,
+} from "lucide-react";
 
 const API_URL = "http://localhost:5000";
 
@@ -48,7 +55,9 @@ const UserProfile = () => {
     }
   };
 
-  const isFriend = currentUser?.friends?.some(friendId => friendId === userId);
+  const isFriend = currentUser?.friends?.some(
+    (friendId) => friendId === userId
+  );
 
   const handleSendMessage = async () => {
     try {
@@ -72,7 +81,11 @@ const UserProfile = () => {
   };
 
   const handleRemoveFriend = async () => {
-    if (!window.confirm(`Are you sure you want to remove ${user.name} as a friend? This will also delete your chat history with them.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to remove ${user.name} as a friend? This will also delete your chat history with them.`
+      )
+    ) {
       return;
     }
 
@@ -81,7 +94,7 @@ const UserProfile = () => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -90,7 +103,11 @@ const UserProfile = () => {
 
         // Dispatch event to refresh conversations in sidebar
         if (data.deletedChatRoom) {
-          window.dispatchEvent(new CustomEvent('chatDeleted', { detail: { chatroomId: data.deletedChatRoom } }));
+          window.dispatchEvent(
+            new CustomEvent("chatDeleted", {
+              detail: { chatroomId: data.deletedChatRoom },
+            })
+          );
         }
 
         // Refresh current user data
@@ -120,7 +137,9 @@ const UserProfile = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">User not found</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            User not found
+          </h2>
           <button
             onClick={() => navigate(-1)}
             className="text-purple-600 hover:text-purple-700"
@@ -155,7 +174,7 @@ const UserProfile = () => {
           <div className="h-32 bg-gradient-to-r from-purple-600 to-indigo-600"></div>
 
           {/* Profile Info */}
-          <div className="px-8 pb-8">
+          <div className="px-8 pb-8 relative">
             {/* Avatar */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between -mt-16 mb-6">
               <div className="flex items-end space-x-4">
@@ -167,7 +186,9 @@ const UserProfile = () => {
                   />
                 </div>
                 <div className="pb-2">
-                  <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {user.name}
+                  </h1>
                   {user.username && (
                     <p className="text-gray-500">@{user.username}</p>
                   )}
@@ -176,7 +197,7 @@ const UserProfile = () => {
 
               {/* Action Buttons */}
               {!isOwnProfile && isFriend && (
-                <div className="mt-4 md:mt-0 pb-2 flex flex-col space-y-2">
+                <div className="mt-4 md:mt-20 flex flex-col space-y-2">
                   <button
                     onClick={handleSendMessage}
                     className="flex items-center justify-center space-x-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -203,13 +224,17 @@ const UserProfile = () => {
                   <span>{user.friends.length} Friends</span>
                 </div>
               )}
-              {user.createdAt && (
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Calendar className="w-5 h-5 text-purple-600" />
-                  <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
-                </div>
-              )}
             </div>
+
+            {/* Joined Date - Bottom Right */}
+            {user.createdAt && (
+              <div className="absolute bottom-8 right-8 flex items-center space-x-3 text-gray-600">
+                <Calendar className="w-5 h-5 text-purple-600" />
+                <span>
+                  Joined {new Date(user.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            )}
 
             {/* Interests */}
             {user.interests && user.interests.length > 0 && (
@@ -237,7 +262,9 @@ const UserProfile = () => {
                 <h2 className="text-xl font-semibold text-gray-900 mb-3">
                   Events ({user.joinedEvents.length})
                 </h2>
-                <p className="text-gray-500">Member of {user.joinedEvents.length} events</p>
+                <p className="text-gray-500">
+                  Member of {user.joinedEvents.length} events
+                </p>
               </div>
             )}
           </div>
