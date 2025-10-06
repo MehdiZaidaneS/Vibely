@@ -11,12 +11,8 @@ import {
 import { Check, X, Trash2 } from "lucide-react"; // if using lucide-react icons
 
 
-function NotificationPopup({ onClose }) {
-  const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    getMyNotifications(setNotifications);
-  }, []);
+function NotificationPopup({ onClose, notifications, setNotifications}) {
+  
 
   const handleAccept = async (notif) => {
     try {

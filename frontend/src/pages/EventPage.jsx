@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Sidebar from "../import/Sidebar";
 import Modal from "../import/Events/JoinEvent";
-import { getUserbyId } from "../api/userApi";
+import { getUnreadPrivateChats, getUserbyId } from "../api/userApi";
 import { joinEvent, getAllEvents, getJoinedEvents, leaveEvent, recommendEvents } from "../api/eventsApi";
 import Toast from "../import/Notification/NotificationJoin";
 import CreateEventModal from "../import/Events/CreateEvents/createEventPopup";
@@ -14,6 +14,7 @@ import EventDetailsModal from "../import/Events/EventDetails/EventDetailsModal";
 // import ProfileMiniPage from "../import/ProfileModal";
 import { Plus } from 'lucide-react';
 import "./EventPage.css";
+import { getMyNotifications } from "../api/notificationsApi";
 
 // Helper function to generate category-based gradient backgrounds or use image
 const getEventBackground = (event) => {
@@ -94,7 +95,24 @@ function EventPage({ isAuthenticated }) {
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [conversations, setConversations] = useState([]);
 
+  useEffect(() => {
+    const fetchUnreadChats = async () => {
+      try {
+        const messages = await getUnreadPrivateChats();
+        setConversations(messages || []);
+      } catch (error) {
+        console.error("Failed to load unread private chats:", error);
+      }
+    };
+    fetchUnreadChats();
+  }, []);
+
+  useEffect(() => {
+    getMyNotifications(setNotifications);
+  }, []);
   useEffect(() => {
     getAllEvents(setEvents, setActiveMenu)
 
@@ -248,28 +266,42 @@ function EventPage({ isAuthenticated }) {
                     <span className="tooltip">Create Event</span>
                   </span>
                   <div className="icon-container">
-                    <span className="tooltip-wrapper relative"> {/* Added relative for popup positioning */}
+                    <span className="tooltip-wrapper relative">
                       <img
                         src="../assets/images/img_notification.svg"
                         alt="Notifications"
                         className="notification-icon cursor-pointer"
-                        onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsDmOpen(false); }} // Toggle popup
+                        onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsDmOpen(false); }}
                       />
                       <span className="tooltip">Notifications</span>
-                      {isNotificationOpen && <NotificationPopup onClose={() => setIsNotificationOpen(false)} />} {/* Render popup */}
+
+                      {/* Red dot for unread notifications */}
+                      {notifications.length > 0 && (
+                        <span className="notification-dot"></span>
+                      )}
+
+                      {isNotificationOpen && <NotificationPopup notifications={notifications} setNotifications={setNotifications} onClose={() => setIsNotificationOpen(false)} />}
                     </span>
-                    <span className="tooltip-wrapper relative"> {/* Added relative for popup positioning */}
+
+                    <span className="tooltip-wrapper relative">
                       <img
                         src="../assets/images/img_DM_icon.svg"
                         alt="Direct Messages"
                         className="dm-icon cursor-pointer"
                         width="18"
                         height="18"
-                        onClick={() => { setIsDmOpen(!isDmOpen); setIsNotificationOpen(false) }} // Toggle popup
+                        onClick={() => { setIsDmOpen(!isDmOpen); setIsNotificationOpen(false) }}
                       />
                       <span className="tooltip">Direct Messages</span>
-                      {isDmOpen && <DmPopup onClose={() => setIsDmOpen(false)} />} {/* Render popup */}
+
+                      {/* Red dot for unread DMs */}
+                      {conversations.length > 0 && (
+                        <span className="dm-notification-dot"></span>
+                      )}
+
+                      {isDmOpen && <DmPopup conversations={conversations} setConversations={setConversations} onClose={() => setIsDmOpen(false)} />}
                     </span>
+
                   </div>
                   <UserDropdown user={user} setUser={setUser} setToast={setToast} />
                 </>

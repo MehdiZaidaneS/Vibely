@@ -5,22 +5,10 @@ import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom"
 import { AiOutlineMessage } from "react-icons/ai";
 
-function DmPopup({ onClose }) {
+function DmPopup({ onClose, conversations, setConversations }) {
 
   const navigate = useNavigate()
-  const [conversations, setConversations] = useState([]);
 
-  useEffect(() => {
-    const fetchUnreadChats = async () => {
-      try {
-        const messages = await getUnreadPrivateChats();
-        setConversations(messages || []);
-      } catch (error) {
-        console.error("Failed to load unread private chats:", error);
-      }
-    };
-    fetchUnreadChats();
-  }, []);
 
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-[1100]
@@ -45,25 +33,20 @@ function DmPopup({ onClose }) {
               className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors"
               onClick={async () => {
                 navigate(`/private-chat/${conv.id}`);
-                markAsRead(conv.id)
+                markAsRead(conv.id);
               }}
-
             >
               <div className="min-w-0">
                 {/* Name */}
                 <p
-                  className={`text-sm truncate ${conv.unreadCount > 0
-                      ? "font-semibold text-gray-900"
-                      : "text-gray-800"
+                  className={`text-sm truncate ${conv.unreadCount > 0 ? "font-semibold text-gray-900" : "text-gray-800"
                     }`}
                 >
                   {conv.name}
                 </p>
                 {/* Last Message */}
                 <p
-                  className={`text-sm truncate ${conv.unreadCount > 0
-                      ? "font-medium text-gray-700"
-                      : "text-gray-600"
+                  className={`text-sm truncate ${conv.unreadCount > 0 ? "font-medium text-gray-700" : "text-gray-600"
                     }`}
                 >
                   {conv.lastMessage}
@@ -86,9 +69,15 @@ function DmPopup({ onClose }) {
             </li>
           ))
         ) : (
-          <li className="p-6 text-center text-gray-400 flex flex-col items-center">
-            <AiOutlineMessage className="w-12 h-12 mb-2" />
-            No messages yet
+          <li className="p-6 text-center text-gray-400 flex flex-col items-center space-y-2">
+            <AiOutlineMessage className="w-12 h-12" />
+            <p>No messages yet.</p>
+            <p
+              className="mt-2 text-blue-500 hover:underline"
+              onClick={() => navigate("/private-chat")}
+            >
+              Send a message
+            </p>
           </li>
         )}
       </ul>

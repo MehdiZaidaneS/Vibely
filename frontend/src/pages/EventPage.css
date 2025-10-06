@@ -1231,6 +1231,33 @@ button:focus, a:focus, input:focus {
   border-color: #7c3aed;
 }
 
+.notification-dot {
+  position: absolute;
+  top: -2px;       /* Moves the dot higher above the icon */
+  right: 3px;     /* Moves the dot a bit to the right edge */
+  width: 10px;     /* Bigger size */
+  height: 10px;    /* Bigger size */
+  background-color: red;
+  border-radius: 50%;
+  border: 2px solid white; /* optional, adds a nice border */
+  z-index: 10;
+}
+
+.dm-notification-dot {
+  position: absolute;
+  top: -4px;       /* Moves the dot higher */
+  right: -4px;     /* Moves the dot to the right edge */
+  width: 10px;     /* Bigger size */
+  height: 10px;    /* Bigger size */
+  background-color: red;
+  border-radius: 50%;
+  border: 2px solid white; /* Optional: makes it pop */
+  z-index: 10;
+}
+
+
+
+
 /* Responsive tweaks */
 @media (max-width: 600px) {
   .filters-below {

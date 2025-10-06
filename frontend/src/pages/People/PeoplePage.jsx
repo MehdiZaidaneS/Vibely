@@ -23,7 +23,7 @@ const PeoplePage = () => {
   const [activeUsers, setActiveUsers] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
-
+  
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
     const users = await getAllUsers();
@@ -420,10 +420,7 @@ const PeoplePage = () => {
                                 </div>
                               </div>
 
-                              {user.bio && (
-                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-slate-600'} mb-4 line-clamp-2`}>{user.bio}</p>
-                              )}
-
+                              
                               {user.tags && user.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-4">
                                   {user.tags.slice(0, 3).map(tag => (
@@ -435,10 +432,6 @@ const PeoplePage = () => {
                               )}
 
                               <div className="space-y-2 mb-4">
-                                <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
-                                  <Calendar className="w-4 h-4" />
-                                  <span>Joined {user.createdAt ? format(new Date(user.createdAt), "PPP") : 'Recently'}</span>
-                                </div>
                                 {
                                    user.location &&
                                   <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
@@ -452,6 +445,12 @@ const PeoplePage = () => {
                                     <span className="truncate">{user.interests.join(', ')}</span>
                                   </div>
                                 )}
+                                <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
+                                  <Calendar className="w-4 h-4" />
+                                  <span>Joined {user.createdAt ? format(new Date(user.createdAt), "PPP") : 'Recently'}</span>
+                                </div>
+                                
+                                
                                 {user.mutualFriends !== 0 && (
                                   <div className="flex items-center gap-2 text-sm text-purple-600 font-medium">
                                     <Users className="w-4 h-4" />
