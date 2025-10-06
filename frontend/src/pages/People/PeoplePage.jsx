@@ -143,7 +143,7 @@ const acceptRequest = async (requestId) => {
   };
 
   const filteredActiveUsers = activeUsers.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (filter === 'all' ||
       (filter === 'online' && user.isOnline) ||
       (filter === 'recommended' && user.mutualFriends > 2) ||
