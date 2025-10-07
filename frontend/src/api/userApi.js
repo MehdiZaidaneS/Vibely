@@ -355,7 +355,7 @@ export const getActivities = async () => {
   }
 };
 
-export const recommendusers = async (setActiveMenu, setEvents) => {
+export const recommendusers = async (setActiveMenu, setUsers) => {
   const token = localStorage.getItem("user");
   const userId = localStorage.getItem("userId");
 
@@ -372,11 +372,10 @@ export const recommendusers = async (setActiveMenu, setEvents) => {
 
     const response = await fetch("/api/users/matched-users", {
       method: "POST",
-      body: JSON.stringify({}),
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
+        "Authorization": `Bearer ${token}`,
+      },
     });
 
     if (!response.ok) {
@@ -385,34 +384,24 @@ export const recommendusers = async (setActiveMenu, setEvents) => {
       throw new Error("Failed to get recommended users");
     }
 
-    const recommendedUsersResponse = await response.json();
-    console.log("Recommendation response:", recommendedUsersResponse);
+    const data = await response.json();
+    console.log("Recommendation response:", data);
 
-    const recommendedArray = Array.isArray(recommendedUsersResponse.matches)
-      ? recommendedUsersResponse.matches
-      : [];
+    const matches = Array.isArray(data.matches) ? data.matches : [];
 
-    console.log("Matches found:", recommendedArray.length);
-
-    if (recommendedArray.length === 0) {
+    if (matches.length === 0) {
       console.log("No recommendations found");
       setUsers([]);
       return;
     }
 
-    const recommended = await Promise.all(
-      recommendedArray.map(async (match) => {
-        const user = await getUserbyId(match._id);
-        if (!user) return null;
-        return { matchScore: match.matchScore, ...user };
-      })
-    );
+    // Sort by match score descending
+    const sortedMatches = matches.sort((a, b) => b.matchScore - a.matchScore);
 
-    const validRecommended = recommended.filter(e => e !== null);
-    console.log("Valid recommended users:", validRecommended);
-    setUsers(validRecommended);
+    console.log("Valid recommended users:", sortedMatches);
+    setUsers(sortedMatches);
   } catch (error) {
-    console.error("Error fetching recommended events:", error);
+    console.error("Error fetching recommended users:", error);
     setUsers([]);
   }
 };

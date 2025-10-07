@@ -104,7 +104,7 @@ const matchEvents = async (userId, preferences = {}) => {
 }
 
 
-const matchUsers = async (userId) => {
+const matchUsers = async (userId, selectedInterests = []) => {
   try {
 
     const currentUser = await User.findById(userId)
@@ -157,6 +157,9 @@ const userList = usersWithStatus.map(u => ({
   })) || [],
 }));
 
+const effectiveInterests = [...(currentUser.interests || []), ...(selectedInterests || [])];
+const uniqueEffectiveInterests = [...new Set(effectiveInterests)];
+
 const prompt = `
 You are an intelligent users matcher.
 Based on the user's profile interests and events joined, return a ranked list of suitable users in JSON format.
@@ -164,7 +167,7 @@ Based on the user's profile interests and events joined, return a ranked list of
 ### User Profile:
 {
   "name": "${currentUser.name}",
-  "interests": ${JSON.stringify(currentUser.interests || [])},
+  "interests": ${JSON.stringify(uniqueEffectiveInterests)},
   "joinedEvents": ${JSON.stringify(currentUser.joinedEvents || [])}
 }
 

@@ -34,6 +34,7 @@ const EventMatches = async (req, res) => {
 
 const UserMatches = async (req, res) => {
   const userId = req.user._id;
+  const { interests } = req.body;
   try {
 
     if (!userId) {
@@ -41,7 +42,7 @@ const UserMatches = async (req, res) => {
     }
 
     // Call event matcher service
-    const rawResponse = await matchUsers(userId);
+    const rawResponse = await matchUsers(userId, interests);
 
     // Log response
     if (process.env.DEBUG_GEMINI === "true") {
@@ -61,7 +62,6 @@ const UserMatches = async (req, res) => {
         coverImage: user.coverImage || "/default-cover.jpg",
         bio: user.bio || "",
         location: user.location || "Unknown",
-        badges: user.badges || [],
         mutualFriends: match.mutualFriends || 0,
         commonEvents: match.commonEvents || 0,
         interests: user.interests || [],
