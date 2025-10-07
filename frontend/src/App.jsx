@@ -11,6 +11,7 @@ import UserProfile from "./components/profile/UserProfile";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import "./App.css";
 import React, { useState } from "react";
+import DuoFinderAdvanced  from "./pages/DuoFinder/DuoFinderPage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -33,7 +34,7 @@ function App() {
           element={isAuthenticated ? <Navigate to="/" /> : <Auth setIsAuthenticated={setIsAuthenticated} />} 
         />
         <Route path="/welcome" element={<WelcomePage />} />
-        
+<Route path="/duo-finder" element={isAuthenticated ? <DuoFinderAdvanced /> : <Navigate to="/register" />} />
 
         {/* <Route path="create-event" element={<CreateEvent />} /> */}
         <Route path="/public-chat" element={<PublicChat isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />} />
