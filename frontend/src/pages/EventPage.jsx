@@ -99,6 +99,7 @@ function EventPage({ isAuthenticated }) {
   const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
+    if(!isAuthenticated) return
     const fetchUnreadChats = async () => {
       try {
         const messages = await getUnreadPrivateChats();
@@ -111,6 +112,7 @@ function EventPage({ isAuthenticated }) {
   }, []);
 
   useEffect(() => {
+    if(!isAuthenticated) return
     getMyNotifications(setNotifications);
   }, []);
   useEffect(() => {
