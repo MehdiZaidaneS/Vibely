@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, X, User, MessageCircle, Sparkles, Users, MapPin, Calendar, TrendingUp, Zap, Target, Award, Star, Filter, RefreshCw } from 'lucide-react';
 import Sidebar from '../../import/Sidebar';
-import { recommendusers } from '../../api/userApi'
+import { sendFriendRequest, getPrivateChatRoom } from '../../api/userApi';
 import { useNavigate } from 'react-router-dom';
+
 
 const interests = [
   { name: "Football", icon: "⚽", color: "from-green-400 to-green-600" },
@@ -27,9 +28,18 @@ export default function DuoFinderAdvanced() {
   const [isDragging, setIsDragging] = useState(false);
   const [showReason, setShowReason] = useState(false);
   const [likedMatches, setLikedMatches] = useState([]);
-  const [showCompatibility, setShowCompatibility] = useState(false);
+
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    sessionStorage.setItem('currentMatchIndex', currentMatchIndex.toString());
+  }, [currentMatchIndex]);
+  useEffect(() => {
+    sessionStorage.setItem('matches', JSON.stringify(matches));
+    sessionStorage.setItem('likedMatches', JSON.stringify(likedMatches));
+  }, [matches, likedMatches]);
+
   const openSidebar = () => {
     setIsSidebarOpen(true);
     document.body.style.overflow = 'hidden';
@@ -90,7 +100,7 @@ export default function DuoFinderAdvanced() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ interests: selectedInterests }) // Added this line
+        body: JSON.stringify({ interests: selectedInterests })
       });
 
       if (!response.ok) {
@@ -108,8 +118,18 @@ export default function DuoFinderAdvanced() {
       setStep('complete');
     }
   };
+  
+  const handleLike = async () => {
+    try {
+        await sendFriendRequest(currentMatch._id);
+        console.log(`Sent friend request to ${currentMatch.name}`);
+    } catch (error) {
+        console.error("Failed to send friend request", error);
+    }
+    handleSwipe('right');
+};
 
-  const handleSwipe = (direction) => {
+  const handleSwipe = async (direction) => {
     const swipeDistance = direction === 'right' ? 1000 : -1000;
     setCardPosition({ x: swipeDistance, y: -100 });
 
@@ -121,8 +141,6 @@ export default function DuoFinderAdvanced() {
       if (currentMatchIndex < matches.length - 1) {
         setCurrentMatchIndex(prev => prev + 1);
         setCardPosition({ x: 0, y: 0 });
-        setShowReason(false);
-        setShowCompatibility(false);
       } else {
         setStep('complete');
       }
@@ -153,13 +171,14 @@ export default function DuoFinderAdvanced() {
 
   const resetSearch = () => {
     setStep('welcome');
+    sessionStorage.clear();
     setSelectedInterests([]);
     setMatches([]);
     setCurrentMatchIndex(0);
     setLikedMatches([]);
     setCardPosition({ x: 0, y: 0 });
   };
-
+  
   const currentMatch = matches[currentMatchIndex];
   const rotation = cardPosition.x / 20;
 
@@ -187,7 +206,6 @@ export default function DuoFinderAdvanced() {
             >
               Back
             </button>
-
           </div>
         </header>
 
@@ -410,37 +428,6 @@ export default function DuoFinderAdvanced() {
 
                             <div className="p-6">
                               <p className="text-gray-300 text-lg mb-6">{match.bio}</p>
-                              <button
-                                onClick={() => setShowCompatibility(!showCompatibility)}
-                                className="w-full mb-4 py-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-white font-medium transition-all flex items-center justify-between px-4"
-                              >
-                                <span className="flex items-center gap-2">
-                                  <Target className="w-5 h-5 text-purple-400" />
-                                  Compatibility Score
-                                </span>
-                                <span className="text-2xl">{showCompatibility ? '−' : '+'}</span>
-                              </button>
-
-                              {showCompatibility && (
-                                <div className="grid grid-cols-3 gap-3 mb-6 animate-fadeIn">
-                                  <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl p-4 border border-purple-400/30">
-                                    <div className="text-2xl font-bold text-purple-300 mb-1">{match.compatibility.interests}%</div>
-                                    <div className="text-xs text-gray-400">Interests</div>
-                                  </div>
-                                  <div className="bg-gradient-to-br from-pink-500/20 to-pink-600/20 rounded-xl p-4 border border-pink-400/30">
-                                    <div className="text-2xl font-bold text-pink-300 mb-1">{match.compatibility.events}%</div>
-                                    <div className="text-xs text-gray-400">Events</div>
-                                  </div>
-                                  <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl p-4 border border-blue-400/30">
-                                    <div className="text-2xl font-bold text-blue-300 mb-1">{match.compatibility.social}%</div>
-                                    <div className="text-xs text-gray-400">Social</div>
-                                  </div>
-                                  <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-xl p-4 border border-yellow-400/30 col-span-2">
-                                    <div className="text-2xl font-bold text-yellow-300 mb-1">{(match.matchScore || 0)}%</div>
-                                    <div className="text-xs text-gray-400">Total Score</div>
-                                  </div>
-                                </div>
-                              )}
 
                               <div className="grid grid-cols-3 gap-3 mb-6">
                                 <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-center">
@@ -455,9 +442,18 @@ export default function DuoFinderAdvanced() {
                                 </div>
                                 <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-center">
                                   <Sparkles className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-                                  <div className="text-2xl font-bold text-white">{match.interests.length}</div>
+                                  <div className="text-2xl font-bold text-white">{(typeof match.interests === 'string' ? match.interests.split(',').map(s => s.trim()) : match.interests || []).length}</div>
                                   <div className="text-xs text-gray-400">Shared Interests</div>
                                 </div>
+                              </div>
+                              
+                              {/* New AI score and reason block */}
+                              <div className="bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 rounded-2xl p-5 mb-6 border border-purple-400/30 animate-fadeIn">
+                                <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+                                  <Sparkles className="w-5 h-5 text-purple-400" />
+                                  AI Match Reason
+                                </h3>
+                                <p className="text-gray-300 leading-relaxed">{match.reason}</p>
                               </div>
 
                               <div className="mb-6">
@@ -476,33 +472,6 @@ export default function DuoFinderAdvanced() {
                                   })}
                                 </div>
                               </div>
-
-                              {showReason && (
-                                <div className="bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 rounded-2xl p-5 mb-6 border border-purple-400/30 animate-fadeIn">
-                                  <h3 className="text-white font-bold mb-3 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-purple-400" />
-                                    Why {match.name}?
-                                  </h3>
-                                  <p className="text-gray-300 leading-relaxed">{match.reason}</p>
-                                </div>
-                              )}
-
-                              <div className="grid grid-cols-2 gap-3">
-                                <button
-                                  onClick={() => setShowReason(!showReason)}
-                                  className="py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-semibold transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                  <Zap className="w-5 h-5 text-yellow-400" />
-                                  {showReason ? 'Hide' : 'Why Match?'}
-                                </button>
-                                <button
-                                  onClick={() => navigate(`/profile/${currentMatch._id}`)}
-                                  className="py-3 px-4 bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 border border-blue-400/30 text-white rounded-xl font-semibold transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                  <User className="w-5 h-5" />
-                                  View Profile
-                                </button>
-                              </div>
                             </div>
                           </div>
                         )}
@@ -520,16 +489,7 @@ export default function DuoFinderAdvanced() {
                     </button>
 
                     <button
-                      onClick={() => alert('Navigate to: /private-chat')}
-                      className="group w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all active:scale-95 border-4 border-blue-400/50 relative"
-                      aria-label="Message"
-                    >
-                      <MessageCircle className="w-12 h-12 text-white group-hover:scale-110 transition-transform" />
-                      <div className="absolute inset-0 rounded-full bg-blue-400 blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                    </button>
-
-                    <button
-                      onClick={() => handleSwipe('right')}
+                      onClick={handleLike}
                       className="group w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all active:scale-95 border-4 border-green-400/50"
                       aria-label="Like"
                     >
@@ -572,8 +532,12 @@ export default function DuoFinderAdvanced() {
                         </h3>
                         <div className="flex flex-wrap justify-center gap-3">
                           {likedMatches.map((match) => (
-                            <div key={match._id} className="group relative">
-                              <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-pink-400 hover:scale-110 transition-transform cursor-pointer">
+                            <div
+                              key={match._id}
+                              className="group relative cursor-pointer"
+                              onClick={() => navigate(`/profile/${match._id}`)}
+                            >
+                              <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-pink-400 hover:scale-110 transition-transform">
                                 <img src={match.avatar} alt={match.name} className="w-full h-full object-cover" />
                               </div>
                               <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
@@ -593,16 +557,6 @@ export default function DuoFinderAdvanced() {
                         <RefreshCw className="w-5 h-5" />
                         Find More Duos
                       </button>
-
-                      {likedMatches.length > 0 && (
-                        <button
-                          onClick={() => alert('Navigate to: /private-chat')}
-                          className="group relative px-8 py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-bold text-lg text-white border border-white/20 shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2"
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                          View Messages
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -620,7 +574,7 @@ export default function DuoFinderAdvanced() {
                   transform: translateY(0);
                 }
               }
-              
+
               @keyframes fadeInUp {
                 from {
                   opacity: 0;
@@ -631,15 +585,15 @@ export default function DuoFinderAdvanced() {
                   transform: translateY(0);
                 }
               }
-              
+
               .animate-fadeIn {
                 animation: fadeIn 0.5s ease-out forwards;
               }
-              
+
               .animate-fadeInUp {
                 animation: fadeInUp 0.6s ease-out forwards;
               }
-              
+
               @keyframes spin-reverse {
                 from {
                   transform: rotate(360deg);
@@ -648,11 +602,11 @@ export default function DuoFinderAdvanced() {
                   transform: rotate(0deg);
                 }
               }
-              
+
               .animate-spin-reverse {
                 animation: spin-reverse 1.5s linear infinite;
               }
-              
+
               @keyframes blob {
                 0% {
                   transform: translate(0px, 0px) scale(1);
@@ -667,19 +621,19 @@ export default function DuoFinderAdvanced() {
                   transform: translate(0px, 0px) scale(1);
                 }
               }
-              
+
               .animate-blob {
                 animation: blob 7s infinite;
               }
-              
+
               .animation-delay-2000 {
                 animation-delay: 2s;
               }
-              
+
               .animation-delay-4000 {
                 animation-delay: 4s;
               }
-              
+
               input[type="range"]::-webkit-slider-thumb {
                 appearance: none;
                 width: 20px;
@@ -689,7 +643,7 @@ export default function DuoFinderAdvanced() {
                 cursor: pointer;
                 box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
               }
-              
+
               input[type="range"]::-moz-range-thumb {
                 width: 20px;
                 height: 20px;

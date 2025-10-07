@@ -106,123 +106,123 @@ const matchEvents = async (userId, preferences = {}) => {
 
 const matchUsers = async (userId, selectedInterests = []) => {
   try {
-
-    const currentUser = await User.findById(userId)
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { DuoInterest: selectedInterests },
+      { new: true } 
+    )
       .populate("friends")
       .populate("friend_requests.user")
       .populate("joinedEvents", "name type description");
-if (!currentUser) throw new Error("User not found");
 
+    if (!updatedUser) throw new Error("User not found");
 
-const users = await User.find({
-  _id: { $nin: [userId, ...(currentUser.friends?.map(f => f._id) || [])] }
-}).populate("friends").populate("friend_requests.user").populate("joinedEvents", "name type description");
+    const users = await User.find({
+      _id: { $nin: [userId, ...(updatedUser.friends?.map(f => f._id) || [])] }
+    }).populate("friends").populate("friend_requests.user").populate("joinedEvents", "name type description");
 
+    const usersWithStatus = users.map(otherUser => {
+      const hasSentRequest = otherUser.friend_requests?.some(req =>
+        req.user?._id?.equals(userId)
+      );
 
-const usersWithStatus = users.map(otherUser => {
-  const hasSentRequest = otherUser.friend_requests?.some(req =>
-    req.user?._id?.equals(userId)
-  );
+      const hasReceivedRequest = updatedUser.friend_requests?.some(req =>
+        req.user?._id?.equals(otherUser._id)
+      );
 
-  const hasReceivedRequest = currentUser.friend_requests?.some(req =>
-    req.user?._id?.equals(otherUser._id)
-  );
+      const mutualFriends = otherUser.friends.filter(f =>
+        updatedUser.friends.some(cf => cf._id.equals(f._id))
+      ).length;
 
+      return {
+        _id: otherUser._id,
+        name: otherUser.name,
+        username: otherUser.username,
+        interests: otherUser.interests,
+        DuoInterest: otherUser.DuoInterest, 
+        createdAt: otherUser.createdAt,
+        friendRequestPending: hasSentRequest ? "Pending" : "Add Friend",
+        friendRequestReceived: hasReceivedRequest ? "Respond" : null,
+        mutualFriends
+      };
+    });
 
-  const mutualFriends = otherUser.friends.filter(f =>
-    currentUser.friends.some(cf => cf._id.equals(f._id))
-  ).length;
+    const userList = usersWithStatus.map(u => ({
+      id: u._id,
+      name: u.name,
+      interests: u.interests || [],
+      DuoInterest: u.DuoInterest || [], 
+      joinedEvents: u.joinedEvents?.map(e => ({
+        name: e.name,
+        type: e.type,
+        description: e.description,
+      })) || [],
+    }));
 
-  return {
-    _id: otherUser._id,
-    name: otherUser.name,
-    username: otherUser.username,
-    interests: otherUser.interests,
-    createdAt: otherUser.createdAt,
-    friendRequestPending: hasSentRequest ? "Pending" : "Add Friend",
-    friendRequestReceived: hasReceivedRequest ? "Respond" : null,
-    mutualFriends
-  };
-});
+    const effectiveInterests = [...(updatedUser.interests || []), ...(selectedInterests || [])];
+    const uniqueEffectiveInterests = [...new Set(effectiveInterests)];
 
-
-const userList = usersWithStatus.map(u => ({
-  id: u._id,
-  name: u.name,
-  interests: u.interests || [],
-  joinedEvents: u.joinedEvents?.map(e => ({
-    name: e.name,
-    type: e.type,
-    description: e.description,
-  })) || [],
-}));
-
-const effectiveInterests = [...(currentUser.interests || []), ...(selectedInterests || [])];
-const uniqueEffectiveInterests = [...new Set(effectiveInterests)];
-
-const prompt = `
+    const prompt = `
 You are an intelligent users matcher.
 Based on the user's profile interests and events joined, return a ranked list of suitable users in JSON format.
 
 ### User Profile:
 {
-  "name": "${currentUser.name}",
-  "interests": ${JSON.stringify(uniqueEffectiveInterests)},
-  "joinedEvents": ${JSON.stringify(currentUser.joinedEvents || [])}
+ "name": "${updatedUser.name}",
+ "interests": ${JSON.stringify(uniqueEffectiveInterests)},
+ "DuoInterest": ${JSON.stringify(updatedUser.DuoInterest || [])}, // Highlighted Addition: Include DuoInterest in the prompt
+ "joinedEvents": ${JSON.stringify(updatedUser.joinedEvents || [])}
 }
 
 ### Users:
 ${JSON.stringify(userList, null, 2)}
 
 ### Instructions:
-### Instructions:
-- Compare users by overlap of interests **and** joined event details (name, type, and description).
+- Compare users by overlap of interests, **DuoInterests**, and joined event details (name, type, and description). // Highlighted Change: Added DuoInterests to instructions
 - Prioritize matches who joined events of similar type or theme.
 - Avoid users that the user is already friends with.
-- ALWAYS return maximum 5 matches, even if no perfect match.
-- Keep each field concise (1–3 sentences max).
+- Return up to 5 matches. If there are fewer than 5 users, return all available users.
+- Keep each field concise (1-3 sentences max).
 - ALL the reasons cannot be identical
-- When you speak about users use you to refer to him
+- When you speak about users, use you to refer to him.
 - Return ONLY JSON in this schema:
 - Return in order of higher matched score.
 
 {
-  "matches": [
-    {
-      "_id": "string",
-      "matchScore": "number (0-100)",
-      "reason": "Atractive reason why matches",
-    }
-  ]
+"matches": [
+ {
+ "_id": "string",
+  "matchScore": "number (0-100)",
+ "reason": "Atractive reason why matches",
+ }
+ ]
 }
 `;
 
+    const result = await model(prompt);
 
-const result = await model(prompt);
+    if (process.env.DEBUG_GEMINI === "true") {
+      console.log("Raw Gemini response:", result);
+    }
 
-if (process.env.DEBUG_GEMINI === "true") {
-  console.log("Raw Gemini response:", result);
-}
+    const rawText = result.text || "";
+    const jsonMatch = rawText.match(/```json\s*([\s\S]*?)\s*```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : rawText;
 
-const rawText = result.text || "";
-const jsonMatch = rawText.match(/```json\s*([\s\S]*?)\s*```/);
-const jsonString = jsonMatch ? jsonMatch[1] : rawText;
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonString);
+    } catch (err) {
+      console.error("Failed to parse LLM output:", jsonString);
+      throw new Error("Invalid JSON returned by LLM");
+    }
 
-let parsed;
-try {
-  parsed = JSON.parse(jsonString);
-} catch (err) {
-  console.error("Failed to parse LLM output:", jsonString);
-  throw new Error("Invalid JSON returned by LLM");
-}
-
-return parsed;
+    return parsed;
 
   } catch (err) {
-  console.error("Error in usersMatcherService:", err);
-  throw new Error("Failed to match users");
-}
+    console.error("Error in usersMatcherService:", err);
+    throw new Error("Failed to match users");
+  }
 };
-
 
 module.exports = { matchEvents, matchUsers };

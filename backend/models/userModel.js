@@ -54,6 +54,11 @@ const userSchema = new Schema(
         required: false,
       },
     ],
+    DuoInterest: [
+      {
+        type: String,
+        required: false,
+      },],
     profile_pic: {
       type: String,
       required: false,
