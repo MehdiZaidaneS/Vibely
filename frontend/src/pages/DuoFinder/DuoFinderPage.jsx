@@ -118,11 +118,11 @@ export default function DuoFinderAdvanced() {
       setStep('complete');
     }
   };
-  
+
   const handleLike = async () => {
-    
+
     handleSwipe('right');
-};
+  };
 
   const handleSwipe = async (direction) => {
     const swipeDistance = direction === 'right' ? 1000 : -1000;
@@ -132,9 +132,9 @@ export default function DuoFinderAdvanced() {
       try {
         await sendFriendRequest(currentMatch._id);
         console.log(`Sent friend request to ${currentMatch.name}`);
-    } catch (error) {
+      } catch (error) {
         console.error("Failed to send friend request", error);
-    }
+      }
       setLikedMatches(prev => [...prev, currentMatch]);
     }
 
@@ -179,7 +179,7 @@ export default function DuoFinderAdvanced() {
     setLikedMatches([]);
     setCardPosition({ x: 0, y: 0 });
   };
-  
+
   const currentMatch = matches[currentMatchIndex];
   const rotation = cardPosition.x / 20;
 
@@ -394,11 +394,6 @@ export default function DuoFinderAdvanced() {
                             )}
 
                             <div className="relative h-72 overflow-hidden">
-                              <img
-                                src={match.coverImage}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
                               <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/50 backdrop-blur-xl rounded-full px-4 py-2 border border-white/20">
@@ -447,7 +442,7 @@ export default function DuoFinderAdvanced() {
                                   <div className="text-xs text-gray-400">Shared Interests</div>
                                 </div>
                               </div>
-                              
+
                               {/* New AI score and reason block */}
                               <div className="bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 rounded-2xl p-5 mb-6 border border-purple-400/30 animate-fadeIn">
                                 <h3 className="text-white font-bold mb-3 flex items-center gap-2">
@@ -480,7 +475,8 @@ export default function DuoFinderAdvanced() {
                     ))}
                   </div>
 
-                  <div className="flex justify-center items-center gap-6 mt-8">
+                  {/* Buttons - slightly below cards */}
+                  <div className="relative z-50 mt-6 flex justify-center items-center gap-6">
                     <button
                       onClick={() => handleSwipe('left')}
                       className="group w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all active:scale-95 border-4 border-red-400/50"
@@ -497,6 +493,7 @@ export default function DuoFinderAdvanced() {
                       <Heart className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
                     </button>
                   </div>
+
 
                   <div className="text-center mt-6">
                     <p className="text-gray-400 text-sm">Drag the card or use buttons to swipe</p>
@@ -520,7 +517,7 @@ export default function DuoFinderAdvanced() {
 
                     <p className="text-xl text-gray-300 mb-8">
                       {likedMatches.length > 0
-                        ? `You liked ${likedMatches.length} ${likedMatches.length === 1 ? 'person' : 'people'}! Check your messages to connect.`
+                        ? `You liked ${likedMatches.length} ${likedMatches.length === 1 ? 'person' : 'people'}! They have received a friend request from you!`
                         : "No matches this time, but don't worry! Try adjusting your interests or check back later."
                       }
                     </p>

@@ -109,7 +109,7 @@ const matchUsers = async (userId, selectedInterests = []) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { DuoInterest: selectedInterests },
-      { new: true } 
+      { new: true }
     )
       .populate("friends")
       .populate("friend_requests.user")
@@ -119,9 +119,13 @@ const matchUsers = async (userId, selectedInterests = []) => {
 
     const users = await User.find({
       _id: { $nin: [userId, ...(updatedUser.friends?.map(f => f._id) || [])] }
-    }).populate("friends").populate("friend_requests.user").populate("joinedEvents", "name type description");
+    })
+      .populate("friends")
+      .populate("friend_requests.user")
+      .populate("joinedEvents", "name type description");
 
-    const usersWithStatus = users.map(otherUser => {
+    // Filter out users who have already sent or received friend requests
+    const filteredUsers = users.filter(otherUser => {
       const hasSentRequest = otherUser.friend_requests?.some(req =>
         req.user?._id?.equals(userId)
       );
@@ -130,8 +134,17 @@ const matchUsers = async (userId, selectedInterests = []) => {
         req.user?._id?.equals(otherUser._id)
       );
 
+      // Exclude if there’s any pending friend request either way
+      return !hasSentRequest && !hasReceivedRequest;
+    });
+
+    const usersWithStatus = filteredUsers.map(otherUser => {
       const mutualFriends = otherUser.friends.filter(f =>
         updatedUser.friends.some(cf => cf._id.equals(f._id))
+      ).length;
+
+      const commonEvents = otherUser.joinedEvents.filter(ev =>
+        updatedUser.joinedEvents.some(uev => uev._id.equals(ev._id))
       ).length;
 
       return {
@@ -139,25 +152,18 @@ const matchUsers = async (userId, selectedInterests = []) => {
         name: otherUser.name,
         username: otherUser.username,
         interests: otherUser.interests,
-        DuoInterest: otherUser.DuoInterest, 
+        DuoInterest: otherUser.DuoInterest,
         createdAt: otherUser.createdAt,
-        friendRequestPending: hasSentRequest ? "Pending" : "Add Friend",
-        friendRequestReceived: hasReceivedRequest ? "Respond" : null,
-        mutualFriends
+        mutualFriends,
+        commonEvents,
+        joinedEvents: otherUser.joinedEvents?.map(e => ({
+          name: e.name,
+          type: e.type,
+          description: e.description,
+        })) || [],
       };
     });
 
-    const userList = usersWithStatus.map(u => ({
-      id: u._id,
-      name: u.name,
-      interests: u.interests || [],
-      DuoInterest: u.DuoInterest || [], 
-      joinedEvents: u.joinedEvents?.map(e => ({
-        name: e.name,
-        type: e.type,
-        description: e.description,
-      })) || [],
-    }));
 
     const effectiveInterests = [...(updatedUser.interests || []), ...(selectedInterests || [])];
     const uniqueEffectiveInterests = [...new Set(effectiveInterests)];
@@ -175,13 +181,14 @@ Based on the user's profile interests and events joined, return a ranked list of
 }
 
 ### Users:
-${JSON.stringify(userList, null, 2)}
+${JSON.stringify(usersWithStatus, null, 2)}
 
 ### Instructions:
 - Compare users by overlap of interests, **DuoInterests**, and joined event details (name, type, and description). // Highlighted Change: Added DuoInterests to instructions
+- Also consider **mutualFriends** and **commonEvents** to increase compatibility.
 - Prioritize matches who joined events of similar type or theme.
 - Avoid users that the user is already friends with.
-- Return up to 5 matches. If there are fewer than 5 users, return all available users.
+- Return up to 3 matches. If there are fewer than 3 users, return all available users.
 - Keep each field concise (1-3 sentences max).
 - ALL the reasons cannot be identical
 - When you speak about users, use you to refer to him.
@@ -189,13 +196,15 @@ ${JSON.stringify(userList, null, 2)}
 - Return in order of higher matched score.
 
 {
-"matches": [
- {
- "_id": "string",
-  "matchScore": "number (0-100)",
- "reason": "Atractive reason why matches",
- }
- ]
+  "matches": [
+    {
+      "_id": "string",
+      "matchScore": "number (0-100)",
+      "mutualFriends": "number",
+      "commonEvents": "number",
+      "reason": "Attractive reason why matches"
+    }
+  ]
 }
 `;
 

@@ -22,7 +22,7 @@ const PeoplePage = () => {
 
   const [activeUsers, setActiveUsers] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
-  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  //const [suggestedUsers, setSuggestedUsers] = useState([]);
   
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
@@ -31,28 +31,28 @@ const PeoplePage = () => {
     setIsLoadingUsers(false);
   };
 
-  const fetchSuggestedUsers = async () => {
-    setIsLoadingSuggestions(true);
-    const suggested = await getSuggestedUsers();
+  // const fetchSuggestedUsers = async () => {
+  //   setIsLoadingSuggestions(true);
+  //   const suggested = await getSuggestedUsers();
 
-    const suggestedMap = new Map();
-    suggested.forEach(match => {
-      suggestedMap.set(match._id, { matchScore: match.matchScore, reason: match.reason });
-    });
+  //   const suggestedMap = new Map();
+  //   suggested.forEach(match => {
+  //     suggestedMap.set(match._id, { matchScore: match.matchScore, reason: match.reason });
+  //   });
 
-    const suggestedUserList = activeUsers
-      .filter(user => suggestedMap.has(user._id))
-      .map(user => ({
-        ...user,
-        matchScore: suggestedMap.get(user._id).matchScore,
-        reason: suggestedMap.get(user._id).reason
-      }))
-      .sort((a, b) => b.matchScore - a.matchScore);
+  //   const suggestedUserList = activeUsers
+  //     .filter(user => suggestedMap.has(user._id))
+  //     .map(user => ({
+  //       ...user,
+  //       matchScore: suggestedMap.get(user._id).matchScore,
+  //       reason: suggestedMap.get(user._id).reason
+  //     }))
+  //     .sort((a, b) => b.matchScore - a.matchScore);
 
-    setSuggestedUsers(suggestedUserList);
-    setActiveTab("suggestions");
-    setIsLoadingSuggestions(false);
-  };
+  //   setSuggestedUsers(suggestedUserList);
+  //   setActiveTab("suggestions");
+  //   setIsLoadingSuggestions(false);
+  // };
 
 
   useEffect(() => {
@@ -121,7 +121,7 @@ const PeoplePage = () => {
       await acceptFriendResquest(requestId);
       setFriendRequests(prev => prev.filter(r => r._id !== requestId));
       setActiveUsers(prev => prev.filter(r => r._id !== requestId));
-      setSuggestedUsers(prev => prev.filter(r => r._id !== requestId));
+      //setSuggestedUsers(prev => prev.filter(r => r._id !== requestId));
     } catch (error) {
       console.error("Error accepting friend request:", error);
     }
@@ -132,7 +132,7 @@ const PeoplePage = () => {
       await declineFriendRequest(requestId);
       setFriendRequests(prev => prev.filter(r => r._id !== requestId));
       setActiveUsers(prev => prev.filter(r => r._id !== requestId));
-      setSuggestedUsers(prev => prev.filter(r => r._id !== requestId));
+      //setSuggestedUsers(prev => prev.filter(r => r._id !== requestId));
     } catch (error) {
       console.error("Error declining friend request:", error);
     }
@@ -369,7 +369,7 @@ const PeoplePage = () => {
                       </span>
                     )}
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => fetchSuggestedUsers()}
                     disabled={isLoadingSuggestions}
                     className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === 'suggestions'
@@ -394,7 +394,7 @@ const PeoplePage = () => {
                         )}
                       </>
                     )}
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
@@ -587,7 +587,7 @@ const PeoplePage = () => {
                       </div>
                     ))}
 
-                    {/* Suggestions Tab */}
+                    {/* Suggestions Tab
                     {activeTab === 'suggestions' && suggestedUsers.map((sugg, index) => (
                       <div
                         key={sugg._id}
@@ -672,9 +672,9 @@ const PeoplePage = () => {
                           )}
                         </div>
                       </div>
-                    ))}
+                    ))}*/}
                   </div>
-                )}
+                )} 
 
                 {/* Empty States */}
                 {!isLoadingUsers && !isLoadingSuggestions && (
@@ -695,13 +695,13 @@ const PeoplePage = () => {
                       </div>
                     )}
 
-                    {activeTab === 'suggestions' && suggestedUsers.length === 0 && !isLoadingSuggestions && (
+                    {/* {activeTab === 'suggestions' && suggestedUsers.length === 0 && !isLoadingSuggestions && (
                       <div className="text-center py-20 animate-fade-in">
                         <Sparkles className={`w-20 h-20 ${darkMode ? 'text-gray-600' : 'text-purple-300'} mx-auto mb-4 animate-pulse`} />
                         <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-slate-700'} mb-2`}>No suggestions yet</h3>
                         <p className={`${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>Check back later for personalized recommendations</p>
                       </div>
-                    )}
+                    )} */}
                   </>
                 )}
               </div>
