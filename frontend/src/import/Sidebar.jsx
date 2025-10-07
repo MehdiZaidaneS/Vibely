@@ -25,10 +25,10 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
             <img src="../assets/images/img_events_icon.svg" alt="" width="18" height="18" />
             <span className="menu-text">Events</span>
           </Link>
-          <a href="/people-page" className="menu-item">
+          <Link href="/people-page" className="menu-item">
             <img src="../assets/images/img_people.svg" alt="" width="18" height="20" />
             <span className="menu-text">People</span>
-          </a>
+          </Link>
             <Link to="/public-chat" className="menu-item">
             <img src="../assets/images/img_publicchat_icon.svg" alt="" width="25" height="20" />
             <span className="menu-text">Public Chat</span>
