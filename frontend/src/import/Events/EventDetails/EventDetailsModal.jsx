@@ -18,20 +18,20 @@ const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, acti
     if (event.background) {
       // If it's an image URL (contains common image extensions or starts with http/https)
       if (event.background.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) ||
-          event.background.startsWith('http://') ||
-          event.background.startsWith('https://') ||
-          event.background.startsWith('url(')) {
+        event.background.startsWith('http://') ||
+        event.background.startsWith('https://') ||
+        event.background.startsWith('url(')) {
         return event.background;
       }
       // Otherwise it's already a gradient, return as-is
       return event.background;
     }
-
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
     // Check if event has an imageUrl or image property for custom images
     if (event.imageUrl || event.image) {
       const imageUrl = event.imageUrl || event.image;
       // If it's a relative path, prepend the backend URL
-      const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `http://localhost:5000${imageUrl}`;
+      const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${API_URL}${imageUrl}`;
       return fullImageUrl;
     }
 
@@ -61,8 +61,8 @@ const EventDetailsModal = ({ isOpen, onClose, event, onJoinLeave, isJoined, acti
 
   const cardBackground = getEventBackground(event);
   const isImageUrl = cardBackground.startsWith('url(') ||
-                     cardBackground.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) ||
-                     (cardBackground.startsWith('http://') || cardBackground.startsWith('https://'));
+    cardBackground.match(/\.(jpg|jpeg|png|gif|webp|svg)/i) ||
+    (cardBackground.startsWith('http://') || cardBackground.startsWith('https://'));
   const isGradient = !isImageUrl && cardBackground.includes('gradient');
 
   return (
