@@ -17,10 +17,10 @@ function EventPage() {
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
   const createEvent = async (newEventData) => {
     try {
-      const response = await fetch("http://localhost:5000/api/events", {
+      const response = await fetch(`${API_URL}/api/events`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEventData),

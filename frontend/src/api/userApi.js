@@ -1,9 +1,10 @@
-const API_URL = `http://localhost:5000/api/users`;
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 
 export const getAllUsers = async () => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_URL}/api/users`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -26,7 +27,7 @@ export const getAllUsers = async () => {
 
 export const createUser = async (body) => {
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_URL}/api/users`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
@@ -54,7 +55,7 @@ export const createUser = async (body) => {
 export const getUserbyId = async () => {
   const userId = localStorage.getItem("userId");
   try {
-    const response = await fetch(`${API_URL}/${userId}`);
+    const response = await fetch(`${API_URL}/api/users/${userId}`);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
@@ -70,7 +71,7 @@ export const getUserbyId = async () => {
 
 export const logUser = async (body) => {
   try {
-    const response = await fetch(`${API_URL}/login`, {
+    const response = await fetch(`${API_URL}/api/users/login`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
@@ -99,7 +100,7 @@ export const addInfo = async (body) => {
   const token = localStorage.getItem("user");
   const userId = localStorage.getItem("userId");
   try {
-    const response = await fetch(`${API_URL}/${userId}`, {
+    const response = await fetch(`${API_URL}/api/users/${userId}`, {
       method: "PATCH",
       body: JSON.stringify(body),
       headers: {
@@ -123,7 +124,7 @@ export const addInfo = async (body) => {
 export const declineFriendRequest = async (friend_request_id) => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/delete/${friend_request_id}`, {
+    const response = await fetch(`${API_URL}/api/users/delete/${friend_request_id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -145,7 +146,7 @@ export const declineFriendRequest = async (friend_request_id) => {
 export const acceptFriendResquest = async (friend_request_id) => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/accept/${friend_request_id}`, {
+    const response = await fetch(`${API_URL}/api/users/accept/${friend_request_id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -167,7 +168,7 @@ export const acceptFriendResquest = async (friend_request_id) => {
 export const getFriendRequests = async () => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/friend-requests`, {
+    const response = await fetch(`${API_URL}/api/users/friend-requests`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -188,7 +189,7 @@ export const getFriendRequests = async () => {
 export const checkUserName = async (username) => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/check-username/${username}`);
+    const response = await fetch(`${API_URL}/api/users/check-username/${username}`);
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
@@ -205,7 +206,7 @@ export const checkUserName = async (username) => {
 export const sendFriendRequest = async (userId) => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/add/${userId}`, {
+    const response = await fetch(`${API_URL}/api/users/add/${userId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -227,7 +228,7 @@ export const sendFriendRequest = async (userId) => {
 export const getFriends = async () => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/friends`, {
+    const response = await fetch(`${API_URL}/api/users/friends`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -248,7 +249,7 @@ export const getFriends = async () => {
 export const getSuggestedUsers = async () => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/matched-users`, {
+    const response = await fetch(`${API_URL}/api/users/matched-users`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -270,7 +271,7 @@ export const getPrivateChatRoom = async (targetUserId) => {
   try {
     const currentUserId = localStorage.getItem("userId");
     const res = await fetch(
-      `http://localhost:5000/api/chatrooms/searchPri/${currentUserId}`
+      `${API_URL}/api/chatrooms/searchPri/${currentUserId}`
     );
 
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -291,7 +292,7 @@ export const getPrivateChatRoom = async (targetUserId) => {
 export const getUnreadPrivateChats = async () => {
     const token = localStorage.getItem("user")
     try {
-        const response = await fetch(`http://localhost:5000/api/chatrooms/unread-chats`, {
+        const response = await fetch(`${API_URL}/api/chatrooms/unread-chats`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -314,7 +315,7 @@ export const markAsRead = async (id) => {
 
     const token = localStorage.getItem("user")
     try {
-        const response = await fetch(`http://localhost:5000/api/chatrooms/${id}/markAsRead`, {
+        const response = await fetch(`${API_URL}/api/chatrooms/${id}/markAsRead`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -337,7 +338,7 @@ export const markAsRead = async (id) => {
 export const getActivities = async () => {
   const token = localStorage.getItem("user");
   try {
-    const response = await fetch(`${API_URL}/activities`, {
+    const response = await fetch(`${API_URL}/api/users/activities`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -370,7 +371,7 @@ export const recommendusers = async (setActiveMenu, setUsers) => {
   try {
     console.log("Fetching recommendations for user:", userId);
 
-    const response = await fetch("/api/users/matched-users", {
+    const response = await fetch(`${API_URL}/api/users/matched-users`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

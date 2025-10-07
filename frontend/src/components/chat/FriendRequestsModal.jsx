@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { UserCheck, UserX, X, Users, Inbox } from "lucide-react";
 
-const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 
 import {
   getFriendRequests,

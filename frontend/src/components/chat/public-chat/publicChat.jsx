@@ -13,7 +13,7 @@ import CreateGroupModal from "./Modals/CreateGroupModal";
 import FriendRequestsModal from "../FriendRequestsModal";
 import Sidebar from "../../../import/Sidebar";
 
-const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 
 const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   const navigate = useNavigate();

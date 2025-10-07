@@ -136,11 +136,11 @@ const PeoplePage = () => {
       console.error("Error declining friend request:", error);
     }
   };
-
+ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
   const removeFriendHandler = async (friendId) => {
     const token = localStorage.getItem("user");
     try {
-      const response = await fetch(`http://localhost:5000/api/users/remove/${friendId}`, {
+      const response = await fetch(`${API_URL}/api/users/remove/${friendId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

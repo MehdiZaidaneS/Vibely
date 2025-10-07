@@ -1,4 +1,4 @@
-
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 
 
 export const createEvent = async (newEventData, setEvents, setIsCreateModalOpen, setToast) => {
@@ -18,7 +18,7 @@ export const createEvent = async (newEventData, setEvents, setIsCreateModalOpen,
             headers["Content-Type"] = "application/json";
         }
 
-        const response = await fetch("/api/events", {
+        const response = await fetch(`${API_URL}/api/events`, {
             method: "POST",
             headers: headers,
             body: isFormData ? newEventData : JSON.stringify(newEventData),
@@ -50,7 +50,7 @@ export const joinEvent = async (selectedEvent, setIsCreateModalOpen, setSelected
         const eventID = selectedEvent._id
         console.log(eventID)
 
-        const response = await fetch(`/api/events/${eventID}/join`, {
+        const response = await fetch(`${API_URL}/api/events/${eventID}/join`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -91,7 +91,7 @@ export const joinEvent = async (selectedEvent, setIsCreateModalOpen, setSelected
 export const getAllEvents = async (setEvents, setActiveMenu) => {
     setActiveMenu("All Events")
     try {
-        const response = await fetch("/api/events");
+        const response = await fetch(`${API_URL}/api/events`);
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
 
@@ -111,7 +111,7 @@ export const getJoinedEvents = async (setEvents) => {
     const token = localStorage.getItem("user")
     const userId = localStorage.getItem("userId")
     try {
-        const response = await fetch(`/api/users/${userId}/joined-events`, {
+        const response = await fetch(`${API_URL}/api/users/${userId}/joined-events`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
@@ -136,7 +136,7 @@ export const leaveEvent = async (event, setIsCreateModalOpen, setSelectedEvent, 
     const token = localStorage.getItem("user")
 
     try {
-        const response = await fetch(`/api/users/${userId}/leave-event`, {
+        const response = await fetch(`${API_URL}/api/users/${userId}/leave-event`, {
             method: "PATCH",
             body: JSON.stringify({ event: event._id }),
             headers: {
@@ -161,7 +161,7 @@ export const leaveEvent = async (event, setIsCreateModalOpen, setSelectedEvent, 
 
 const getEventById = async (eventId) => {
     try {
-        const response = await fetch(`/api/events/${eventId}`)
+        const response = await fetch(`${API_URL}/api/events/${eventId}`)
         const event = await response.json()
 
         return event
@@ -187,7 +187,7 @@ export const recommendEvents = async (setActiveMenu, setEvents) => {
   try {
     console.log("Fetching recommendations for user:", userId);
 
-    const response = await fetch("/api/events/recommend-event", {
+    const response = await fetch(`${API_URL}/api/events/recommend-event`, {
       method: "POST",
       body: JSON.stringify({ userId, preferences: [] }),
       headers: {
@@ -239,7 +239,7 @@ export const getEventCreatedbyUser = async () => {
   const token = localStorage.getItem("user");
 
   try {
-    const response = await fetch("/api/events/created-events", {
+    const response = await fetch(`${API_URL}/api/events/created-events`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`

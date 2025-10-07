@@ -4,7 +4,7 @@ import Sidebar from '../../import/Sidebar';
 import { sendFriendRequest, getPrivateChatRoom } from '../../api/userApi';
 import { useNavigate } from 'react-router-dom';
 
-
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 const interests = [
   { name: "Football", icon: "⚽", color: "from-green-400 to-green-600" },
   { name: "Gaming", icon: "🎮", color: "from-purple-400 to-purple-600" },
@@ -94,7 +94,7 @@ export default function DuoFinderAdvanced() {
         return;
       }
 
-      const response = await fetch("/api/users/matched-users", {
+      const response = await fetch(`${API_URL}/api/users/matched-users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

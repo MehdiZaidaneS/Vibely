@@ -1,11 +1,11 @@
-
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 
 export const getMyNotifications = async (setNotifications) => {
 
   const token = localStorage.getItem("user")
 
   try {
-    const response = await fetch(`http://localhost:5000/api/notifications/getNotifications`, {
+    const response = await fetch(`${API_URL}/api/notifications/getNotifications`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -26,7 +26,7 @@ export const getMyNotifications = async (setNotifications) => {
 
 export const deleteNotification = async (notificationId) => {
   try {
-    const response = await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+    const response = await fetch(`${API_URL}/api/notifications/${notificationId}`, {
       method: "DELETE",
     });
 
