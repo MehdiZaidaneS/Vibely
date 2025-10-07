@@ -33,10 +33,10 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
             <img src="../assets/images/img_PublicChat_Icon.svg" alt="" width="25" height="20" />
             <span className="menu-text">Public Chat</span>
           </Link>
-          <a href="#" className="menu-item">
+          <Link to="/duo-finder" className="menu-item">
             <img src="../assets/images/img_duofinder_icon.svg" alt="" width="24" height="24" />
             <span className="menu-text">DuoFinder</span>
-          </a>
+          </Link>
         </nav>
       </aside>
 
