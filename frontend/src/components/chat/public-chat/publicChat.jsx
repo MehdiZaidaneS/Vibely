@@ -507,7 +507,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   );
 
   return (
-    <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
+    <div className="hide-sidebar-toggle h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
       {/* Main Vibely Sidebar Overlay for mobile */}
       {isMainSidebarOpen && (
         <div
