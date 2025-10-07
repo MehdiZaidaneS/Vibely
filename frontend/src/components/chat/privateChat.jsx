@@ -431,7 +431,7 @@ const PrivateChat = () => {
     messages.find((m) => m.sender._id?.toString() !== userId)?.sender._id;
 
   return (
-    <div className="h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
+    <div className="hide-sidebar-toggle h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex overflow-hidden">
       {/* Main Vibely Sidebar Overlay for mobile */}
       {isMainSidebarOpen && (
         <div
