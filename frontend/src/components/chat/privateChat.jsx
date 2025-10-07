@@ -171,29 +171,27 @@ const PrivateChat = () => {
 
     // Listen for chat deletion events
     const handleChatDeleted = (event) => {
-      console.log("Chat deleted event received:", event.detail);
+   
       const deletedChatroomId = event.detail.chatroomId;
-      console.log("Deleted chatroom ID:", deletedChatroomId);
-      console.log("Current chatroom ID:", chatroomId);
+      
 
       // Remove deleted chat from conversations
       setConversations((prev) => {
         const filtered = prev.filter((c) => c.id !== deletedChatroomId);
-        console.log("Conversations before filter:", prev.length);
-        console.log("Conversations after filter:", filtered.length);
+       
         return filtered;
       });
 
       // If currently viewing the deleted chat, navigate away
       if (chatroomId === deletedChatroomId) {
-        console.log("Currently viewing deleted chat, navigating away");
+       
         navigate("/private-chat");
       }
     };
 
     // Listen for friend added events to refresh sidebar
     const handleFriendAdded = () => {
-      console.log("Friend added event received, refreshing conversations");
+  
       getChatrooms();
     };
 

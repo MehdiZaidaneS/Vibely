@@ -186,7 +186,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket connected:", socketRef.current.id);
+
       setSocketConnected(true);
     });
 
@@ -196,7 +196,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
     });
 
     socketRef.current.on("disconnect", () => {
-      console.log("Socket disconnected");
+     
       setSocketConnected(false);
     });
 
@@ -256,11 +256,11 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
   useEffect(() => {
     if (!activeGroup || !socketRef.current || !socketConnected) return;
 
-    console.log("Joining room:", activeGroup);
+ 
     socketRef.current.emit("joinRoom", activeGroup);
 
     const handleNewMessage = (message) => {
-      console.log("Received message:", message);
+     
       setMessages((prev) => {
         // Prevent duplicate messages
         if (prev.some((m) => m._id === message._id)) {
@@ -490,7 +490,7 @@ const PublicChat = ({ isAuthenticated, setIsAuthenticated }) => {
       setActiveGroup(newGroup._id);
       setShowCreateGroup(false);
 
-      console.log("Successfully created new group:", newGroup);
+    
     } catch (error) {
       console.error("Error creating group:", error);
       alert("Error creating group. Please try again.");
