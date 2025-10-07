@@ -15,7 +15,7 @@ import EventDetailsModal from "../import/Events/EventDetails/EventDetailsModal";
 import { Plus } from 'lucide-react';
 import "./EventPage.css";
 import { getMyNotifications } from "../api/notificationsApi";
-
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 // Helper function to generate category-based gradient backgrounds or use image
 const getEventBackground = (event) => {
   // If event already has a background, check if it's an image URL or gradient
@@ -35,7 +35,7 @@ const getEventBackground = (event) => {
   if (event.imageUrl || event.image) {
     const imageUrl = event.imageUrl || event.image;
     // If it's a relative path, prepend the backend URL
-    const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `http://localhost:5000${imageUrl}`;
+    const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : `${API_URL}${imageUrl}`;
     return fullImageUrl;
   }
 
