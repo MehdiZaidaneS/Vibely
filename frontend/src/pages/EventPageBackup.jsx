@@ -220,7 +220,7 @@ const [events, setEvents] = useState([
                 key={event.id}
                 className={`event-card ${event.className} animate-card`}
                 style={{ backgroundImage: event.background, backgroundSize: "cover", backgroundPosition: "center" }}
-                onClick={() => console.log("Event card clicked:", event.title)}
+                
               >
                 <div>
                   <h2 className="event-title">{event.title}</h2>

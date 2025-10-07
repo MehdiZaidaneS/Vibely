@@ -109,7 +109,6 @@ const PeoplePage = () => {
   const sendMessage = async (userId) => {
     const room = await getPrivateChatRoom(userId);
     if (!room) {
-      console.log('No private chat exists yet.');
       return;
     }
     navigate(`/private-chat/${room}`);
@@ -154,7 +153,7 @@ const PeoplePage = () => {
   };
 
   const inviteToEvent = async (userId, eventId) => {
-    console.log('Inviting user to event:', userId, eventId);
+ 
     navigate('/');
   };
 

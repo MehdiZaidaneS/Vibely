@@ -45,7 +45,7 @@ const Auth = ({isAuthenticated, setIsAuthenticated}) => {
       return;
     }
 
-    console.log(isAuthenticated)
+    
     try {
       if (isLogin) {
         await logUser(formData);
@@ -58,13 +58,13 @@ const Auth = ({isAuthenticated, setIsAuthenticated}) => {
           localStorage.removeItem('rememberedEmail');
         }
 
-        console.log(isAuthenticated)
+       
         navigate("/");
 
       } else {
         await createUser(formData);
         setIsAuthenticated(true)
-        console.log(isAuthenticated)
+        
         navigate("/welcome");
 
       }

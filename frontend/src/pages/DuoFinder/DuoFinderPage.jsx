@@ -131,7 +131,7 @@ export default function DuoFinderAdvanced() {
     if (direction === 'right') {
       try {
         await sendFriendRequest(currentMatch._id);
-        console.log(`Sent friend request to ${currentMatch.name}`);
+       
       } catch (error) {
         console.error("Failed to send friend request", error);
       }
@@ -358,7 +358,7 @@ export default function DuoFinderAdvanced() {
                       <span className="text-white font-bold">Match {currentMatchIndex + 1} of {matches.length}</span>
                     </div>
                   </div>
-                  {console.log(matches)}
+                  
 
                   <div className="relative" style={{ height: '650px' }}>
                     {matches.slice(currentMatchIndex, currentMatchIndex + 3).map((match, index) => (
