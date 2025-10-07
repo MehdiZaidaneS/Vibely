@@ -22,7 +22,7 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
 
         <nav className="sidebar-menu">
           <Link to="/" className="menu-item">
-            <img src="../assets/images/img_Events_icon.svg" alt="" width="18" height="18" />
+            <img src="../assets/images/img_events_icon.svg" alt="" width="18" height="18" />
             <span className="menu-text">Events</span>
           </Link>
           <a href="/people" className="menu-item">
@@ -30,7 +30,7 @@ export default function Sidebar({ isOpen, onClose, onToggle }) {
             <span className="menu-text">People</span>
           </a>
             <Link to="/public-chat" className="menu-item">
-            <img src="../assets/images/img_PublicChat_Icon.svg" alt="" width="25" height="20" />
+            <img src="../assets/images/img_publicchat_icon.svg" alt="" width="25" height="20" />
             <span className="menu-text">Public Chat</span>
           </Link>
           <Link to="/duo-finder" className="menu-item">

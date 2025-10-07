@@ -17,10 +17,10 @@ function EventPage() {
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
+
   const createEvent = async (newEventData) => {
     try {
-      const response = await fetch(`${API_URL}/api/events`, {
+      const response = await fetch("http://localhost:5000/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEventData),
@@ -177,7 +177,7 @@ const [events, setEvents] = useState([
                 <span className="tooltip">Notifications</span>
               </span>
               <span className="tooltip-wrapper">
-                <img src="../assets/images/img_DM_icon.svg" alt="Direct Messages" className="dm-icon" width="18" height="18" />
+                <img src="../assets/images/img_dm_icon.svg" alt="Direct Messages" className="dm-icon" width="18" height="18" />
                 <span className="tooltip">Direct Messages</span>
               </span>
             </div>
