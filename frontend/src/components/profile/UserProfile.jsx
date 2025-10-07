@@ -8,7 +8,10 @@ import {
   Heart,
   MessageCircle,
   UserX,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
+import { sendFriendRequest } from "../../api/userApi";
 
 const API_URL = "http://localhost:5000";
 
@@ -59,6 +62,45 @@ const UserProfile = () => {
   const isFriend = currentUser?.friends?.some(
     (friendId) => friendId === userId
   );
+
+  const hasSentRequest = () => {
+    // Check if current user has sent a friend request to this user
+    if (user?.friend_requests && currentUser) {
+      return user.friend_requests.some(
+        (req) =>
+          (req.user &&
+            (req.user._id ? req.user._id.toString() : req.user.toString())) ===
+          currentUser._id.toString()
+      );
+    }
+    return false;
+  };
+
+  const hasReceivedRequest = () => {
+    // Check if current user has received a friend request from this user
+    if (currentUser?.friend_requests) {
+      return currentUser.friend_requests.some(
+        (req) =>
+          (req.user &&
+            (req.user._id ? req.user._id.toString() : req.user.toString())) ===
+          userId
+      );
+    }
+    return false;
+  };
+
+  const handleSendFriendRequest = async () => {
+    try {
+      await sendFriendRequest(userId);
+      alert("Friend request sent successfully!");
+      // Refresh both user profiles to update the button state
+      await fetchUserProfile();
+      await fetchCurrentUser();
+    } catch (err) {
+      console.error("Failed to send friend request:", err);
+      alert("Error sending friend request. Please try again.");
+    }
+  };
 
   const handleSendMessage = async () => {
     try {
@@ -197,22 +239,50 @@ const UserProfile = () => {
               </div>
 
               {/* Action Buttons */}
-              {!isOwnProfile && isFriend && (
+              {!isOwnProfile && (
                 <div className="mt-4 md:mt-20 pb-2 flex flex-col space-y-2">
-                  <button
-                    onClick={handleSendMessage}
-                    className="flex items-center justify-center space-x-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Message</span>
-                  </button>
-                  <button
-                    onClick={handleRemoveFriend}
-                    className="flex items-center justify-center space-x-2 px-6 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                  >
-                    <UserX className="w-4 h-4" />
-                    <span>Remove Friend</span>
-                  </button>
+                  {isFriend ? (
+                    <>
+                      <button
+                        onClick={handleSendMessage}
+                        className="flex items-center justify-center space-x-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Message</span>
+                      </button>
+                      <button
+                        onClick={handleRemoveFriend}
+                        className="flex items-center justify-center space-x-2 px-6 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                      >
+                        <UserX className="w-4 h-4" />
+                        <span>Remove Friend</span>
+                      </button>
+                    </>
+                  ) : hasReceivedRequest() ? (
+                    <button
+                      onClick={() => navigate("/profile")}
+                      className="flex items-center justify-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <UserCheck className="w-4 h-4" />
+                      <span>Respond to Request</span>
+                    </button>
+                  ) : hasSentRequest() ? (
+                    <button
+                      className="flex items-center justify-center space-x-2 px-6 py-2 bg-gray-100 text-gray-600 rounded-lg cursor-default"
+                      disabled
+                    >
+                      <UserX className="w-4 h-4" />
+                      <span>Request Sent</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSendFriendRequest}
+                      className="flex items-center justify-center space-x-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span>Add Friend</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
