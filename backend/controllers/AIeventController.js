@@ -1,7 +1,7 @@
 // controllers/AIeventController.js
 
 const { matchEvents, matchUsers } = require("../services/AIService");
-const { normalizeAI } = require("../utils/normalizeAI");
+const { normalizeAIevent } = require("../utils/normalizeAI");
 const User = require("../models/userModel");
 
 const EventMatches = async (req, res) => {
@@ -16,7 +16,7 @@ const EventMatches = async (req, res) => {
     const rawResponse = await matchEvents(userId, preferrences);
 
     // Normalize the response
-    const norm = normalizeAI(rawResponse);
+    const norm = normalizeAIevent(rawResponse);
 
     // Log response
     if (process.env.DEBUG_GEMINI === "true") {
