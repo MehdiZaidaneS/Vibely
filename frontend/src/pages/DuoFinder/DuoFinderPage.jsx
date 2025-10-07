@@ -120,12 +120,7 @@ export default function DuoFinderAdvanced() {
   };
   
   const handleLike = async () => {
-    try {
-        await sendFriendRequest(currentMatch._id);
-        console.log(`Sent friend request to ${currentMatch.name}`);
-    } catch (error) {
-        console.error("Failed to send friend request", error);
-    }
+    
     handleSwipe('right');
 };
 
@@ -134,6 +129,12 @@ export default function DuoFinderAdvanced() {
     setCardPosition({ x: swipeDistance, y: -100 });
 
     if (direction === 'right') {
+      try {
+        await sendFriendRequest(currentMatch._id);
+        console.log(`Sent friend request to ${currentMatch.name}`);
+    } catch (error) {
+        console.error("Failed to send friend request", error);
+    }
       setLikedMatches(prev => [...prev, currentMatch]);
     }
 
