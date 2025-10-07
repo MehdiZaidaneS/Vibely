@@ -8,7 +8,7 @@ const cors = require("cors")
 const userRouter = require("./routes/userRouter")
 const notificationRouter = require("./routes/notificationsRouter")
 //const generateText  = require("./controllers/AIeventController");
-
+const path = require("path")
 const connectDB = require("./config/db")
 const eventRouter = require("./routes/eventRouter")
 const chatRouter = require('./routes/chatRouter.js');
@@ -36,6 +36,12 @@ app.use("/api/notifications", notificationRouter)
 //app.post('/api/AIevent', generateText)
 app.use('/api/chatrooms', chatRouter)
 
+
+app.use(express.static(path.join(__dirname, 'client/build')))
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
 //chatroom servers
 const server = http.createServer(app);
 const io = new Server(server, {
