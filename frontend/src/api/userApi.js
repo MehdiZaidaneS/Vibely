@@ -354,3 +354,65 @@ export const getActivities = async () => {
     throw error;
   }
 };
+
+export const recommendusers = async (setActiveMenu, setEvents) => {
+  const token = localStorage.getItem("user");
+  const userId = localStorage.getItem("userId");
+
+  setActiveMenu("Recommended");
+
+  if (!userId || !token) {
+    console.log("User not authenticated");
+    setUsers([]);
+    return;
+  }
+
+  try {
+    console.log("Fetching recommendations for user:", userId);
+
+    const response = await fetch("/api/users/matched-users", {
+      method: "POST",
+      body: JSON.stringify({}),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("API error:", errorData);
+      throw new Error("Failed to get recommended users");
+    }
+
+    const recommendedUsersResponse = await response.json();
+    console.log("Recommendation response:", recommendedUsersResponse);
+
+    const recommendedArray = Array.isArray(recommendedUsersResponse.matches)
+      ? recommendedUsersResponse.matches
+      : [];
+
+    console.log("Matches found:", recommendedArray.length);
+
+    if (recommendedArray.length === 0) {
+      console.log("No recommendations found");
+      setUsers([]);
+      return;
+    }
+
+    const recommended = await Promise.all(
+      recommendedArray.map(async (match) => {
+        const user = await getUserbyId(match._id);
+        if (!user) return null;
+        return { matchScore: match.matchScore, ...user };
+      })
+    );
+
+    const validRecommended = recommended.filter(e => e !== null);
+    console.log("Valid recommended users:", validRecommended);
+    setUsers(validRecommended);
+  } catch (error) {
+    console.error("Error fetching recommended events:", error);
+    setUsers([]);
+  }
+};
