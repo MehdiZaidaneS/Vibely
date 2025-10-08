@@ -55,7 +55,7 @@ const AuthForm = ({
           </div>
 
           {/* Google login button - signup only */}
-          {!isLogin && (
+          {/* {!isLogin && (
             <div
               className={`mb-6 space-y-3 ${styles.animateSlideUp}`}
               style={{ animationDelay: "0.1s" }}
@@ -63,7 +63,7 @@ const AuthForm = ({
               <GoogleLoginButton />
 
               {/* Divider */}
-              <div className="relative">
+              {/* <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-purple-200"></div>
                 </div>
@@ -72,7 +72,7 @@ const AuthForm = ({
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Form header */}
           <div className={`mb-8 ${styles.animateSlideDown}`}>
