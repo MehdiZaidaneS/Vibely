@@ -74,17 +74,17 @@
 
 <div align="center">
 
-| Events Dashboard | Private Chat | Public Chat |
+| People Page | Private Chat | Public Chat |
 |:---:|:---:|:---:|
-| ![Events](./docs/screenshots/events.png) | ![Private Chat](./docs/screenshots/privatechat.png) | ![Public Chat](./docs/screenshots/publicchat.png) |
+| ![People Page](./docs/screenshots/peoplepage.png) | ![Private Chat](./docs/screenshots/privatechat.png) | ![Public Chat](./docs/screenshots/publicchat.png) |
 
 | User Profile | Authentication | DuoFinder |
 |:---:|:---:|:---:|
 | ![Profile](./docs/screenshots/profile.png) | ![Auth](./docs/screenshots/auth.png) | ![DuoFinder](./docs/screenshots/duofinder.png) |
 
-| People Page |
+| Events Dashboard |
 |:---:|
-| ![People Page](./docs/screenshots/peoplepage.png) |
+| ![Events](./docs/screenshots/events.png) |
 
 </div>
 
