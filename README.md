@@ -36,6 +36,7 @@
 ## ✨ Features
 
 ### 💬 **Real-Time Chat**
+
 - **Private Messaging** - One-on-one conversations with friends
 - **Public Chat Rooms** - Join or create group discussions
 - **Online Status** - See who's online in real-time
@@ -44,6 +45,7 @@
 - **Message Search** - Find conversations quickly
 
 ### 🎪 **Event Management**
+
 - **Browse Events** - Discover social, business, educational, and entertainment events
 - **Smart Filters** - Search by location, date, and keywords
 - **Join Events** - RSVP to events with capacity management
@@ -52,12 +54,14 @@
 - **Event Details** - View comprehensive information with host profiles
 
 ### 👤 **User Profiles**
+
 - **Profile Customization** - Upload profile pictures and update bio
 - **Friend System** - Send/accept friend requests
 - **Activity Tracking** - View joined events and chat history
 - **User Discovery** - Search and connect with other users
 
 ### 🔔 **Notifications**
+
 - **Real-Time Alerts** - Instant notifications for friend requests and event updates
 - **Notification Center** - Centralized hub for all alerts
 - **Unread Badges** - Visual indicators for new notifications
@@ -74,16 +78,16 @@
 
 <div align="center">
 
-| People Page | Private Chat | Public Chat |
-|:---:|:---:|:---:|
+|                    People Page                    |                    Private Chat                     |                    Public Chat                    |
+| :-----------------------------------------------: | :-------------------------------------------------: | :-----------------------------------------------: |
 | ![People Page](./docs/screenshots/peoplepage.png) | ![Private Chat](./docs/screenshots/privatechat.png) | ![Public Chat](./docs/screenshots/publicchat.png) |
 
-| User Profile | Authentication | DuoFinder |
-|:---:|:---:|:---:|
+|                User Profile                |            Authentication            |                   DuoFinder                    |
+| :----------------------------------------: | :----------------------------------: | :--------------------------------------------: |
 | ![Profile](./docs/screenshots/profile.png) | ![Auth](./docs/screenshots/auth.png) | ![DuoFinder](./docs/screenshots/duofinder.png) |
 
-| Events Dashboard |
-|:---:|
+|             Events Dashboard             |
+| :--------------------------------------: |
 | ![Events](./docs/screenshots/events.png) |
 
 </div>
@@ -93,6 +97,7 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18.2** - UI library with hooks
 - **Vite** - Fast build tool and dev server
 - **React Router DOM** - Client-side routing
@@ -103,6 +108,7 @@
 - **date-fns** - Modern date utility library
 
 ### Backend
+
 - **Node.js** - JavaScript runtime
 - **Express 5** - Web application framework
 - **MongoDB** - NoSQL database
@@ -115,17 +121,12 @@
 - **Validator** - Input validation library
 
 ### Development Tools
+
 - **ESLint** - JavaScript linting
 - **Nodemon** - Auto-restart for Node.js
 - **dotenv** - Environment variable management
 
 ---
-
-<div align="center">
-
-**Made with ❤️ by the Vibely Team**
-
-⭐ Star us on GitHub if you find this project useful!
 
 [⬆ Back to Top](#-vibely---social-networking-platform)
 
