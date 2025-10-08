@@ -1,7 +1,7 @@
 # 🧩 Self-Assessment Report
 
 ## 📘 Project Overview
-This codebase implementss a **user management and social interaction system** using **Node.js**, **Express**, and **Mongoose**. It supports:
+This codebase implements a **user management and social interaction system** using **Node.js**, **Express**, and **Mongoose**. It supports:
 - User authentication (JWT)
 - User creation and login
 - Friend requests and acceptance
